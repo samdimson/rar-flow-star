@@ -16,10 +16,13 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedClaimsRouteImport } from './routes/_authenticated/claims'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
+import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedEstimatesRouteImport } from './routes/_authenticated/estimates'
+import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticated/invoices'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
 import { Route as AuthenticatedProductionRouteImport } from './routes/_authenticated/production'
+import { Route as AuthenticatedRepsRouteImport } from './routes/_authenticated/reps'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedLeadsIndexRouteImport } from './routes/_authenticated/leads.index'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
@@ -58,9 +61,19 @@ const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEstimatesRoute = AuthenticatedEstimatesRouteImport.update({
   id: '/estimates',
   path: '/estimates',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedInvoicesRoute = AuthenticatedInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
@@ -76,6 +89,11 @@ const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
 const AuthenticatedProductionRoute = AuthenticatedProductionRouteImport.update({
   id: '/production',
   path: '/production',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRepsRoute = AuthenticatedRepsRouteImport.update({
+  id: '/reps',
+  path: '/reps',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
@@ -102,10 +120,13 @@ export interface FileRoutesByFullPath {
   '/claims': typeof AuthenticatedClaimsRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/customers': typeof AuthenticatedCustomersRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
   '/estimates': typeof AuthenticatedEstimatesRoute
+  '/invoices': typeof AuthenticatedInvoicesRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/production': typeof AuthenticatedProductionRoute
+  '/reps': typeof AuthenticatedRepsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/leads/': typeof AuthenticatedLeadsIndexRoute
@@ -116,10 +137,13 @@ export interface FileRoutesByTo {
   '/claims': typeof AuthenticatedClaimsRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/customers': typeof AuthenticatedCustomersRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
   '/estimates': typeof AuthenticatedEstimatesRoute
+  '/invoices': typeof AuthenticatedInvoicesRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/production': typeof AuthenticatedProductionRoute
+  '/reps': typeof AuthenticatedRepsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/': typeof AuthenticatedIndexRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
@@ -133,10 +157,13 @@ export interface FileRoutesById {
   '/_authenticated/claims': typeof AuthenticatedClaimsRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/customers': typeof AuthenticatedCustomersRoute
+  '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/estimates': typeof AuthenticatedEstimatesRoute
+  '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/production': typeof AuthenticatedProductionRoute
+  '/_authenticated/reps': typeof AuthenticatedRepsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
@@ -151,10 +178,13 @@ export interface FileRouteTypes {
     | '/claims'
     | '/contracts'
     | '/customers'
+    | '/documents'
     | '/estimates'
+    | '/invoices'
     | '/jobs'
     | '/pipeline'
     | '/production'
+    | '/reps'
     | '/tasks'
     | '/leads/$leadId'
     | '/leads/'
@@ -165,10 +195,13 @@ export interface FileRouteTypes {
     | '/claims'
     | '/contracts'
     | '/customers'
+    | '/documents'
     | '/estimates'
+    | '/invoices'
     | '/jobs'
     | '/pipeline'
     | '/production'
+    | '/reps'
     | '/tasks'
     | '/'
     | '/leads/$leadId'
@@ -181,10 +214,13 @@ export interface FileRouteTypes {
     | '/_authenticated/claims'
     | '/_authenticated/contracts'
     | '/_authenticated/customers'
+    | '/_authenticated/documents'
     | '/_authenticated/estimates'
+    | '/_authenticated/invoices'
     | '/_authenticated/jobs'
     | '/_authenticated/pipeline'
     | '/_authenticated/production'
+    | '/_authenticated/reps'
     | '/_authenticated/tasks'
     | '/_authenticated/'
     | '/_authenticated/leads/$leadId'
@@ -247,11 +283,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/documents': {
+      id: '/_authenticated/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/estimates': {
       id: '/_authenticated/estimates'
       path: '/estimates'
       fullPath: '/estimates'
       preLoaderRoute: typeof AuthenticatedEstimatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/invoices': {
+      id: '/_authenticated/invoices'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof AuthenticatedInvoicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/jobs': {
@@ -273,6 +323,13 @@ declare module '@tanstack/react-router' {
       path: '/production'
       fullPath: '/production'
       preLoaderRoute: typeof AuthenticatedProductionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reps': {
+      id: '/_authenticated/reps'
+      path: '/reps'
+      fullPath: '/reps'
+      preLoaderRoute: typeof AuthenticatedRepsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tasks': {
@@ -304,10 +361,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClaimsRoute: typeof AuthenticatedClaimsRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
+  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEstimatesRoute: typeof AuthenticatedEstimatesRoute
+  AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedProductionRoute: typeof AuthenticatedProductionRoute
+  AuthenticatedRepsRoute: typeof AuthenticatedRepsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedLeadsLeadIdRoute: typeof AuthenticatedLeadsLeadIdRoute
@@ -319,10 +379,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClaimsRoute: AuthenticatedClaimsRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
+  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEstimatesRoute: AuthenticatedEstimatesRoute,
+  AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedProductionRoute: AuthenticatedProductionRoute,
+  AuthenticatedRepsRoute: AuthenticatedRepsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedLeadsLeadIdRoute: AuthenticatedLeadsLeadIdRoute,
