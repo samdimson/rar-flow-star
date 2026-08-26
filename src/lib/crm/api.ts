@@ -559,8 +559,8 @@ export function useCreateLead() {
             city: input.city.trim(),
             state: input.state.trim() || "OK",
             postal_code: input.postal_code.trim(),
-            property_type: input.property_type || null,
-            roof_type: input.roof_type || null,
+            property_type: input.property_type,
+            roof_type: input.roof_type,
             roof_age: input.roof_age ? Number(input.roof_age) : null,
           })
           .select()
