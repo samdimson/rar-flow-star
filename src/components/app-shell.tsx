@@ -20,13 +20,14 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
+import { NotificationBell } from "@/components/crm/notification-bell";
 import { Button } from "@/components/ui/button";
+
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { initials, titleCase } from "@/lib/crm/format";
-import { cn } from "@/lib/utils";
 
 type NavItem = {
   to: string;
@@ -202,9 +203,11 @@ export function AppShell({
               ) : null}
             </div>
           </div>
-          <div className={cn("flex flex-wrap items-center gap-2", !actions && "hidden lg:flex")}>
+          <div className="flex flex-wrap items-center gap-2">
+            <NotificationBell />
             {actions}
           </div>
+
         </header>
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">{children}</main>
       </div>
