@@ -28,7 +28,6 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { initials, titleCase } from "@/lib/crm/format";
-import { cn } from "@/lib/utils";
 
 type NavItem = {
   to: string;
