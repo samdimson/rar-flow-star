@@ -310,8 +310,8 @@ function LeadDetail() {
                       label="Address"
                       value={`${lead.property?.address_line1 ?? "—"}${lead.property?.city ? `, ${lead.property.city}, ${lead.property.state} ${lead.property.postal_code}` : ""}`}
                     />
-                    <Field label="Property type" value={lead.property?.property_type || "—"} />
-                    <Field label="Roof type" value={lead.property?.roof_type || "—"} />
+                    <Field label="Property type" value={propertyTypeLabel(lead.property?.property_type)} />
+                    <Field label="Roof type" value={roofTypeLabel(lead.property?.roof_type)} />
                     <Field label="Roof age" value={lead.property?.roof_age ? `${lead.property.roof_age} yrs` : "—"} />
                     <Field label="Jurisdiction" value={lead.property?.jurisdiction || "—"} />
                   </dl>
