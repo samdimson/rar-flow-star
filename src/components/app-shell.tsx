@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
+import { NotificationBell } from "@/components/crm/notification-bell";
 import { Button } from "@/components/ui/button";
+
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
