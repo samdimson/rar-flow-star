@@ -410,7 +410,10 @@ export async function applyTransition({ lead, toTaskCode, reason, isOverride }: 
   }
 
   if (task.appointment) {
-    const source = updatedLead[task.appointment.dateField] ?? claim?.[task.appointment.dateField as "adjuster_meeting_at"];
+    const field = task.appointment.dateField;
+    const source =
+      (updatedLead as unknown as Record<string, string | null>)[field] ??
+      (claim as unknown as Record<string, string | null> | null | undefined)?.[field];
     if (source) {
       const starts = String(source).length <= 10 ? `${source}T09:00:00` : String(source);
       const { data: existing } = await supabase
