@@ -240,10 +240,10 @@ function LeadDetail() {
                         { name: "secondary_phone", label: "Secondary phone", type: "tel" },
                         { name: "email", label: "Email", type: "email" },
                         { name: "preferred_contact", label: "Preferred contact" },
-                        { name: "mailing_address_line1", label: "Mailing address" },
-                        { name: "mailing_city", label: "Mailing city" },
-                        { name: "mailing_state", label: "Mailing state" },
-                        { name: "mailing_postal_code", label: "Mailing ZIP" },
+                        { name: "address_line1", label: "Address", required: true },
+                        { name: "city", label: "City", required: true },
+                        { name: "state", label: "State", required: true },
+                        { name: "postal_code", label: "ZIP", required: true },
                         { name: "notes", label: "Customer notes", type: "textarea" },
                       ]}
                     />
@@ -255,10 +255,10 @@ function LeadDetail() {
                     <Field label="Email" value={lead.customer?.email || "—"} />
                     <Field label="Preferred contact" value={lead.customer?.preferred_contact || "—"} />
                     <Field
-                      label="Mailing address"
+                      label="Address"
                       value={
-                        lead.customer?.mailing_address_line1
-                          ? `${lead.customer.mailing_address_line1}, ${lead.customer.mailing_city ?? ""} ${lead.customer.mailing_state ?? ""} ${lead.customer.mailing_postal_code ?? ""}`
+                        lead.customer?.address_line1
+                          ? `${lead.customer.address_line1}, ${lead.customer.city ?? ""} ${lead.customer.state ?? ""} ${lead.customer.postal_code ?? ""}`
                           : "Same as property"
                       }
                     />

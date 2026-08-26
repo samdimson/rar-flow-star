@@ -397,54 +397,54 @@ export type Database = {
       }
       customers: {
         Row: {
+          address_line1: string | null
+          city: string | null
           created_at: string
           email: string | null
           first_name: string
           id: string
           last_name: string
-          mailing_address_line1: string | null
-          mailing_city: string | null
-          mailing_postal_code: string | null
-          mailing_state: string | null
           notes: string | null
           phone: string | null
+          postal_code: string | null
           preferred_contact: string | null
           property_id: string | null
           secondary_phone: string | null
+          state: string | null
           updated_at: string
         }
         Insert: {
+          address_line1?: string | null
+          city?: string | null
           created_at?: string
           email?: string | null
           first_name?: string
           id?: string
           last_name?: string
-          mailing_address_line1?: string | null
-          mailing_city?: string | null
-          mailing_postal_code?: string | null
-          mailing_state?: string | null
           notes?: string | null
           phone?: string | null
+          postal_code?: string | null
           preferred_contact?: string | null
           property_id?: string | null
           secondary_phone?: string | null
+          state?: string | null
           updated_at?: string
         }
         Update: {
+          address_line1?: string | null
+          city?: string | null
           created_at?: string
           email?: string | null
           first_name?: string
           id?: string
           last_name?: string
-          mailing_address_line1?: string | null
-          mailing_city?: string | null
-          mailing_postal_code?: string | null
-          mailing_state?: string | null
           notes?: string | null
           phone?: string | null
+          postal_code?: string | null
           preferred_contact?: string | null
           property_id?: string | null
           secondary_phone?: string | null
+          state?: string | null
           updated_at?: string
         }
         Relationships: [
