@@ -386,6 +386,38 @@ export const LEAD_SOURCES: { value: LeadSource; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+export type PropertyType = Database["public"]["Enums"]["property_type"];
+export type RoofType = Database["public"]["Enums"]["roof_type"];
+
+export const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
+  { value: "residential_single", label: "Single Family" },
+  { value: "residential_multi", label: "Multi-Family" },
+  { value: "condo", label: "Condo/Townhome" },
+  { value: "mobile", label: "Mobile Home" },
+  { value: "commercial_flat", label: "Commercial — Flat" },
+  { value: "commercial_low", label: "Commercial — Low Slope" },
+  { value: "commercial_steep", label: "Commercial — Steep Slope" },
+  { value: "industrial", label: "Industrial" },
+  { value: "church", label: "Church/Non-Profit" },
+  { value: "other", label: "Other" },
+];
+
+export const ROOF_TYPES: { value: RoofType; label: string }[] = [
+  { value: "asphalt_shingle", label: "Asphalt Shingle" },
+  { value: "metal", label: "Metal" },
+  { value: "tile", label: "Tile" },
+  { value: "flat_tpo", label: "Flat — TPO" },
+  { value: "flat_epdm", label: "Flat — EPDM" },
+  { value: "flat_mod", label: "Flat — Modified Bitumen" },
+  { value: "wood_shake", label: "Wood Shake" },
+  { value: "slate", label: "Slate" },
+  { value: "other", label: "Other" },
+];
+
+export const propertyTypeLabel = (v?: string | null) =>
+  PROPERTY_TYPES.find((o) => o.value === v)?.label ?? "—";
+export const roofTypeLabel = (v?: string | null) => ROOF_TYPES.find((o) => o.value === v)?.label ?? "—";
+
 export const ROLES: { value: AppRole; label: string; description: string }[] = [
   { value: "admin", label: "Admin", description: "Full access including roles, settings and audit log" },
   { value: "owner_manager", label: "Owner / Manager", description: "Full operational and financial visibility" },

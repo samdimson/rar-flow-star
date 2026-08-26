@@ -524,8 +524,8 @@ export type NewLeadInput = {
   city: string;
   state: string;
   postal_code: string;
-  property_type: string;
-  roof_type: string;
+  property_type: Database["public"]["Enums"]["property_type"];
+  roof_type: Database["public"]["Enums"]["roof_type"];
   roof_age: string;
   source: Database["public"]["Enums"]["lead_source"];
   assigned_rep_id: string;
@@ -559,8 +559,8 @@ export function useCreateLead() {
             city: input.city.trim(),
             state: input.state.trim() || "OK",
             postal_code: input.postal_code.trim(),
-            property_type: input.property_type || null,
-            roof_type: input.roof_type || null,
+            property_type: input.property_type,
+            roof_type: input.roof_type,
             roof_age: input.roof_age ? Number(input.roof_age) : null,
           })
           .select()

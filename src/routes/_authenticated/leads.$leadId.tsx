@@ -34,7 +34,11 @@ import {
   APPOINTMENT_KINDS,
   LEAD_SOURCES,
   PAYMENT_KINDS,
+  PROPERTY_TYPES,
+  ROOF_TYPES,
   TASK_BY_CODE,
+  propertyTypeLabel,
+  roofTypeLabel,
   stageName,
 } from "@/lib/crm/workflow";
 
@@ -279,11 +283,25 @@ function LeadDetail() {
                       fields={[
                         { name: "address_line1", label: "Address", required: true, full: true },
                         { name: "address_line2", label: "Address line 2" },
-                        { name: "city", label: "City" },
-                        { name: "state", label: "State" },
-                        { name: "postal_code", label: "ZIP" },
-                        { name: "property_type", label: "Property type" },
-                        { name: "roof_type", label: "Roof type" },
+                        { name: "city", label: "City", required: true },
+                        { name: "state", label: "State", required: true },
+                        { name: "postal_code", label: "ZIP", required: true },
+                        {
+                          name: "property_type",
+                          label: "Property type",
+                          type: "select",
+                          options: PROPERTY_TYPES,
+                          required: true,
+                          placeholder: "Select property type",
+                        },
+                        {
+                          name: "roof_type",
+                          label: "Roof type",
+                          type: "select",
+                          options: ROOF_TYPES,
+                          required: true,
+                          placeholder: "Select roof type",
+                        },
                         { name: "roof_age", label: "Roof age (years)", type: "number" },
                         { name: "jurisdiction", label: "Permit jurisdiction" },
                         { name: "notes", label: "Property notes", type: "textarea" },
@@ -296,8 +314,8 @@ function LeadDetail() {
                       label="Address"
                       value={`${lead.property?.address_line1 ?? "—"}${lead.property?.city ? `, ${lead.property.city}, ${lead.property.state} ${lead.property.postal_code}` : ""}`}
                     />
-                    <Field label="Property type" value={lead.property?.property_type || "—"} />
-                    <Field label="Roof type" value={lead.property?.roof_type || "—"} />
+                    <Field label="Property type" value={propertyTypeLabel(lead.property?.property_type)} />
+                    <Field label="Roof type" value={roofTypeLabel(lead.property?.roof_type)} />
                     <Field label="Roof age" value={lead.property?.roof_age ? `${lead.property.roof_age} yrs` : "—"} />
                     <Field label="Jurisdiction" value={lead.property?.jurisdiction || "—"} />
                   </dl>
