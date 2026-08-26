@@ -255,10 +255,10 @@ function LeadDetail() {
                     <Field label="Email" value={lead.customer?.email || "—"} />
                     <Field label="Preferred contact" value={lead.customer?.preferred_contact || "—"} />
                     <Field
-                      label="Mailing address"
+                      label="Address"
                       value={
-                        lead.customer?.mailing_address_line1
-                          ? `${lead.customer.mailing_address_line1}, ${lead.customer.mailing_city ?? ""} ${lead.customer.mailing_state ?? ""} ${lead.customer.mailing_postal_code ?? ""}`
+                        lead.customer?.address_line1
+                          ? `${lead.customer.address_line1}, ${lead.customer.city ?? ""} ${lead.customer.state ?? ""} ${lead.customer.postal_code ?? ""}`
                           : "Same as property"
                       }
                     />
