@@ -1106,9 +1106,9 @@ export type Database = {
           jurisdiction: string | null
           notes: string | null
           postal_code: string
-          property_type: string | null
+          property_type: Database["public"]["Enums"]["property_type"]
           roof_age: number | null
-          roof_type: string | null
+          roof_type: Database["public"]["Enums"]["roof_type"]
           state: string
           updated_at: string
         }
@@ -1121,9 +1121,9 @@ export type Database = {
           jurisdiction?: string | null
           notes?: string | null
           postal_code?: string
-          property_type?: string | null
+          property_type?: Database["public"]["Enums"]["property_type"]
           roof_age?: number | null
-          roof_type?: string | null
+          roof_type?: Database["public"]["Enums"]["roof_type"]
           state?: string
           updated_at?: string
         }
@@ -1136,9 +1136,9 @@ export type Database = {
           jurisdiction?: string | null
           notes?: string | null
           postal_code?: string
-          property_type?: string | null
+          property_type?: Database["public"]["Enums"]["property_type"]
           roof_age?: number | null
-          roof_type?: string | null
+          roof_type?: Database["public"]["Enums"]["roof_type"]
           state?: string
           updated_at?: string
         }
@@ -1301,6 +1301,27 @@ export type Database = {
         | "acv"
         | "depreciation"
         | "supplement"
+        | "other"
+      property_type:
+        | "residential_single"
+        | "residential_multi"
+        | "condo"
+        | "mobile"
+        | "commercial_flat"
+        | "commercial_low"
+        | "commercial_steep"
+        | "industrial"
+        | "church"
+        | "other"
+      roof_type:
+        | "asphalt_shingle"
+        | "metal"
+        | "tile"
+        | "flat_tpo"
+        | "flat_epdm"
+        | "flat_mod"
+        | "wood_shake"
+        | "slate"
         | "other"
       task_status: "open" | "completed" | "cancelled"
     }
@@ -1487,6 +1508,29 @@ export const Constants = {
         "acv",
         "depreciation",
         "supplement",
+        "other",
+      ],
+      property_type: [
+        "residential_single",
+        "residential_multi",
+        "condo",
+        "mobile",
+        "commercial_flat",
+        "commercial_low",
+        "commercial_steep",
+        "industrial",
+        "church",
+        "other",
+      ],
+      roof_type: [
+        "asphalt_shingle",
+        "metal",
+        "tile",
+        "flat_tpo",
+        "flat_epdm",
+        "flat_mod",
+        "wood_shake",
+        "slate",
         "other",
       ],
       task_status: ["open", "completed", "cancelled"],
