@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
