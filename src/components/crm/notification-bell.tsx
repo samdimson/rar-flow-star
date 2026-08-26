@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { relativeDay } from "@/lib/crm/format";
+import { dateTime } from "@/lib/crm/format";
 
 export function NotificationBell() {
   const { user } = useAuth();
@@ -93,7 +93,7 @@ export function NotificationBell() {
                 <>
                   <span className="block text-sm text-foreground">{n.message}</span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
-                    {relativeDay(n.created_at)}
+                    {dateTime(n.created_at)}
                   </span>
                 </>
               );
