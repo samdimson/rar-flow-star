@@ -187,8 +187,8 @@ function NewLeadDialog() {
     phone: "",
     value: "",
     stage: "new" as Stage,
-    owner: OWNERS[0],
-    source: SOURCES[0],
+    owner: OWNERS[0]!,
+    source: SOURCES[0]!,
     notes: "",
   });
 
@@ -220,8 +220,8 @@ function NewLeadDialog() {
       phone: "",
       value: "",
       stage: "new",
-      owner: OWNERS[0],
-      source: SOURCES[0],
+      owner: OWNERS[0]!,
+      source: SOURCES[0]!,
       notes: "",
     });
   };

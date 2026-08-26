@@ -67,7 +67,7 @@ function Pipeline() {
                           className="size-7"
                           disabled={idx <= 0}
                           aria-label={`Move ${lead.company} back a stage`}
-                          onClick={() => moveLead(lead.id, stageIds[idx - 1])}
+                          onClick={() => moveLead(lead.id, stageIds[idx - 1]!)}
                         >
                           <ChevronLeft className="size-4" />
                         </Button>
@@ -77,7 +77,7 @@ function Pipeline() {
                           className="size-7"
                           disabled={idx >= stageIds.length - 1}
                           aria-label={`Move ${lead.company} forward a stage`}
-                          onClick={() => moveLead(lead.id, stageIds[idx + 1])}
+                          onClick={() => moveLead(lead.id, stageIds[idx + 1]!)}
                         >
                           <ChevronRight className="size-4" />
                         </Button>
