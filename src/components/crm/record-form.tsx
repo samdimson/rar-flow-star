@@ -55,7 +55,7 @@ export function RecordForm<K extends keyof Tables>({
   table: K;
   label: string;
   fields: FieldSpec[];
-  initial?: Values | null;
+  initial?: Values | null | undefined;
   extra?: Values;
   submitLabel?: string;
   onSaved?: () => void;

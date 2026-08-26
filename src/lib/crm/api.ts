@@ -7,6 +7,11 @@ import { addBusinessDays, TASK_BY_CODE, type RequiredField, REQUIRED_FIELD_LABEL
 import { isoDate } from "./format";
 
 type Tables = Database["public"]["Tables"];
+
+// Loose table accessor for the generic CRUD/list helpers below. Row types are
+// re-applied by each caller, so type safety is preserved at the call sites.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const anyTable = (name: string) => (supabase as any).from(name);
 export type LeadRow = Tables["leads"]["Row"];
 export type CustomerRow = Tables["customers"]["Row"];
 export type PropertyRow = Tables["properties"]["Row"];
@@ -71,7 +76,7 @@ function listHook<K extends keyof Tables>(
       queryKey: [table as string, filter?.column ?? "all", filter?.value ?? "all"],
       enabled: filter ? !!filter.value : true,
       queryFn: async () => {
-        let q = supabase.from(table as string).select("*").order(orderColumn, { ascending });
+        let q = anyTable(table as string).select("*").order(orderColumn, { ascending });
         if (filter?.value) q = q.eq(filter.column, filter.value);
         const { data, error } = await q;
         if (error) throw error;
@@ -225,8 +230,8 @@ export async function logActivity(input: {
 export type AdvanceInput = {
   lead: LeadRow;
   toTaskCode: string;
-  reason?: string;
-  isOverride?: boolean;
+  reason?: string | undefined;
+  isOverride?: boolean | undefined;
 };
 
 export function missingRequirements(
@@ -468,9 +473,8 @@ export function useUpsert<K extends keyof Tables>(table: K, label: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (values: Record<string, unknown>) => {
-      const { data, error } = await supabase
-        .from(table as string)
-        .upsert(values as never, { onConflict: "id" })
+      const { data, error } = await anyTable(table as string)
+        .upsert(values, { onConflict: "id" })
         .select()
         .maybeSingle();
       if (error) throw error;
@@ -495,7 +499,7 @@ export function useDeleteRow<K extends keyof Tables>(table: K, label: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from(table as string).delete().eq("id", id);
+      const { error } = await anyTable(table as string).delete().eq("id", id);
       if (error) throw error;
       await logAudit({ entity: table as string, entityId: id, action: "delete", summary: label });
     },

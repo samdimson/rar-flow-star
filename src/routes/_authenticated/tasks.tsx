@@ -38,7 +38,7 @@ function TasksPage() {
   const now = Date.now();
   const rows = tasks.filter((t) => {
     if (state === "open" && t.status !== "open") return false;
-    if (state === "done" && t.status !== "done") return false;
+    if (state === "completed" && t.status !== "completed") return false;
     if (state === "overdue" && !(t.status === "open" && t.due_at && new Date(t.due_at).getTime() < now)) return false;
     if (owner === "mine" && t.assigned_to !== user?.id) return false;
     if (owner !== "all" && owner !== "mine" && t.assigned_to !== owner) return false;
@@ -66,7 +66,7 @@ function TasksPage() {
             <SelectContent>
               <SelectItem value="open">Open</SelectItem>
               <SelectItem value="overdue">Overdue</SelectItem>
-              <SelectItem value="done">Completed</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="all">All</SelectItem>
             </SelectContent>
           </Select>
@@ -117,7 +117,7 @@ function TasksPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => save.mutate({ id: t.id, status: "done", completed_at: new Date().toISOString() })}
+                        onClick={() => save.mutate({ id: t.id, status: "completed", completed_at: new Date().toISOString() })}
                       >
                         <CheckCircle2 className="size-4" /> Complete
                       </Button>

@@ -183,7 +183,7 @@ function LeadsPage() {
                     <td className="px-3 py-2.5"><StageBadge stageId={l.stage_id} /></td>
                     <td className="px-3 py-2.5"><TaskBadge code={l.task_code} /></td>
                     <td className="px-3 py-2.5 text-xs">{repName(l.assigned_rep_id)}</td>
-                    <td className="px-3 py-2.5 text-xs">{titleCaseSource(l.source)}</td>
+                    <td className="px-3 py-2.5 text-xs">{titleCase(l.source)}</td>
                     {canViewFinance ? (
                       <td className="px-3 py-2.5 font-medium">
                         {currency(l.contract_amount ?? l.estimated_value)}

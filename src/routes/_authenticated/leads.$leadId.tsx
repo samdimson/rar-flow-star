@@ -452,7 +452,7 @@ function LeadDetail() {
                           size="sm"
                           variant="outline"
                           onClick={() =>
-                            saveTask.mutate({ id: t.id, status: "done", completed_at: new Date().toISOString() })
+                            saveTask.mutate({ id: t.id, status: "completed", completed_at: new Date().toISOString() })
                           }
                         >
                           <CheckCircle2 className="size-4" /> Complete

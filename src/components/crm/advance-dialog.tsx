@@ -31,7 +31,7 @@ export function AdvanceDialog({
   trigger,
 }: {
   lead: LeadRow;
-  claim?: ClaimRow | null;
+  claim?: ClaimRow | null | undefined;
   trigger?: React.ReactNode;
 }) {
   const { canEdit, canManage } = useAuth();

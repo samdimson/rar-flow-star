@@ -13,7 +13,7 @@ export function KpiCard({
 }: {
   label: string;
   value: ReactNode;
-  hint?: string;
+  hint?: string | undefined;
   icon?: ReactNode;
   tone?: "default" | "positive" | "warning" | "danger";
 }) {
