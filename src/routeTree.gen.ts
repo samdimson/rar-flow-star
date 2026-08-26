@@ -28,7 +28,6 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedLeadsIndexRouteImport } from './routes/_authenticated/leads.index'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
-import { Route as ApiPublicSeedUsersRouteImport } from './routes/api/public/seed-users'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -125,11 +124,6 @@ const AuthenticatedLeadsLeadIdRoute =
     path: '/leads/$leadId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiPublicSeedUsersRoute = ApiPublicSeedUsersRouteImport.update({
-  id: '/api/public/seed-users',
-  path: '/api/public/seed-users',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -149,7 +143,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
-  '/api/public/seed-users': typeof ApiPublicSeedUsersRoute
   '/leads/': typeof AuthenticatedLeadsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -170,7 +163,6 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksRoute
   '/': typeof AuthenticatedIndexRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
-  '/api/public/seed-users': typeof ApiPublicSeedUsersRoute
   '/leads': typeof AuthenticatedLeadsIndexRoute
 }
 export interface FileRoutesById {
@@ -193,7 +185,6 @@ export interface FileRoutesById {
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
-  '/api/public/seed-users': typeof ApiPublicSeedUsersRoute
   '/_authenticated/leads/': typeof AuthenticatedLeadsIndexRoute
 }
 export interface FileRouteTypes {
@@ -216,7 +207,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/leads/$leadId'
-    | '/api/public/seed-users'
     | '/leads/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -237,7 +227,6 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/'
     | '/leads/$leadId'
-    | '/api/public/seed-users'
     | '/leads'
   id:
     | '__root__'
@@ -259,14 +248,12 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks'
     | '/_authenticated/'
     | '/_authenticated/leads/$leadId'
-    | '/api/public/seed-users'
     | '/_authenticated/leads/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ApiPublicSeedUsersRoute: typeof ApiPublicSeedUsersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -404,13 +391,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeadsLeadIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/seed-users': {
-      id: '/api/public/seed-users'
-      path: '/api/public/seed-users'
-      fullPath: '/api/public/seed-users'
-      preLoaderRoute: typeof ApiPublicSeedUsersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -460,7 +440,6 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  ApiPublicSeedUsersRoute: ApiPublicSeedUsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
