@@ -75,7 +75,7 @@ export function LeadFormDialog() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const nextErrors: Record<string, string> = {};
-    for (const f of ADDRESS_FIELDS) {
+    for (const f of REQUIRED_FIELDS) {
       if (!String(form[f.key] ?? "").trim()) nextErrors[f.key] = `${f.label} is required`;
     }
     setErrors(nextErrors);
