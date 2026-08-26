@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { useCreateLead, useProfiles, type NewLeadInput } from "@/lib/crm/api";
-import { LEAD_SOURCES } from "@/lib/crm/workflow";
+import { LEAD_SOURCES, PROPERTY_TYPES, ROOF_TYPES } from "@/lib/crm/workflow";
 
 const EMPTY: NewLeadInput = {
   first_name: "",
