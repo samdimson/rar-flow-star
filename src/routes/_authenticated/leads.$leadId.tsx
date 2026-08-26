@@ -240,10 +240,10 @@ function LeadDetail() {
                         { name: "secondary_phone", label: "Secondary phone", type: "tel" },
                         { name: "email", label: "Email", type: "email" },
                         { name: "preferred_contact", label: "Preferred contact" },
-                        { name: "mailing_address_line1", label: "Mailing address" },
-                        { name: "mailing_city", label: "Mailing city" },
-                        { name: "mailing_state", label: "Mailing state" },
-                        { name: "mailing_postal_code", label: "Mailing ZIP" },
+                        { name: "address_line1", label: "Address", required: true },
+                        { name: "city", label: "City", required: true },
+                        { name: "state", label: "State", required: true },
+                        { name: "postal_code", label: "ZIP", required: true },
                         { name: "notes", label: "Customer notes", type: "textarea" },
                       ]}
                     />
