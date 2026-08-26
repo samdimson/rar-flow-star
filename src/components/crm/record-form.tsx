@@ -68,16 +68,36 @@ export function RecordForm<K extends keyof Tables>({
   const build = () =>
     Object.fromEntries(fields.map((f) => [f.name, toInput(f, initial?.[f.name])])) as Values;
   const [values, setValues] = useState<Values>(build);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setValues(build());
+    setErrors({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial?.["id"], initial?.["updated_at"]]);
 
-  const set = (name: string, value: unknown) => setValues((v) => ({ ...v, [name]: value }));
+  const set = (name: string, value: unknown) => {
+    setValues((v) => ({ ...v, [name]: value }));
+    setErrors((e) => {
+      if (!e[name]) return e;
+      const next = { ...e };
+      delete next[name];
+      return next;
+    });
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    const nextErrors: Record<string, string> = {};
+    for (const f of fields) {
+      if (!f.required || f.type === "checkbox") continue;
+      const raw = values[f.name];
+      if (raw === null || raw === undefined || String(raw).trim() === "") {
+        nextErrors[f.name] = `${f.label} is required`;
+      }
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
     const payload: Values = { ...extra };
     for (const f of fields) payload[f.name] = fromInput(f, values[f.name]);
     if (initial?.["id"]) payload["id"] = initial["id"];
@@ -110,7 +130,10 @@ export function RecordForm<K extends keyof Tables>({
                 </label>
               ) : (
                 <>
-                  <Label htmlFor={id}>{f.label}</Label>
+                  <Label htmlFor={id}>
+                    {f.label}
+                    {f.required ? <span className="ml-0.5 text-destructive">*</span> : null}
+                  </Label>
                   {f.type === "textarea" ? (
                     <Textarea id={id} rows={3} value={String(value ?? "")} onChange={(e) => set(f.name, e.target.value)} />
                   ) : f.type === "select" ? (
@@ -137,12 +160,15 @@ export function RecordForm<K extends keyof Tables>({
                             : (f.type ?? "text")
                       }
                       step={f.type === "number" ? "any" : undefined}
-                      required={f.required}
+                      aria-invalid={Boolean(errors[f.name])}
                       placeholder={f.placeholder}
                       value={String(value ?? "")}
                       onChange={(e) => set(f.name, e.target.value)}
                     />
                   )}
+                  {errors[f.name] ? (
+                    <p className="text-xs font-medium text-destructive">{errors[f.name]}</p>
+                  ) : null}
                 </>
               )}
             </div>
