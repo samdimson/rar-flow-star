@@ -34,7 +34,11 @@ import {
   APPOINTMENT_KINDS,
   LEAD_SOURCES,
   PAYMENT_KINDS,
+  PROPERTY_TYPES,
+  ROOF_TYPES,
   TASK_BY_CODE,
+  propertyTypeLabel,
+  roofTypeLabel,
   stageName,
 } from "@/lib/crm/workflow";
 
