@@ -524,8 +524,8 @@ export type NewLeadInput = {
   city: string;
   state: string;
   postal_code: string;
-  property_type: string;
-  roof_type: string;
+  property_type: Database["public"]["Enums"]["property_type"];
+  roof_type: Database["public"]["Enums"]["roof_type"];
   roof_age: string;
   source: Database["public"]["Enums"]["lead_source"];
   assigned_rep_id: string;
