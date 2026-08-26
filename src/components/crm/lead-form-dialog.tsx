@@ -60,11 +60,16 @@ export function LeadFormDialog() {
     });
   };
 
-  const ADDRESS_FIELDS: { key: "address_line1" | "city" | "state" | "postal_code"; label: string }[] = [
+  const REQUIRED_FIELDS: {
+    key: "address_line1" | "city" | "state" | "postal_code" | "property_type" | "roof_type";
+    label: string;
+  }[] = [
     { key: "address_line1", label: "Address" },
     { key: "city", label: "City" },
     { key: "state", label: "State" },
     { key: "postal_code", label: "ZIP" },
+    { key: "property_type", label: "Property type" },
+    { key: "roof_type", label: "Roof type" },
   ];
 
   const submit = (e: React.FormEvent) => {
