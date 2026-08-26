@@ -202,9 +202,11 @@ export function AppShell({
               ) : null}
             </div>
           </div>
-          <div className={cn("flex flex-wrap items-center gap-2", !actions && "hidden lg:flex")}>
+          <div className="flex flex-wrap items-center gap-2">
+            <NotificationBell />
             {actions}
           </div>
+
         </header>
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">{children}</main>
       </div>
