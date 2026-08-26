@@ -171,12 +171,47 @@ export function LeadFormDialog() {
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
-                <Label htmlFor="l-ptype">Property type</Label>
-                <Input id="l-ptype" value={form.property_type} onChange={(e) => set("property_type", e.target.value)} />
+                <Label htmlFor="l-ptype">
+                  Property type<span className="ml-0.5 text-destructive">*</span>
+                </Label>
+                <Select
+                  value={form.property_type}
+                  onValueChange={(v) => set("property_type", v as NewLeadInput["property_type"])}
+                >
+                  <SelectTrigger id="l-ptype" aria-invalid={Boolean(errors["property_type"])}>
+                    <SelectValue placeholder="Select property type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PROPERTY_TYPES.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors["property_type"] ? (
+                  <p className="text-xs font-medium text-destructive">{errors["property_type"]}</p>
+                ) : null}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="l-rtype">Roof type</Label>
-                <Input id="l-rtype" value={form.roof_type} onChange={(e) => set("roof_type", e.target.value)} placeholder="Architectural shingle" />
+                <Label htmlFor="l-rtype">
+                  Roof type<span className="ml-0.5 text-destructive">*</span>
+                </Label>
+                <Select value={form.roof_type} onValueChange={(v) => set("roof_type", v as NewLeadInput["roof_type"])}>
+                  <SelectTrigger id="l-rtype" aria-invalid={Boolean(errors["roof_type"])}>
+                    <SelectValue placeholder="Select roof type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROOF_TYPES.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors["roof_type"] ? (
+                  <p className="text-xs font-medium text-destructive">{errors["roof_type"]}</p>
+                ) : null}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="l-rage">Roof age (years)</Label>
