@@ -517,15 +517,31 @@ function LeadDetail() {
                 <EmptyState message="Nothing scheduled." />
               ) : (
                 <ul className="divide-y divide-border">
-                  {appointments.map((a) => (
-                    <li key={a.id} className="py-2.5">
-                      <p className="text-sm font-medium">{a.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {titleCase(a.kind)} · {dateTime(a.starts_at)}
-                        {a.location ? ` · ${a.location}` : ""}
-                      </p>
-                    </li>
-                  ))}
+                  {[...appointments]
+                    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime())
+                    .map((a) => {
+                      const isPast = new Date(a.starts_at).getTime() < new Date().getTime();
+                      const owner = profiles.find((p) => p.id === a.assigned_to)?.full_name ?? "Unassigned";
+                      return (
+                        <li key={a.id} className="flex flex-wrap items-start justify-between gap-3 py-2.5">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium">{a.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {titleCase(a.kind)} · {dateTime(a.starts_at)}
+                              {a.location ? ` · ${a.location}` : ""}
+                              {" · "}Owner: {owner}
+                            </p>
+                          </div>
+                          <span
+                            className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                              isPast ? "bg-chart-3/15 text-chart-3" : "bg-chart-2/15 text-chart-2"
+                            }`}
+                          >
+                            {isPast ? "Completed" : "Scheduled"}
+                          </span>
+                        </li>
+                      );
+                    })}
                 </ul>
               )}
             </SectionCard>
