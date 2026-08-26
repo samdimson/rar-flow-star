@@ -21,7 +21,7 @@ export type Lead = {
   source: string;
   createdAt: string;
   lastActivity: string;
-  notes?: string;
+  notes?: string | undefined;
 };
 
 export type Activity = {
