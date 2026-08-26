@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, Columns3, Users, Search } from "lucide-react";
+import { LayoutDashboard, Columns3, Users } from "lucide-react";
 import type { ReactNode } from "react";
 
 const nav = [
@@ -63,10 +63,6 @@ export function AppShell({
           </div>
           <div className="flex items-center gap-2">
             {actions}
-            <div className="hidden items-center gap-2 rounded-md border border-input px-3 py-2 text-sm text-muted-foreground xl:flex">
-              <Search className="size-4" aria-hidden="true" />
-              <span>Search coming soon</span>
-            </div>
           </div>
         </header>
         <main className="flex-1 px-5 py-6 sm:px-8">{children}</main>
