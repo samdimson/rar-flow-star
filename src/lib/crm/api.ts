@@ -144,6 +144,46 @@ export async function syncAdjusterMeetingAppointment(input: {
   }
 }
 
+/**
+ * Keeps a single appointment identified by (lead_id, title) in sync with a
+ * claim date field. Used for the Reinspection appointment.
+ */
+export async function syncTitledAppointment(input: {
+  leadId: string;
+  title: string;
+  kind: Database["public"]["Enums"]["appointment_kind"];
+  startsAt: string | null | undefined;
+  location?: string | null;
+  assignedTo?: string | null;
+}) {
+  if (!input.startsAt) return;
+  const startsAt = new Date(
+    String(input.startsAt).length <= 10 ? `${input.startsAt}T09:00:00` : String(input.startsAt),
+  ).toISOString();
+  const { data: auth } = await supabase.auth.getUser();
+  const actor = auth.user?.id ?? null;
+  const { data: existing } = await supabase
+    .from("appointments")
+    .select("id")
+    .eq("lead_id", input.leadId)
+    .eq("title", input.title)
+    .maybeSingle();
+  const payload = {
+    lead_id: input.leadId,
+    kind: input.kind,
+    title: input.title,
+    starts_at: startsAt,
+    location: input.location ?? null,
+  };
+  if (existing) {
+    await supabase.from("appointments").update(payload).eq("id", existing.id);
+  } else {
+    await supabase
+      .from("appointments")
+      .insert({ ...payload, assigned_to: input.assignedTo ?? actor, created_by: actor });
+  }
+}
+
 export function useClaim(leadId: string | null) {
   return useQuery({
     queryKey: ["insurance_claims", leadId],
