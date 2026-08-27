@@ -77,13 +77,14 @@ function CommissionsPage() {
       actions={
         isManager && repOptions.length ? (
           <Select
-            value={repId ?? ""}
+            value={showAllReps ? "all" : (repId ?? "")}
             onValueChange={(v) => setSelectedRep(v)}
           >
             <SelectTrigger className="w-56" aria-label="Select rep">
               <SelectValue placeholder="Select rep" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">All reps</SelectItem>
               {repOptions.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.full_name || p.email}
@@ -135,10 +136,20 @@ function CommissionsPage() {
         <SectionCard title={`Milestone payouts — ${repName}`}>
           {isLoading ? (
             <LoadingBlock label="Loading payouts" />
-          ) : !repId ? (
+          ) : !repId && !showAllReps ? (
             <EmptyState message="Select a rep to view milestone payouts." />
           ) : (
             <MilestoneTable payouts={payouts} canManage={canManage} />
+          )}
+        </SectionCard>
+
+        <SectionCard title={`Jobs & Commission Detail — ${repName}`}>
+          {jobsLoading ? (
+            <LoadingBlock label="Loading jobs" />
+          ) : jobs.length === 0 ? (
+            <EmptyState message="No jobs with milestone payouts yet." />
+          ) : (
+            <JobsCommissionTable jobs={jobs} />
           )}
         </SectionCard>
       </div>
