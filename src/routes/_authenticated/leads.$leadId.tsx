@@ -211,6 +211,8 @@ export const Route = createFileRoute("/_authenticated/leads/$leadId")({
 function LeadDetail() {
   const { leadId } = Route.useParams();
   const { canEdit, canViewFinance, canManage, user } = useAuth();
+  const rcvAccess = useEstimatorAccess();
+
   const { data: lead, isLoading } = useLead(leadId);
   const { data: claim } = useClaim(leadId);
   const { data: production } = useProductionJob(leadId);
