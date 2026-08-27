@@ -41,6 +41,7 @@ import {
   syncTitledAppointment,
 } from "@/lib/crm/api";
 import { currency, currencyExact, dateTime, shortDate, titleCase } from "@/lib/crm/format";
+import { laborLabel, laborRate } from "@/lib/crm/labor";
 import {
   CARRIERS,
   APPOINTMENT_KINDS,
@@ -69,7 +70,7 @@ function JobCostPanel({ leadId }: { leadId: string }) {
     queryFn: async () => {
       const { data: estimate, error } = await supabase
         .from("estimates")
-        .select("id, updated_at")
+        .select("id, updated_at, labor_type, labor_squares")
         .eq("lead_id", leadId)
         .order("updated_at", { ascending: false })
         .limit(1)
@@ -83,22 +84,31 @@ function JobCostPanel({ leadId }: { leadId: string }) {
         .gte("quantity", 1)
         .order("sort_order", { ascending: true });
       if (lineError) throw lineError;
-      return { updatedAt: estimate.updated_at, lines: (lines ?? []) as EstimateLine[] };
+      return {
+        updatedAt: estimate.updated_at,
+        laborType: estimate.labor_type,
+        laborSquares: Number(estimate.labor_squares ?? 0),
+        lines: (lines ?? []) as EstimateLine[],
+      };
     },
   });
 
   if (isLoading) return <LoadingBlock label="Loading job cost" />;
 
   const materials = (data?.lines ?? []).filter((l) => l.source === "material");
-  const labor = (data?.lines ?? []).filter((l) => l.source === "labor");
+  const laborLines = (data?.lines ?? []).filter((l) => l.source === "labor");
   const materialsTotal = materials.reduce(
     (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
     0,
   );
-  const laborTotal = labor.reduce(
-    (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
-    0,
-  );
+  const laborTypeValue = data?.laborType ?? null;
+  const laborRateValue = laborRate(laborTypeValue);
+  // fall back to the saved labor line when the estimate predates the squares fields
+  const laborSquares =
+    (data?.laborSquares ?? 0) > 0
+      ? (data?.laborSquares ?? 0)
+      : Math.round(laborLines.reduce((s, l) => s + Number(l.quantity), 0));
+  const laborTotal = laborSquares * laborRateValue;
   const totalCost = materialsTotal + laborTotal;
 
   return (
@@ -147,44 +157,17 @@ function JobCostPanel({ leadId }: { leadId: string }) {
       </SectionCard>
 
       <SectionCard title="Labor Cost">
-        {labor.length === 0 ? (
+        {laborSquares <= 0 ? (
           <p className="text-sm text-muted-foreground">
             No labor estimate saved — use the Labor Cost Estimator to build and save one.
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border bg-card">
-            <table className="w-full min-w-[600px] text-sm">
-              <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2.5 font-semibold">Description</th>
-                  <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
-                  <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
-                  <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
-                  <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {labor.map((line) => (
-                  <tr key={`l-${line.item}`} className="border-t border-border">
-                    <td className="px-3 py-2">{line.item}</td>
-                    <td className="px-3 py-2">{line.quantity}</td>
-                    <td className="px-3 py-2 text-xs">{line.unit}</td>
-                    <td className="px-3 py-2 text-right">{currencyExact(line.unit_price)}</td>
-                    <td className="px-3 py-2 text-right font-medium">
-                      {currencyExact(Number(line.quantity) * Number(line.unit_price))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-border bg-secondary/50 font-semibold text-foreground">
-                  <td className="px-3 py-2.5" colSpan={4}>
-                    Labor subtotal
-                  </td>
-                  <td className="px-3 py-2.5 text-right">{currencyExact(laborTotal)}</td>
-                </tr>
-              </tfoot>
-            </table>
+          <div className="rounded-lg border border-border bg-card px-3 py-3">
+            <p className="text-sm font-medium text-foreground">
+              Labor: {laborSquares} SQ × {currencyExact(laborRateValue)}/SQ ={" "}
+              <span className="font-semibold">{currencyExact(laborTotal)}</span>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{laborLabel(laborTypeValue)}</p>
           </div>
         )}
       </SectionCard>

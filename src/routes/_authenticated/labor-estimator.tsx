@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AppShell } from "@/components/app-shell";
-import { CostEstimator, LABOR_SECTIONS } from "@/components/crm/cost-estimator";
+import { AccessDenied } from "@/components/crm/access-denied";
+import { LaborEstimator } from "@/components/crm/labor-estimator";
+import { useEstimatorAccess } from "@/lib/crm/access";
 
 const title = "Labor Cost Estimator — Rise Above Roofing Oklahoma CRM";
 const description =
-  "Wholesale roofing labor cost estimator with live line totals and one-click save to a customer estimate.";
+  "Simplified roofing labor cost estimator: pick a labor type, enter squares and save the total to a customer estimate.";
 
 export const Route = createFileRoute("/_authenticated/labor-estimator")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -24,18 +26,18 @@ export const Route = createFileRoute("/_authenticated/labor-estimator")({
 
 function LaborEstimatorPage() {
   const { leadId } = Route.useSearch();
+  const { allowed, loading } = useEstimatorAccess();
 
   return (
     <AppShell
       title="Labor Cost Estimator"
-      subtitle="Wholesale labor rates — enter quantities to build a total"
+      subtitle="Labor rate per square — choose a labor type and enter squares"
     >
-      <CostEstimator
-        heading="Labor Cost Estimator"
-        sections={LABOR_SECTIONS}
-        source="labor"
-        {...(leadId ? { leadId } : {})}
-      />
+      {loading ? null : allowed ? (
+        <LaborEstimator {...(leadId ? { leadId } : {})} />
+      ) : (
+        <AccessDenied message="Only owners and managers can access the cost estimators." />
+      )}
     </AppShell>
   );
 }

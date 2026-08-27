@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { laborRate } from "@/lib/crm/labor";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -224,12 +225,18 @@ export function useLeadCostBreakdown(leadIds: string[]) {
     queryFn: async () => {
       const { data: estimates, error: estError } = await supabase
         .from("estimates")
-        .select("id, lead_id")
+        .select("id, lead_id, labor_type, labor_squares")
         .in("lead_id", leadIds);
       if (estError) throw estError;
       const ids = (estimates ?? []).map((e) => e.id);
       let materials = 0;
       let labor = 0;
+      // labor = squares * rate when the estimate carries the simplified fields
+      const squares = (estimates ?? []).reduce((s, e) => s + Number(e.labor_squares ?? 0), 0);
+      const laborFromSquares = (estimates ?? []).reduce(
+        (s, e) => s + Number(e.labor_squares ?? 0) * laborRate(e.labor_type),
+        0,
+      );
       if (ids.length > 0) {
         const { data: lines, error } = await supabase
           .from("estimate_line_items")
@@ -242,6 +249,7 @@ export function useLeadCostBreakdown(leadIds: string[]) {
           else materials += amount;
         }
       }
+      if (squares > 0) labor = laborFromSquares;
       return { materials: Number(materials.toFixed(2)), labor: Number(labor.toFixed(2)) };
     },
   });

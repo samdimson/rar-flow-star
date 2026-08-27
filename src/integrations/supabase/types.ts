@@ -644,6 +644,8 @@ export type Database = {
           created_by: string | null
           estimate_number: string | null
           id: string
+          labor_squares: number | null
+          labor_type: string | null
           lead_id: string
           notes: string | null
           scope_gap_amount: number | null
@@ -657,6 +659,8 @@ export type Database = {
           created_by?: string | null
           estimate_number?: string | null
           id?: string
+          labor_squares?: number | null
+          labor_type?: string | null
           lead_id: string
           notes?: string | null
           scope_gap_amount?: number | null
@@ -670,6 +674,8 @@ export type Database = {
           created_by?: string | null
           estimate_number?: string | null
           id?: string
+          labor_squares?: number | null
+          labor_type?: string | null
           lead_id?: string
           notes?: string | null
           scope_gap_amount?: number | null

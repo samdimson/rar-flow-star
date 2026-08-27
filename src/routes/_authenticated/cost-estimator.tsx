@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AppShell } from "@/components/app-shell";
+import { AccessDenied } from "@/components/crm/access-denied";
 import { CostEstimator, SECTIONS } from "@/components/crm/cost-estimator";
+import { useEstimatorAccess } from "@/lib/crm/access";
 
 const title = "Materials Cost Estimator — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -24,18 +26,23 @@ export const Route = createFileRoute("/_authenticated/cost-estimator")({
 
 function CostEstimatorPage() {
   const { leadId } = Route.useSearch();
+  const { allowed, loading } = useEstimatorAccess();
 
   return (
     <AppShell
       title="Materials Cost Estimator"
       subtitle="Wholesale material and labor rates — enter quantities to build a total"
     >
-      <CostEstimator
-        heading="Materials Cost Estimator"
-        sections={SECTIONS}
-        source="material"
-        {...(leadId ? { leadId } : {})}
-      />
+      {loading ? null : allowed ? (
+        <CostEstimator
+          heading="Materials Cost Estimator"
+          sections={SECTIONS}
+          source="material"
+          {...(leadId ? { leadId } : {})}
+        />
+      ) : (
+        <AccessDenied message="Only owners and managers can access the cost estimators." />
+      )}
     </AppShell>
   );
 }
