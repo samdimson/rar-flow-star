@@ -148,17 +148,13 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2.5 px-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-[11px] font-bold tracking-tight text-primary-foreground">
-        RAR
-      </span>
-      <span className="min-w-0 text-sm font-semibold leading-tight text-sidebar-foreground">
-        Rise Above Roofing
-        <span className="block text-[11px] font-normal text-muted-foreground">Oklahoma CRM</span>
-      </span>
+    <div className="px-3">
+      <img src="/logo.png" alt="Rise Above Roofing Oklahoma" className="h-10 w-auto" />
+      <span className="mt-1 block text-[11px] font-normal text-sidebar-foreground/60">Oklahoma CRM</span>
     </div>
   );
 }
+
 
 export function AppShell({
   title,
