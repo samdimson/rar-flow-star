@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { ArrowLeft, CheckCircle2, Clock, Plus } from "lucide-react";
+import { toast } from "sonner";
+
+import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
 
 import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
@@ -80,6 +84,42 @@ function LeadDetail() {
   const saveTask = useUpsert("tasks", "Task");
   const saveNote = useUpsert("notes", "Note");
   const [noteBody, setNoteBody] = useState("");
+  const sendEmail = useServerFn(sendAppointmentEmail);
+
+  const notifyAttendees = async (row?: Record<string, unknown> | null) => {
+    const attendees = String(row?.["attendees"] ?? "").trim();
+    if (!row || !attendees || !lead) return;
+    const rep = profiles.find((p) => p.id === row["assigned_to"]);
+    const property = lead.property;
+    const address = property
+      ? `${property.address_line1}, ${property.city} ${property.state} ${property.postal_code}`
+      : null;
+    try {
+      const result = await sendEmail({
+        data: {
+          appointmentId: (row["id"] as string | undefined) ?? null,
+          leadId: leadId,
+          attendees,
+          title: String(row["title"] ?? "Appointment"),
+          kind: String(row["kind"] ?? "other"),
+          startsAt: String(row["starts_at"]),
+          endsAt: (row["ends_at"] as string | null) ?? null,
+          location: (row["location"] as string | null) ?? null,
+          notes: (row["notes"] as string | null) ?? null,
+          customerName:
+            `${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim() || null,
+          propertyAddress: address,
+          rep: rep
+            ? { full_name: rep.full_name, phone: rep.phone, email: rep.email }
+            : null,
+        },
+      });
+      if (result.sent > 0) toast.success(`Confirmation emailed to ${result.sent} attendee(s)`);
+      if (result.failed > 0) toast.error(`${result.failed} attendee email(s) could not be sent`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send attendee emails");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -492,9 +532,11 @@ function LeadDetail() {
                 <RecordForm
                   table="appointments"
                   label="Appointment"
+                  initial={{ assigned_to: lead.assigned_rep_id }}
                   extra={{ lead_id: leadId, created_by: user?.id ?? null }}
                   resetAfterSave
                   submitLabel="Schedule"
+                  onSaved={(row) => void notifyAttendees(row)}
                   fields={[
                     { name: "title", label: "Title", required: true },
                     {
@@ -506,6 +548,12 @@ function LeadDetail() {
                     { name: "starts_at", label: "Starts", type: "datetime", required: true },
                     { name: "ends_at", label: "Ends", type: "datetime" },
                     { name: "assigned_to", label: "Owner", type: "select", options: repOptions },
+                    {
+                      name: "attendees",
+                      label: "Other attendees",
+                      placeholder: "Jane Doe <jane@example.com>, adjuster@carrier.com",
+                      full: true,
+                    },
                     { name: "location", label: "Location" },
                     { name: "notes", label: "Notes", type: "textarea" },
                   ]}

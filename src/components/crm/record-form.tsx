@@ -58,7 +58,7 @@ export function RecordForm<K extends keyof Tables>({
   initial?: Values | null | undefined;
   extra?: Values;
   submitLabel?: string;
-  onSaved?: () => void;
+  onSaved?: (row?: Values | null) => void;
   onCancel?: () => void;
   columns?: 1 | 2 | 3;
   className?: string;
@@ -102,9 +102,9 @@ export function RecordForm<K extends keyof Tables>({
     for (const f of fields) payload[f.name] = fromInput(f, values[f.name]);
     if (initial?.["id"]) payload["id"] = initial["id"];
     upsert.mutate(payload, {
-      onSuccess: () => {
-        if (resetAfterSave) setValues(Object.fromEntries(fields.map((f) => [f.name, toInput(f, null)])));
-        onSaved?.();
+      onSuccess: (row) => {
+        if (resetAfterSave) setValues(build());
+        onSaved?.(row as Values | null);
       },
     });
   };
