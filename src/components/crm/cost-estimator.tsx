@@ -415,7 +415,13 @@ export function CostEstimator({
         .eq("id", estimateId);
       if (estError) throw estError;
 
-      const contractAmount = Number(leads.find((l) => l.id === targetLeadId)?.contract_amount ?? 0);
+      const { data: leadRow, error: leadError } = await supabase
+        .from("leads")
+        .select("contract_amount")
+        .eq("id", targetLeadId)
+        .maybeSingle();
+      if (leadError) throw leadError;
+      const contractAmount = Number(leadRow?.contract_amount ?? 0);
       const netAmount = contractAmount > 0 ? Number((contractAmount - estimateTotal).toFixed(2)) : 0;
       const { error: netError } = await supabase
         .from("leads")
