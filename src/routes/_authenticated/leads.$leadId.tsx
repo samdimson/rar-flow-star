@@ -635,6 +635,11 @@ function LeadDetail() {
             </SectionCard>
           </TabsContent>
 
+          {/* Supplements --------------------------------------------- */}
+          <TabsContent value="supplements" className="mt-4">
+            <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
+          </TabsContent>
+
           {/* Money --------------------------------------------------- */}
           {canViewFinance ? (
             <TabsContent value="money" className="mt-4 space-y-4">
