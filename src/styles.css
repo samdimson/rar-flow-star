@@ -63,41 +63,44 @@
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.988 0.004 106);
-  --foreground: oklch(0.22 0.028 258);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.028 258);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.028 258);
-  --primary: oklch(0.35 0.075 252);
-  --primary-foreground: oklch(0.985 0.005 250);
-  --secondary: oklch(0.955 0.008 250);
-  --secondary-foreground: oklch(0.3 0.05 252);
-  --muted: oklch(0.958 0.007 250);
-  --muted-foreground: oklch(0.52 0.026 256);
-  --accent: oklch(0.945 0.03 88);
-  --accent-foreground: oklch(0.32 0.06 70);
+  /* Rise Above Roofing brand palette */
+  --background: hsl(220 20% 97%); /* #F8F9FB */
+  --foreground: hsl(235 30% 14%); /* #1A1A2E */
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(235 30% 14%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(235 30% 14%);
+  --primary: hsl(213 76% 14%); /* navy #0A1F3C */
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(220 20% 94%);
+  --secondary-foreground: hsl(213 76% 14%);
+  --muted: hsl(220 18% 94%);
+  --muted-foreground: hsl(220 9% 46%); /* #6B7280 */
+  --accent: hsl(26 89% 48%); /* amber #E8720C */
+  --accent-foreground: hsl(0 0% 100%);
   --destructive: oklch(0.55 0.19 25);
-  --destructive-foreground: oklch(0.985 0.005 250);
-  --border: oklch(0.906 0.01 252);
-  --input: oklch(0.906 0.01 252);
-  --ring: oklch(0.55 0.09 252);
-  --chart-1: oklch(0.62 0.16 42);
-  --chart-2: oklch(0.55 0.1 205);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(220 15% 88%);
+  --input: hsl(220 15% 88%);
+  --ring: hsl(26 89% 48%);
+  --chart-1: hsl(26 89% 48%);
+  --chart-2: hsl(213 76% 24%);
   --chart-3: oklch(0.53 0.13 155);
   --chart-4: oklch(0.68 0.13 78);
   --chart-5: oklch(0.48 0.11 292);
-  --sidebar: oklch(0.972 0.006 250);
-  --sidebar-foreground: oklch(0.22 0.028 258);
-  --sidebar-primary: oklch(0.35 0.075 252);
-  --sidebar-primary-foreground: oklch(0.985 0.005 250);
-  --sidebar-accent: oklch(0.925 0.014 252);
-  --sidebar-accent-foreground: oklch(0.27 0.05 252);
-  --sidebar-border: oklch(0.9 0.01 252);
-  --sidebar-ring: oklch(0.55 0.09 252);
+  --sidebar: hsl(213 76% 10%);
+  --sidebar-background: hsl(213 76% 10%);
+  --sidebar-foreground: hsl(0 0% 95%);
+  --sidebar-primary: hsl(26 89% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(26 89% 48%);
+  --sidebar-accent-foreground: hsl(0 0% 100%);
+  --sidebar-border: hsl(213 40% 22%);
+  --sidebar-ring: hsl(26 89% 48%);
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", "DM Sans", sans-serif;
 }
+
 
 .dark {
   --background: oklch(0.129 0.042 264.695);
