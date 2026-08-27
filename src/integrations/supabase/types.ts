@@ -879,6 +879,7 @@ export type Database = {
           net_amount: number | null
           next_follow_up_at: string | null
           notes: string | null
+          overhead_amount: number | null
           production_manager_id: string | null
           property_id: string | null
           rescission_ends_at: string | null
@@ -906,6 +907,7 @@ export type Database = {
           net_amount?: number | null
           next_follow_up_at?: string | null
           notes?: string | null
+          overhead_amount?: number | null
           production_manager_id?: string | null
           property_id?: string | null
           rescission_ends_at?: string | null
@@ -933,6 +935,7 @@ export type Database = {
           net_amount?: number | null
           next_follow_up_at?: string | null
           notes?: string | null
+          overhead_amount?: number | null
           production_manager_id?: string | null
           property_id?: string | null
           rescission_ends_at?: string | null
@@ -1577,7 +1580,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calc_lead_gross_after_costs: {
+        Args: { _contract_amount: number; _lead_id: string }
+        Returns: number
+      }
       calc_lead_net_amount: {
+        Args: { _contract_amount: number; _lead_id: string }
+        Returns: number
+      }
+      calc_lead_overhead_amount: {
         Args: { _contract_amount: number; _lead_id: string }
         Returns: number
       }
