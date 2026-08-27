@@ -421,137 +421,162 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        {summaryMode ? (
-          <table className="w-full min-w-[600px] text-sm">
-            <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <tr>
-                <th className="px-3 py-2.5 font-semibold">Description</th>
-                <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
-                <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
-                <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
-                <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {SECTIONS.map((section) => {
-                const sectionLines = section.items
-                  .map((item) => ({ item, qty: qtyOf(item.desc), price: priceOf(item.desc) }))
-                  .filter(({ qty }) => qty > 0);
-                if (sectionLines.length === 0) return null;
-                return (
-                  <Fragment key={section.label}>
-                    <tr className="bg-blue-100">
-                      <td colSpan={5} className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-950">
-                        {section.label}
-                      </td>
+      {(
+        [
+          { heading: "Materials Cost Estimator", sections: SECTIONS as unknown as EstimatorSection[] },
+          { heading: "Labor Cost Estimator", sections: LABOR_SECTIONS as unknown as EstimatorSection[] },
+        ] as const
+      ).map(({ heading, sections }) => {
+        const sectionsTotal = sections.reduce(
+          (sum, section) =>
+            sum + section.items.reduce((s, item) => s + qtyOf(item.desc) * priceOf(item.desc), 0),
+          0,
+        );
+        return (
+          <section key={heading} className="space-y-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">{heading}</h2>
+            <div className="overflow-x-auto rounded-lg border border-border bg-card">
+              {summaryMode ? (
+                <table className="w-full min-w-[600px] text-sm">
+                  <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2.5 font-semibold">Description</th>
+                      <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
+                      <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
+                      <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
+                      <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
                     </tr>
-                    {sectionLines.map(({ item, qty, price }) => (
-                      <tr key={item.desc} className="border-t border-border">
-                        <td className="px-3 py-2">{item.desc}</td>
-                        <td className="px-3 py-2">{qty}</td>
-                        <td className="px-3 py-2 text-xs">{item.unit}</td>
-                        <td className="px-3 py-2 text-right">{currencyExact(price)}</td>
-                        <td className="px-3 py-2 text-right font-medium">{currencyExact(qty * price)}</td>
-                      </tr>
+                  </thead>
+                  <tbody>
+                    {sections.map((section) => {
+                      const sectionLines = section.items
+                        .map((item) => ({ item, qty: qtyOf(item.desc), price: priceOf(item.desc) }))
+                        .filter(({ qty }) => qty > 0);
+                      if (sectionLines.length === 0) return null;
+                      return (
+                        <Fragment key={section.label}>
+                          <tr className="bg-blue-100">
+                            <td colSpan={5} className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-950">
+                              {section.label}
+                            </td>
+                          </tr>
+                          {sectionLines.map(({ item, qty, price }) => (
+                            <tr key={item.desc} className="border-t border-border">
+                              <td className="px-3 py-2">{item.desc}</td>
+                              <td className="px-3 py-2">{qty}</td>
+                              <td className="px-3 py-2 text-xs">{item.unit}</td>
+                              <td className="px-3 py-2 text-right">{currencyExact(price)}</td>
+                              <td className="px-3 py-2 text-right font-medium">{currencyExact(qty * price)}</td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-border bg-secondary font-semibold">
+                      <td className="px-3 py-2.5" colSpan={4}>
+                        {heading} subtotal
+                      </td>
+                      <td className="px-3 py-2.5 text-right">{currencyExact(sectionsTotal)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              ) : (
+                <table className="w-full min-w-[900px] text-sm">
+                  <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2.5 font-semibold">Category</th>
+                      <th className="px-3 py-2.5 font-semibold">Description</th>
+                      <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
+                      <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
+                      <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
+                      <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sections.map((section) => (
+                      <Fragment key={section.label}>
+                        <tr className="bg-blue-100">
+                          <td colSpan={6} className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-950">
+                            {section.label}
+                          </td>
+                        </tr>
+                        {section.items.map((item) => {
+                          const qty = qtyOf(item.desc);
+                          const price = priceOf(item.desc);
+                          return (
+                            <tr key={item.desc} className="border-t border-border hover:bg-secondary/30">
+                              <td className="px-3 py-2 text-xs text-muted-foreground">{item.cat}</td>
+                              <td className="px-3 py-2">{item.desc}</td>
+                              <td className="px-3 py-2">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  className="h-8 w-24"
+                                  aria-label={`Quantity for ${item.desc}`}
+                                  value={qty === 0 ? "0" : String(qty)}
+                                  onChange={(e) => {
+                                    const raw = e.target.value;
+                                    const parsed = raw === "" ? 0 : parseInt(raw, 10);
+                                    setQuantities((prev) => ({
+                                      ...prev,
+                                      [item.desc]: Math.max(0, Number.isNaN(parsed) ? 0 : parsed),
+                                    }));
+                                  }}
+                                />
+                              </td>
+                              <td className="px-3 py-2 text-xs">{item.unit}</td>
+                              <td className="px-3 py-2 text-right">
+                                {canManage ? (
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    step={0.01}
+                                    className="h-8 w-28 text-right"
+                                    aria-label={`Unit price for ${item.desc}`}
+                                    value={String(price)}
+                                    onChange={(e) =>
+                                      setPrices((prev) => ({
+                                        ...prev,
+                                        [item.desc]: Math.max(0, Number(e.target.value) || 0),
+                                      }))
+                                    }
+                                  />
+                                ) : (
+                                  currencyExact(price)
+                                )}
+                              </td>
+                              <td className="px-3 py-2 text-right font-medium">{currencyExact(qty * price)}</td>
+                            </tr>
+                          );
+                        })}
+                      </Fragment>
                     ))}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-            <tfoot className="sticky bottom-0">
-              <tr className="border-t-2 border-border bg-yellow-200 font-bold text-yellow-950">
-                <td className="px-3 py-3" colSpan={4}>
-                  Grand total
-                </td>
-                <td className="px-3 py-3 text-right text-base">{currencyExact(grandTotal)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        ) : (
-          <table className="w-full min-w-[900px] text-sm">
-            <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <tr>
-                <th className="px-3 py-2.5 font-semibold">Category</th>
-                <th className="px-3 py-2.5 font-semibold">Description</th>
-                <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
-                <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
-                <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
-                <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {SECTIONS.map((section) => (
-                <Fragment key={section.label}>
-                  <tr className="bg-blue-100">
-                    <td colSpan={6} className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-950">
-                      {section.label}
-                    </td>
-                  </tr>
-                  {section.items.map((item) => {
-                    const qty = qtyOf(item.desc);
-                    const price = priceOf(item.desc);
-                    return (
-                      <tr key={item.desc} className="border-t border-border hover:bg-secondary/30">
-                        <td className="px-3 py-2 text-xs text-muted-foreground">{item.cat}</td>
-                        <td className="px-3 py-2">{item.desc}</td>
-                        <td className="px-3 py-2">
-                          <Input
-                            type="number"
-                            min={0}
-                            step={1}
-                            className="h-8 w-24"
-                            aria-label={`Quantity for ${item.desc}`}
-                            value={qty === 0 ? "0" : String(qty)}
-                            onChange={(e) => {
-                              const raw = e.target.value;
-                              const parsed = raw === "" ? 0 : parseInt(raw, 10);
-                              setQuantities((prev) => ({
-                                ...prev,
-                                [item.desc]: Math.max(0, Number.isNaN(parsed) ? 0 : parsed),
-                              }));
-                            }}
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-xs">{item.unit}</td>
-                        <td className="px-3 py-2 text-right">
-                          {canManage ? (
-                            <Input
-                              type="number"
-                              min={0}
-                              step={0.01}
-                              className="h-8 w-28 text-right"
-                              aria-label={`Unit price for ${item.desc}`}
-                              value={String(price)}
-                              onChange={(e) =>
-                                setPrices((prev) => ({
-                                  ...prev,
-                                  [item.desc]: Math.max(0, Number(e.target.value) || 0),
-                                }))
-                              }
-                            />
-                          ) : (
-                            currencyExact(price)
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-right font-medium">{currencyExact(qty * price)}</td>
-                      </tr>
-                    );
-                  })}
-                </Fragment>
-              ))}
-            </tbody>
-            <tfoot className="sticky bottom-0">
-              <tr className="border-t-2 border-border bg-yellow-200 font-bold text-yellow-950">
-                <td className="px-3 py-3" colSpan={5}>
-                  Grand total
-                </td>
-                <td className="px-3 py-3 text-right text-base">{currencyExact(grandTotal)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        )}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-border bg-secondary font-semibold">
+                      <td className="px-3 py-2.5" colSpan={5}>
+                        {heading} subtotal
+                      </td>
+                      <td className="px-3 py-2.5 text-right">{currencyExact(sectionsTotal)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+          </section>
+        );
+      })}
+
+      <div className="overflow-hidden rounded-lg border-2 border-border">
+        <div className="flex items-center justify-between bg-yellow-200 px-3 py-3 font-bold text-yellow-950">
+          <span>Grand total (materials + labor)</span>
+          <span className="text-base">{currencyExact(grandTotal)}</span>
+        </div>
       </div>
     </div>
   );
 }
+
