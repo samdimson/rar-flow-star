@@ -1098,26 +1098,28 @@ function LeadDetail() {
           </TabsContent>
         
           {/* Timeline -------------------------------------------------- */}
-          <TabsContent value="timeline" className="mt-4">
-            <SectionCard title="Activity timeline">
-              {activities.length === 0 ? (
-                <EmptyState message="No activity recorded yet." />
-              ) : (
-                <ol className="relative space-y-4 border-l border-border pl-5">
-                  {activities.map((a) => (
-                    <li key={a.id} className="relative">
-                      <span className="absolute -left-[26px] top-1.5 size-2.5 rounded-full bg-primary" aria-hidden="true" />
-                      <p className="text-sm font-medium">{a.subject}</p>
-                      {a.body ? <p className="text-sm text-muted-foreground">{a.body}</p> : null}
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {titleCase(a.type)} · {dateTime(a.occurred_at)}
-                      </p>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </SectionCard>
-          </TabsContent>
+          <div className="hidden">
+            <TabsContent value="timeline" className="mt-4">
+              <SectionCard title="Activity timeline">
+                {activities.length === 0 ? (
+                  <EmptyState message="No activity recorded yet." />
+                ) : (
+                  <ol className="relative space-y-4 border-l border-border pl-5">
+                    {activities.map((a) => (
+                      <li key={a.id} className="relative">
+                        <span className="absolute -left-[26px] top-1.5 size-2.5 rounded-full bg-primary" aria-hidden="true" />
+                        <p className="text-sm font-medium">{a.subject}</p>
+                        {a.body ? <p className="text-sm text-muted-foreground">{a.body}</p> : null}
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {titleCase(a.type)} · {dateTime(a.occurred_at)}
+                        </p>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </SectionCard>
+            </TabsContent>
+          </div>
 </Tabs>
       </div>
     </AppShell>
