@@ -15,7 +15,7 @@ const description =
 
 export const Route = createFileRoute("/_authenticated/cost-estimator")({
   validateSearch: (search: Record<string, unknown>) => ({
-    leadId: typeof search.leadId === "string" ? search.leadId : undefined,
+    leadId: typeof search["leadId"] === "string" ? (search["leadId"] as string) : undefined,
   }),
   head: () => ({
     meta: [
