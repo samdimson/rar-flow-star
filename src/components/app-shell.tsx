@@ -128,10 +128,11 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                   to={to}
                   onClick={onNavigate}
                   activeOptions={{ exact: to === "/" }}
-                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-accent/20 hover:text-sidebar-foreground"
                   activeProps={{
-                    className: "bg-sidebar-accent text-sidebar-accent-foreground font-semibold",
+                    className: "bg-accent text-white font-semibold hover:bg-accent",
                   }}
+
                 >
                   <Icon className="size-4 shrink-0" aria-hidden="true" />
                   <span className="truncate">{label}</span>
