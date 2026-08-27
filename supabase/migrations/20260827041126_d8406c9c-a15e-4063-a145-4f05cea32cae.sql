@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.calc_lead_net_amount(uuid, numeric) FROM PUBLIC, anon, authenticated;
