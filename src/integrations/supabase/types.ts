@@ -546,39 +546,52 @@ export type Database = {
           caption: string | null
           category: Database["public"]["Enums"]["document_category"]
           created_at: string
+          customer_id: string | null
           file_name: string
           file_size: number | null
           id: string
           lead_id: string | null
           mime_type: string | null
           storage_path: string
+          uploaded_at: string
           uploaded_by: string | null
         }
         Insert: {
           caption?: string | null
           category?: Database["public"]["Enums"]["document_category"]
           created_at?: string
+          customer_id?: string | null
           file_name: string
           file_size?: number | null
           id?: string
           lead_id?: string | null
           mime_type?: string | null
           storage_path: string
+          uploaded_at?: string
           uploaded_by?: string | null
         }
         Update: {
           caption?: string | null
           category?: Database["public"]["Enums"]["document_category"]
           created_at?: string
+          customer_id?: string | null
           file_name?: string
           file_size?: number | null
           id?: string
           lead_id?: string | null
           mime_type?: string | null
           storage_path?: string
+          uploaded_at?: string
           uploaded_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_lead_id_fkey"
             columns: ["lead_id"]
@@ -1676,6 +1689,7 @@ export type Database = {
         | "certificate_of_completion"
         | "warranty"
         | "other"
+        | "coc"
       lead_source:
         | "door_to_door"
         | "website"
@@ -1882,6 +1896,7 @@ export const Constants = {
         "certificate_of_completion",
         "warranty",
         "other",
+        "coc",
       ],
       lead_source: [
         "door_to_door",

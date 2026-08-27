@@ -20,7 +20,7 @@ export async function runIssueCoc(
   const { data: lead, error: leadError } = await authed
     .from("leads")
     .select(
-      "id, lead_number, contract_signed_at, assigned_rep_id, customer:customers(*), property:properties(*)",
+      "id, lead_number, contract_signed_at, assigned_rep_id, customer_id, customer:customers(*), property:properties(*)",
     )
     .eq("id", leadId)
     .single();
@@ -107,17 +107,25 @@ export async function runIssueCoc(
     .eq("storage_path", storagePath)
     .maybeSingle();
 
+  const nowIso = new Date().toISOString();
   if (!existingDoc) {
     await db.from("documents").insert({
       lead_id: leadId,
-      category: "certificate_of_completion",
+      customer_id: lead.customer_id ?? null,
+      category: "coc",
       file_name: "Notice of Completion.pdf",
       storage_path: storagePath,
       mime_type: "application/pdf",
       file_size: pdfBytes.length,
       caption: "Notice of Completion",
       uploaded_by: userId,
+      uploaded_at: nowIso,
     });
+  } else {
+    await db
+      .from("documents")
+      .update({ customer_id: lead.customer_id ?? null, category: "coc", uploaded_at: nowIso })
+      .eq("id", existingDoc.id);
   }
 
   const lastName = lead.customer?.last_name ?? "Homeowner";

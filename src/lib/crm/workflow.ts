@@ -438,6 +438,7 @@ export const DOCUMENT_CATEGORIES: { value: DocumentCategory; label: string }[] =
   { value: "permit", label: "Permit" },
   { value: "invoice", label: "Invoice" },
   { value: "certificate_of_completion", label: "Certificate of Completion" },
+  { value: "coc", label: "Certificate of Completion" },
   { value: "warranty", label: "Warranty" },
   { value: "other", label: "Other" },
 ];
