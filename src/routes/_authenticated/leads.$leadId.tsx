@@ -815,9 +815,9 @@ function LeadDetail() {
             <PolicySummaryCard summary={claim?.policy_summary ?? null} />
           </TabsContent>
 
-          {/* Cost estimator ------------------------------------------ */}
+          {/* Materials Cost ------------------------------------------ */}
           <TabsContent value="cost-estimator" className="mt-4">
-            <CostEstimator leadId={leadId} />
+            <MaterialsCostSummary leadId={leadId} />
           </TabsContent>
 
           {/* Supplements --------------------------------------------- */}
