@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Download } from "lucide-react";
+import { Download, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
@@ -57,7 +57,15 @@ function DocumentsPage() {
   };
 
   return (
-    <AppShell title="Documents & Photos" subtitle={`${docs.length} files stored privately`}>
+    <AppShell
+      title={
+        <span className="flex items-center gap-2.5 text-sm font-semibold text-orange-500">
+          <FolderOpen className="size-4 shrink-0" aria-hidden="true" />
+          Documents & Photos
+        </span>
+      }
+      subtitle={`${docs.length} files stored privately`}
+    >
       <div className="space-y-4">
         <div className="grid gap-2 sm:grid-cols-[1fr_240px]">
           <Input
