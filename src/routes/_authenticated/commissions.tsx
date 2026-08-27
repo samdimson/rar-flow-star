@@ -9,7 +9,13 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useAllRoles, useProfiles } from "@/lib/crm/api";
-import { useCommissionTiers, useJobsCommissionDetail, useMilestonePayouts, useRepCommission } from "@/lib/crm/commissions";
+import {
+  useCommissionTiers,
+  useJobsCommissionDetail,
+  useLeadCostBreakdown,
+  useMilestonePayouts,
+  useRepCommission,
+} from "@/lib/crm/commissions";
 import { currencyExact } from "@/lib/crm/format";
 
 const title = "Commissions — Rise Above Roofing Oklahoma CRM";
@@ -56,6 +62,17 @@ function CommissionsPage() {
       payouts.filter((p) => p.status === status).reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
     return { pending: sum("pending"), paid: sum("paid"), clawback: sum("clawback") };
   }, [payouts]);
+
+  const jobLeadIds = useMemo(() => jobs.map((j) => j.leadId), [jobs]);
+  const { data: costs } = useLeadCostBreakdown(jobLeadIds);
+  const breakdown = useMemo(() => {
+    const contract = jobs.reduce((acc, j) => acc + Number(j.contractAmount ?? 0), 0);
+    const materials = Number(costs?.materials ?? 0);
+    const labor = Number(costs?.labor ?? 0);
+    const gross = contract - materials - labor;
+    const overhead = Number((gross * 0.15).toFixed(2));
+    return { contract, materials, labor, gross, overhead, net: Number((gross - overhead).toFixed(2)) };
+  }, [jobs, costs]);
 
   if (loading) {
     return (
@@ -125,6 +142,35 @@ function CommissionsPage() {
               </li>
             ))}
           </ul>
+        </SectionCard>
+
+        <SectionCard title="Commission base breakdown">
+          <dl className="max-w-md space-y-1 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Contract Amount</dt>
+              <dd className="font-medium">{currencyExact(breakdown.contract)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Less Materials</dt>
+              <dd>−{currencyExact(breakdown.materials)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Less Labor</dt>
+              <dd>−{currencyExact(breakdown.labor)}</dd>
+            </div>
+            <div className="flex justify-between border-t border-border pt-1">
+              <dt className="text-muted-foreground">Gross after costs</dt>
+              <dd>{currencyExact(breakdown.gross)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Less Overhead (15%)</dt>
+              <dd>−{currencyExact(breakdown.overhead)}</dd>
+            </div>
+            <div className="flex justify-between border-t border-border pt-1 font-semibold">
+              <dt>Net (commission base)</dt>
+              <dd>{currencyExact(breakdown.net)}</dd>
+            </div>
+          </dl>
         </SectionCard>
 
         <div className="grid gap-3 sm:grid-cols-3">

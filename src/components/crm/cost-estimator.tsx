@@ -422,10 +422,13 @@ export function CostEstimator({
         .maybeSingle();
       if (leadError) throw leadError;
       const contractAmount = Number(leadRow?.contract_amount ?? 0);
-      const netAmount = contractAmount > 0 ? Number((contractAmount - estimateTotal).toFixed(2)) : 0;
+      // net = (contract - materials - labor) * 0.85 after 15% overhead deduction
+      const grossAfterCosts = contractAmount > 0 ? contractAmount - estimateTotal : 0;
+      const overheadAmount = Number((grossAfterCosts * 0.15).toFixed(2));
+      const netAmount = Number((grossAfterCosts - overheadAmount).toFixed(2));
       const { error: netError } = await supabase
         .from("leads")
-        .update({ net_amount: netAmount })
+        .update({ net_amount: netAmount, overhead_amount: overheadAmount })
         .eq("id", targetLeadId);
       if (netError) throw netError;
 

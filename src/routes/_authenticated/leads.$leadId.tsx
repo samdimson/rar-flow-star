@@ -1061,6 +1061,7 @@ function LeadDetail() {
             <LeadCommissions
               leadId={leadId}
               netAmount={lead.net_amount ?? null}
+              contractAmount={lead.contract_amount ?? null}
               canManage={canManage}
               visible={canManage || lead.assigned_rep_id === user?.id}
             />

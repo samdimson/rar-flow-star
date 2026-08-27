@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 
-/** Recompute lead.net_amount = contract_amount - materials - labor after a contract_amount save. */
+/** Recompute lead.net_amount = (contract_amount - materials - labor) * 0.85 after a 15% overhead deduction. */
 async function recalcLeadNetAmount(leadId: string) {
   const { data: lead } = await supabase.from("leads").select("contract_amount").eq("id", leadId).maybeSingle();
   const { data: estimates } = await supabase.from("estimates").select("id").eq("lead_id", leadId);
@@ -30,8 +30,10 @@ async function recalcLeadNetAmount(leadId: string) {
       .reduce((s, l) => s + Number(l.quantity ?? 0) * Number(l.unit_price ?? 0), 0);
   const materialsTotal = sumFor((s) => s !== "labor");
   const laborTotal = sumFor((s) => s === "labor");
-  const netAmount = Number((Number(lead?.contract_amount ?? 0) - materialsTotal - laborTotal).toFixed(2));
-  await supabase.from("leads").update({ net_amount: netAmount }).eq("id", leadId);
+  const grossAfterCosts = Number(lead?.contract_amount ?? 0) - materialsTotal - laborTotal;
+  const overheadAmount = Number((grossAfterCosts * 0.15).toFixed(2));
+  const netAmount = Number((grossAfterCosts - overheadAmount).toFixed(2));
+  await supabase.from("leads").update({ net_amount: netAmount, overhead_amount: overheadAmount }).eq("id", leadId);
 }
 
 type Tables = Database["public"]["Tables"];
