@@ -150,6 +150,100 @@ function MaterialsCostSummary({ leadId }: { leadId: string }) {
   );
 }
 
+function LaborCostSummary({ leadId }: { leadId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["lead-labor-cost-summary", leadId],
+    queryFn: async () => {
+      const { data: estimate, error } = await supabase
+        .from("estimates")
+        .select("id, updated_at")
+        .eq("lead_id", leadId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      if (!estimate) return null;
+      const { data: lines, error: lineError } = await supabase
+        .from("estimate_line_items")
+        .select("item, quantity, unit, unit_price")
+        .eq("estimate_id", estimate.id)
+        .eq("source", "labor")
+        .gte("quantity", 1)
+        .order("sort_order", { ascending: true });
+      if (lineError) throw lineError;
+      return { updatedAt: estimate.updated_at, lines: (lines ?? []) as EstimateLine[] };
+    },
+  });
+
+  if (isLoading) return <LoadingBlock label="Loading labor estimate" />;
+  if (!data || data.lines.length === 0) {
+    return (
+      <SectionCard title="Labor Cost">
+        <EmptyState message="No labor estimate saved — use the Labor Cost Estimator to build and save one." />
+      </SectionCard>
+    );
+  }
+
+  const grandTotal = data.lines.reduce(
+    (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
+    0,
+  );
+
+  return (
+    <SectionCard title="Labor Cost">
+      <div className="overflow-x-auto rounded-lg border border-border bg-card">
+        <table className="w-full min-w-[600px] text-sm">
+          <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2.5 font-semibold">Description</th>
+              <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
+              <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
+              <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
+              <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {LABOR_SECTIONS.map((section) => {
+              const sectionLines = data.lines.filter((line) =>
+                section.items.some((item) => item.desc === line.item),
+              );
+              if (sectionLines.length === 0) return null;
+              return (
+                <Fragment key={section.label}>
+                  <tr className="bg-blue-100">
+                    <td colSpan={5} className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-950">
+                      {section.label}
+                    </td>
+                  </tr>
+                  {sectionLines.map((line) => (
+                    <tr key={line.item} className="border-t border-border">
+                      <td className="px-3 py-2">{line.item}</td>
+                      <td className="px-3 py-2">{line.quantity}</td>
+                      <td className="px-3 py-2 text-xs">{line.unit}</td>
+                      <td className="px-3 py-2 text-right">{currencyExact(line.unit_price)}</td>
+                      <td className="px-3 py-2 text-right font-medium">
+                        {currencyExact(Number(line.quantity) * Number(line.unit_price))}
+                      </td>
+                    </tr>
+                  ))}
+                </Fragment>
+              );
+            })}
+          </tbody>
+          <tfoot className="sticky bottom-0">
+            <tr className="border-t-2 border-border bg-yellow-200 font-bold text-yellow-950">
+              <td className="px-3 py-3" colSpan={4}>
+                Grand total
+              </td>
+              <td className="px-3 py-3 text-right text-base">{currencyExact(grandTotal)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </SectionCard>
+  );
+}
+
 export const Route = createFileRoute("/_authenticated/leads/$leadId")({
   head: () => ({
     meta: [
