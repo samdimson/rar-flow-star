@@ -629,7 +629,7 @@ function LeadDetail() {
                     table="leads"
                     label="Lead"
                     initial={lead}
-                    fields={canViewFinance ? leadFields : leadFields.filter((f) => !f.name.includes("amount"))}
+                    fields={leadFields}
                     onSaved={close}
                     onCancel={close}
                     columns={3}
@@ -647,8 +647,8 @@ function LeadDetail() {
                     label="Production manager"
                     value={profiles.find((p) => p.id === lead.production_manager_id)?.full_name ?? "—"}
                   />
-                  {canViewFinance ? <Field label="Estimated value" value={currency(lead.estimated_value)} /> : null}
-                  {canViewFinance ? <Field label="Contract amount" value={currency(lead.contract_amount)} /> : null}
+                  <Field label="Estimated value" value={currency(lead.estimated_value)} />
+                  <Field label="Contract amount" value={currency(lead.contract_amount)} />
                   <Field label="Storm date" value={shortDate(lead.storm_date)} />
                   <Field label="Inspection date" value={shortDate(lead.inspection_date)} />
                   <Field label="Contract signed" value={shortDate(lead.contract_signed_at)} />
