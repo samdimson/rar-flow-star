@@ -83,22 +83,31 @@ function JobCostPanel({ leadId }: { leadId: string }) {
         .gte("quantity", 1)
         .order("sort_order", { ascending: true });
       if (lineError) throw lineError;
-      return { updatedAt: estimate.updated_at, lines: (lines ?? []) as EstimateLine[] };
+      return {
+        updatedAt: estimate.updated_at,
+        laborType: estimate.labor_type,
+        laborSquares: Number(estimate.labor_squares ?? 0),
+        lines: (lines ?? []) as EstimateLine[],
+      };
     },
   });
 
   if (isLoading) return <LoadingBlock label="Loading job cost" />;
 
   const materials = (data?.lines ?? []).filter((l) => l.source === "material");
-  const labor = (data?.lines ?? []).filter((l) => l.source === "labor");
+  const laborLines = (data?.lines ?? []).filter((l) => l.source === "labor");
   const materialsTotal = materials.reduce(
     (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
     0,
   );
-  const laborTotal = labor.reduce(
-    (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
-    0,
-  );
+  const laborTypeValue = data?.laborType ?? null;
+  const laborRateValue = laborRate(laborTypeValue);
+  // fall back to the saved labor line when the estimate predates the squares fields
+  const laborSquares =
+    (data?.laborSquares ?? 0) > 0
+      ? (data?.laborSquares ?? 0)
+      : Math.round(laborLines.reduce((s, l) => s + Number(l.quantity), 0));
+  const laborTotal = laborSquares * laborRateValue;
   const totalCost = materialsTotal + laborTotal;
 
   return (
