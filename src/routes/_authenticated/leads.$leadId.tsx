@@ -12,7 +12,7 @@ import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
-import { EstimatorPanel } from "@/components/crm/estimator-panel";
+
 import { SECTIONS, LABOR_SECTIONS } from "@/components/crm/cost-estimator";
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { LeadCommissions } from "@/components/crm/lead-commissions";
@@ -28,7 +28,7 @@ import {
   useAppointments,
   useChangeOrders,
   useClaim,
-  useContracts,
+  
   useEstimates,
   useInvoices,
   useLead,
@@ -272,8 +272,8 @@ function LeadDetail() {
   const { data: notes = [] } = useNotes({ column: "lead_id", value: leadId });
   const { data: tasks = [] } = useTasks({ column: "lead_id", value: leadId });
   const { data: appointments = [] } = useAppointments({ column: "lead_id", value: leadId });
-  const { data: estimates = [] } = useEstimates({ column: "lead_id", value: leadId });
-  const { data: contracts = [] } = useContracts({ column: "lead_id", value: leadId });
+  // Kept: estimates query is still written to by the Materials Cost and Labor Cost summaries.
+  useEstimates({ column: "lead_id", value: leadId });
   const { data: invoices = [] } = useInvoices({ column: "lead_id", value: leadId });
   const { data: payments = [] } = usePayments({ column: "lead_id", value: leadId });
   const { data: changeOrders = [] } = useChangeOrders({ column: "lead_id", value: leadId });
@@ -515,7 +515,7 @@ function LeadDetail() {
             <TabsTrigger value="production">Production</TabsTrigger>
             <TabsTrigger value="cost-estimator">Materials Cost</TabsTrigger>
             <TabsTrigger value="labor-cost">Labor Cost</TabsTrigger>
-            {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
+            
             {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
             <TabsTrigger value="commissions">Commissions</TabsTrigger>
             <TabsTrigger value="history">Status history</TabsTrigger>
@@ -629,7 +629,7 @@ function LeadDetail() {
                     table="leads"
                     label="Lead"
                     initial={lead}
-                    fields={canViewFinance ? leadFields : leadFields.filter((f) => !f.name.includes("amount"))}
+                    fields={leadFields}
                     onSaved={close}
                     onCancel={close}
                     columns={3}
@@ -647,8 +647,8 @@ function LeadDetail() {
                     label="Production manager"
                     value={profiles.find((p) => p.id === lead.production_manager_id)?.full_name ?? "—"}
                   />
-                  {canViewFinance ? <Field label="Estimated value" value={currency(lead.estimated_value)} /> : null}
-                  {canViewFinance ? <Field label="Contract amount" value={currency(lead.contract_amount)} /> : null}
+                  <Field label="Estimated value" value={currency(lead.estimated_value)} />
+                  <Field label="Contract amount" value={currency(lead.contract_amount)} />
                   <Field label="Storm date" value={shortDate(lead.storm_date)} />
                   <Field label="Inspection date" value={shortDate(lead.inspection_date)} />
                   <Field label="Contract signed" value={shortDate(lead.contract_signed_at)} />
@@ -929,109 +929,6 @@ function LeadDetail() {
             <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
           </TabsContent>
 
-          {/* Money --------------------------------------------------- */}
-          {canViewFinance ? (
-            <TabsContent value="money" className="mt-4 space-y-4">
-              <SectionCard title="Estimates">
-                {canEdit ? (
-                  <RecordForm
-                    table="estimates"
-                    label="Estimate"
-                    extra={{ lead_id: leadId, created_by: user?.id ?? null }}
-                    resetAfterSave
-                    submitLabel="Add estimate"
-                    columns={3}
-                    fields={[
-                      { name: "estimate_number", label: "Estimate #" },
-                      {
-                        name: "source",
-                        label: "Source",
-                        type: "select",
-                        options: ["xactimate", "carrier_scope", "internal"].map((v) => ({ value: v, label: titleCase(v) })),
-                      },
-                      { name: "total_amount", label: "Total ($)", type: "number", required: true },
-                      { name: "scope_gap_amount", label: "Scope gap ($)", type: "number" },
-                      {
-                        name: "status",
-                        label: "Status",
-                        type: "select",
-                        options: ["draft", "submitted", "approved", "superseded"].map((v) => ({ value: v, label: titleCase(v) })),
-                      },
-                      { name: "notes", label: "Notes", type: "textarea" },
-                    ]}
-                  />
-                ) : null}
-                {estimates.length === 0 ? (
-                  <p className="mt-3 text-sm text-muted-foreground">No estimates yet.</p>
-                ) : (
-                  <div className="mt-3 space-y-3">
-                    {estimates.map((e) => (
-                      <div key={e.id} className="rounded-lg border border-border p-3">
-                        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-                          <span>
-                            {e.estimate_number || "Estimate"} · {titleCase(e.source)} · {titleCase(e.status)}
-                            {e.scope_gap_amount ? ` · gap ${currency(e.scope_gap_amount)}` : ""}
-                          </span>
-                          <span className="font-medium">{currency(e.total_amount)}</span>
-                        </div>
-                        <details className="mt-2">
-                          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Estimator calculator
-                          </summary>
-                          <div className="mt-3">
-                            <EstimatorPanel estimateId={e.id} canEdit={canEdit} />
-                          </div>
-                        </details>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-              </SectionCard>
-
-              <SectionCard title="Contract">
-                <EditableSection
-                  canEdit={canEdit}
-                  form={(close) => (
-                    <RecordForm
-                      table="contracts"
-                      label="Contract"
-                      initial={contracts[0] ?? null}
-                      extra={{ lead_id: leadId }}
-                      columns={2}
-                      onSaved={close}
-                      onCancel={close}
-                      fields={[
-                        { name: "contract_amount", label: "Contract amount ($)", type: "number", required: true },
-                        { name: "signed_at", label: "Signed", type: "date" },
-                        { name: "rescission_ends_at", label: "Rescission ends", type: "date" },
-                        {
-                          name: "status",
-                          label: "Status",
-                          type: "select",
-                          options: ["draft", "signed", "rescinded", "complete"].map((v) => ({ value: v, label: titleCase(v) })),
-                        },
-                        { name: "direction_to_pay_signed", label: "Direction to Pay signed", type: "checkbox" },
-                        { name: "notes", label: "Notes", type: "textarea" },
-                      ]}
-                    />
-                  )}
-                >
-                  {contracts.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No contract recorded.</p>
-                  ) : (
-                    <dl className="grid gap-3 sm:grid-cols-3">
-                      <Field label="Amount" value={currency(contracts[0]?.contract_amount)} />
-                      <Field label="Signed" value={shortDate(contracts[0]?.signed_at)} />
-                      <Field label="Rescission ends" value={shortDate(contracts[0]?.rescission_ends_at)} />
-                      <Field label="Status" value={titleCase(contracts[0]?.status)} />
-                      <Field label="Direction to Pay" value={contracts[0]?.direction_to_pay_signed ? "Signed" : "Not signed"} />
-                    </dl>
-                  )}
-                </EditableSection>
-              </SectionCard>
-            </TabsContent>
-          ) : null}
 
           {/* Invoices & Payments ------------------------------------- */}
           {canViewFinance ? (
