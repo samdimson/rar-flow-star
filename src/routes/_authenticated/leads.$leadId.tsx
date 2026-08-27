@@ -25,7 +25,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { useEstimatorAccess } from "@/lib/crm/access";
 import { supabase } from "@/integrations/supabase/client";
+
 import {
   useActivities,
   useAppointments,
