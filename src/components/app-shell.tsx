@@ -62,7 +62,7 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
     heading: "Documents & Money",
     items: [
       { to: "/estimates", label: "Estimates", icon: FileText },
-      { to: "/cost-estimator", label: "Cost Estimator", icon: Calculator },
+      { to: "/cost-estimator", label: "Materials Cost Estimator", icon: Calculator },
       { to: "/contracts", label: "Contracts", icon: FileSignature },
       { to: "/invoices", label: "Invoices & Payments", icon: Banknote, finance: true },
       { to: "/documents", label: "Documents & Photos", icon: FolderOpen },

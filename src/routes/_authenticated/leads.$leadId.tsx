@@ -85,7 +85,7 @@ function MaterialsCostSummary({ leadId }: { leadId: string }) {
   if (!data || data.lines.length === 0) {
     return (
       <SectionCard title="Materials Cost">
-        <EmptyState message="No estimate saved — use the Cost Estimator on /cost-estimator to build and save one." />
+        <EmptyState message="No estimate saved — use the Materials Cost Estimator on /cost-estimator to build and save one." />
       </SectionCard>
     );
   }
