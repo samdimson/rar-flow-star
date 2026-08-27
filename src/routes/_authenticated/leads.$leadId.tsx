@@ -17,7 +17,7 @@ import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { LeadCommissions } from "@/components/crm/lead-commissions";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
-import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
+import { StageBadge, StatusBadge } from "@/components/stage-badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
