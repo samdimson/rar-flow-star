@@ -7,8 +7,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useUpsert } from "@/lib/crm/api";
+import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
+
+/** Recompute lead.net_amount = contract_amount - materials - labor after a contract_amount save. */
+async function recalcLeadNetAmount(leadId: string) {
+  const { data: lead } = await supabase.from("leads").select("contract_amount").eq("id", leadId).maybeSingle();
+  const { data: estimates } = await supabase.from("estimates").select("id").eq("lead_id", leadId);
+  const estimateIds = (estimates ?? []).map((e) => e.id);
+  let lines: { quantity: number | null; unit_price: number | null; source: string | null }[] = [];
+  if (estimateIds.length > 0) {
+    const { data } = await supabase
+      .from("estimate_line_items")
+      .select("quantity, unit_price, source")
+      .in("estimate_id", estimateIds);
+    lines = data ?? [];
+  }
+  const sumFor = (predicate: (s: string) => boolean) =>
+    lines
+      .filter((l) => predicate(l.source ?? "material"))
+      .reduce((s, l) => s + Number(l.quantity ?? 0) * Number(l.unit_price ?? 0), 0);
+  const materialsTotal = sumFor((s) => s !== "labor");
+  const laborTotal = sumFor((s) => s === "labor");
+  const netAmount = Number((Number(lead?.contract_amount ?? 0) - materialsTotal - laborTotal).toFixed(2));
+  await supabase.from("leads").update({ net_amount: netAmount }).eq("id", leadId);
+}
 
 type Tables = Database["public"]["Tables"];
 
@@ -129,6 +153,10 @@ export function RecordForm<K extends keyof Tables>({
 
     upsert.mutate(payload, {
       onSuccess: (row) => {
+        if (table === "leads" && "contract_amount" in payload) {
+          const leadId = (row as Values | null)?.["id"] ?? payload["id"];
+          if (typeof leadId === "string") void recalcLeadNetAmount(leadId);
+        }
         if (resetAfterSave) setValues(build());
         onSaved?.(row as Values | null);
       },
