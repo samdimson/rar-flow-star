@@ -6,6 +6,8 @@ import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm
 import { useInvoices, useLeads, usePayments } from "@/lib/crm/api";
 import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { useAuth } from "@/hooks/use-auth";
+import { useEstimatorAccess } from "@/lib/crm/access";
+import { RcvInvoiceDialog } from "@/components/crm/rcv-invoice-dialog";
 
 const title = "Invoices & Payments — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/invoices")({
 
 function InvoicesPage() {
   const { canViewFinance, loading } = useAuth();
+  const rcvAccess = useEstimatorAccess();
   const { data: invoices = [], isLoading } = useInvoices();
   const { data: payments = [] } = usePayments();
   const { data: leads = [] } = useLeads();
@@ -51,7 +54,12 @@ function InvoicesPage() {
   const leadFor = (id: string) => leads.find((l) => l.id === id);
 
   return (
-    <AppShell icon={Banknote} title="Invoices & Payments" subtitle="Job costing and carrier collections">
+    <AppShell
+      icon={Banknote}
+      title="Invoices & Payments"
+      subtitle="Job costing and carrier collections"
+      actions={rcvAccess.allowed ? <RcvInvoiceDialog /> : null}
+    >
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <KpiCard label="Invoiced" value={currency(invoiced)} />
