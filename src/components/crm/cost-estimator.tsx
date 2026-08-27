@@ -463,22 +463,14 @@ export function CostEstimator({
         </div>
       </div>
 
-      {(
-        [
-          { heading: "Materials Cost Estimator", sections: SECTIONS as unknown as EstimatorSection[] },
-          { heading: "Labor Cost Estimator", sections: LABOR_SECTIONS as unknown as EstimatorSection[] },
-        ] as const
-      ).map(({ heading, sections }) => {
+      {(() => {
         const sectionsTotal = sections.reduce(
           (sum, section) =>
             sum + section.items.reduce((s, item) => s + qtyOf(item.desc) * priceOf(item.desc), 0),
           0,
         );
         return (
-          <section key={heading} className="space-y-2">
-            {heading === "Labor Cost Estimator" ? (
-              <div className="mt-6 border-t-4 border-primary pt-4" aria-hidden="true" />
-            ) : null}
+          <section className="space-y-2">
             <h2 className="text-base font-bold uppercase tracking-wide text-foreground">{heading}</h2>
 
             <div className="overflow-x-auto rounded-lg border border-border bg-card">
