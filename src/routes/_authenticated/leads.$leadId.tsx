@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, CheckCircle2, Clock, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,7 +13,7 @@ import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
 
-import { SECTIONS, LABOR_SECTIONS } from "@/components/crm/cost-estimator";
+
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { LeadCommissions } from "@/components/crm/lead-commissions";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -28,8 +28,6 @@ import {
   useAppointments,
   useChangeOrders,
   useClaim,
-  
-  useEstimates,
   useInvoices,
   useLead,
   useNotes,
