@@ -39,6 +39,7 @@ import {
 } from "@/lib/crm/api";
 import { currency, dateTime, shortDate, titleCase } from "@/lib/crm/format";
 import {
+  CARRIERS,
   APPOINTMENT_KINDS,
   LEAD_SOURCES,
   PAYMENT_KINDS,
