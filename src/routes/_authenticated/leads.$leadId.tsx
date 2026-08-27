@@ -87,6 +87,23 @@ function LeadDetail() {
   const saveNote = useUpsert("notes", "Note");
   const [noteBody, setNoteBody] = useState("");
   const sendEmail = useServerFn(sendAppointmentEmail);
+  const queryClient = useQueryClient();
+
+  const syncAdjusterMeeting = async (row?: Record<string, unknown> | null) => {
+    const startsAt = row?.["adjuster_meeting_at"] as string | null | undefined;
+    if (!startsAt || !lead) return;
+    const property = lead.property;
+    await syncAdjusterMeetingAppointment({
+      leadId,
+      startsAt,
+      location: property
+        ? `${property.address_line1}, ${property.city} ${property.state} ${property.postal_code}`
+        : null,
+      assignedTo: lead.assigned_rep_id,
+    });
+    await queryClient.invalidateQueries({ queryKey: ["appointments"] });
+  };
+
 
   const notifyAttendees = async (row?: Record<string, unknown> | null) => {
     const attendees = String(row?.["attendees"] ?? "").trim();
