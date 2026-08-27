@@ -448,9 +448,18 @@ function LeadDetail() {
   const invoiced = invoices.reduce((s, i) => s + Number(i.amount), 0);
   const collected = payments.reduce((s, p) => s + Number(p.amount), 0);
 
+  const rep = profiles.find((p) => p.id === lead.assigned_rep_id);
+
   return (
     <AppShell
-      title={`${lead.lead_number} · ${customerName || "Lead"}`}
+      title={
+        <>
+          {lead.lead_number} · {customerName || "Lead"}
+          {rep ? (
+            <span className="text-sm font-normal text-muted-foreground"> — (Sales Rep: {rep.full_name})</span>
+          ) : null}
+        </>
+      }
       subtitle={`${lead.property?.address_line1 ?? ""}${lead.property?.city ? `, ${lead.property.city}` : ""} — Stage ${lead.stage_id}: ${stageName(lead.stage_id)}`}
       actions={
         <>
