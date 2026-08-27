@@ -1,7 +1,8 @@
 import { EmptyState, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { MilestoneTable } from "@/components/crm/milestone-table";
 import { currencyExact } from "@/lib/crm/format";
-import { useLeadCostBreakdown, useMilestonePayouts } from "@/lib/crm/commissions";
+import { useLeadCostBreakdown, useMilestonePayouts, useRepCommission } from "@/lib/crm/commissions";
+import { useLead, useProfiles } from "@/lib/crm/api";
 
 export function LeadCommissions({
   leadId,
