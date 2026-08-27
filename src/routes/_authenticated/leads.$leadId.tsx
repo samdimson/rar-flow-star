@@ -492,9 +492,11 @@ function LeadDetail() {
                 <RecordForm
                   table="appointments"
                   label="Appointment"
+                  initial={{ assigned_to: lead.assigned_rep_id }}
                   extra={{ lead_id: leadId, created_by: user?.id ?? null }}
                   resetAfterSave
                   submitLabel="Schedule"
+                  onSaved={(row) => void notifyAttendees(row)}
                   fields={[
                     { name: "title", label: "Title", required: true },
                     {
@@ -506,6 +508,12 @@ function LeadDetail() {
                     { name: "starts_at", label: "Starts", type: "datetime", required: true },
                     { name: "ends_at", label: "Ends", type: "datetime" },
                     { name: "assigned_to", label: "Owner", type: "select", options: repOptions },
+                    {
+                      name: "attendees",
+                      label: "Other attendees",
+                      placeholder: "Jane Doe <jane@example.com>, adjuster@carrier.com",
+                      full: true,
+                    },
                     { name: "location", label: "Location" },
                     { name: "notes", label: "Notes", type: "textarea" },
                   ]}
