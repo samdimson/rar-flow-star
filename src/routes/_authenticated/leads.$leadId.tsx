@@ -516,6 +516,7 @@ function LeadDetail() {
             <TabsTrigger value="labor-cost">Labor Cost</TabsTrigger>
             {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
             {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
+            <TabsTrigger value="commissions">Commissions</TabsTrigger>
             <TabsTrigger value="history">Status history</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
