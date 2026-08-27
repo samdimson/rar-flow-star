@@ -15,6 +15,7 @@ import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy
 import { EstimatorPanel } from "@/components/crm/estimator-panel";
 import { SECTIONS, LABOR_SECTIONS } from "@/components/crm/cost-estimator";
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
+import { LeadCommissions } from "@/components/crm/lead-commissions";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
 import { Button } from "@/components/ui/button";
@@ -263,7 +264,7 @@ export const Route = createFileRoute("/_authenticated/leads/$leadId")({
 
 function LeadDetail() {
   const { leadId } = Route.useParams();
-  const { canEdit, canViewFinance, user } = useAuth();
+  const { canEdit, canViewFinance, canManage, user } = useAuth();
   const { data: lead, isLoading } = useLead(leadId);
   const { data: claim } = useClaim(leadId);
   const { data: production } = useProductionJob(leadId);
