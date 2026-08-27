@@ -90,7 +90,7 @@ export function AdvanceDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button size="sm">
+          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
             Advance stage <ArrowRight className="size-4" />
           </Button>
         )}

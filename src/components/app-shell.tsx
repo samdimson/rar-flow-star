@@ -128,10 +128,11 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                   to={to}
                   onClick={onNavigate}
                   activeOptions={{ exact: to === "/" }}
-                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-accent/20 hover:text-sidebar-foreground"
                   activeProps={{
-                    className: "bg-sidebar-accent text-sidebar-accent-foreground font-semibold",
+                    className: "bg-accent text-white font-semibold hover:bg-accent",
                   }}
+
                 >
                   <Icon className="size-4 shrink-0" aria-hidden="true" />
                   <span className="truncate">{label}</span>
@@ -147,17 +148,13 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2.5 px-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-[11px] font-bold tracking-tight text-primary-foreground">
-        RAR
-      </span>
-      <span className="min-w-0 text-sm font-semibold leading-tight text-sidebar-foreground">
-        Rise Above Roofing
-        <span className="block text-[11px] font-normal text-muted-foreground">Oklahoma CRM</span>
-      </span>
+    <div className="px-3">
+      <img src="/logo.png" alt="Rise Above Roofing Oklahoma" className="h-10 w-auto" />
+      <span className="mt-1 block text-[11px] font-normal text-sidebar-foreground/60">Oklahoma CRM</span>
     </div>
   );
 }
+
 
 export function AppShell({
   title,
