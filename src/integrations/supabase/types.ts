@@ -319,6 +319,30 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_tiers: {
+        Row: {
+          id: number
+          label: string
+          max_closed: number | null
+          min_closed: number
+          rate: number
+        }
+        Insert: {
+          id?: number
+          label: string
+          max_closed?: number | null
+          min_closed: number
+          rate: number
+        }
+        Update: {
+          id?: number
+          label?: string
+          max_closed?: number | null
+          min_closed?: number
+          rate?: number
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           amount: number
@@ -852,6 +876,7 @@ export type Database = {
           inspection_date: string | null
           install_date: string | null
           lead_number: string
+          net_amount: number | null
           next_follow_up_at: string | null
           notes: string | null
           production_manager_id: string | null
@@ -878,6 +903,7 @@ export type Database = {
           inspection_date?: string | null
           install_date?: string | null
           lead_number?: string
+          net_amount?: number | null
           next_follow_up_at?: string | null
           notes?: string | null
           production_manager_id?: string | null
@@ -904,6 +930,7 @@ export type Database = {
           inspection_date?: string | null
           install_date?: string | null
           lead_number?: string
+          net_amount?: number | null
           next_follow_up_at?: string | null
           notes?: string | null
           production_manager_id?: string | null
@@ -980,6 +1007,59 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      milestone_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          lead_id: string
+          milestone: number
+          notes: string | null
+          paid_at: string | null
+          rep_id: string | null
+          status: string
+          triggered_at: string
+          triggered_by_task: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          lead_id: string
+          milestone: number
+          notes?: string | null
+          paid_at?: string | null
+          rep_id?: string | null
+          status?: string
+          triggered_at?: string
+          triggered_by_task?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          lead_id?: string
+          milestone?: number
+          notes?: string | null
+          paid_at?: string | null
+          rep_id?: string | null
+          status?: string
+          triggered_at?: string
+          triggered_by_task?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_payouts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notes: {
         Row: {
@@ -1501,6 +1581,22 @@ export type Database = {
       can_manage: { Args: never; Returns: boolean }
       can_view_all_leads: { Args: never; Returns: boolean }
       can_view_finance: { Args: never; Returns: boolean }
+      get_rep_commission: {
+        Args: { rep_id: string }
+        Returns: {
+          commission_amount: number
+          lifetime_closed: number
+          milestone_1_payout: number
+          milestone_2_payout: number
+          milestone_3_payout: number
+          next_tier_label: string
+          next_tier_min: number
+          tier_label: string
+          tier_rate: number
+          total_net: number
+        }[]
+      }
+      get_rep_tier_rate: { Args: { _rep_id: string }; Returns: number }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
