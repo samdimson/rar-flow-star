@@ -13,7 +13,7 @@ import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
 import { EstimatorPanel } from "@/components/crm/estimator-panel";
-import { SECTIONS } from "@/components/crm/cost-estimator";
+import { SECTIONS, LABOR_SECTIONS } from "@/components/crm/cost-estimator";
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
