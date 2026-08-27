@@ -66,30 +66,29 @@ function TestRunnerPage() {
   return (
     <AppShell
       title="CRM test runner"
-      description="Development-only automated checks against the live database."
+      subtitle="Development-only automated checks against the live database."
       actions={
         <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
           {mutation.isPending ? "Running…" : "Re-run all"}
         </Button>
       }
     >
-      <SectionCard
-        title="Summary"
-        description={
-          report
-            ? `${report.summary.passed} passed, ${report.summary.failed} failed — completed in ${(report.summary.duration_ms / 1000).toFixed(2)}s`
-            : mutation.isPending
-              ? "Running checks…"
-              : "No results yet."
-        }
-      >
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-4">
+      <SectionCard title="Summary">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="border-emerald-500/40 text-emerald-600">
             {report?.summary.passed ?? 0} passed
           </Badge>
           <Badge variant="outline" className="border-destructive/40 text-destructive">
             {report?.summary.failed ?? 0} failed
           </Badge>
+          <span className="text-xs text-muted-foreground">
+            {report
+              ? `Completed in ${(report.summary.duration_ms / 1000).toFixed(2)}s`
+              : mutation.isPending
+                ? "Running checks…"
+                : "No results yet."}
+          </span>
         </div>
       </SectionCard>
 
@@ -133,6 +132,7 @@ function TestRunnerPage() {
           </SectionCard>
         );
       })}
+      </div>
     </AppShell>
   );
 }
