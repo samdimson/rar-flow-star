@@ -318,9 +318,15 @@ export function missingRequirements(
   lead: Pick<LeadRow, "inspection_date" | "contract_signed_at" | "contract_amount" | "production_manager_id" | "install_date">,
   claim: Pick<ClaimRow, "carrier" | "claim_number" | "adjuster_meeting_at" | "rcv_amount"> | null | undefined,
   toTaskCode: string,
+  fromTaskCode?: string | null,
 ): RequiredField[] {
   const task = TASK_BY_CODE[toTaskCode];
-  if (!task?.required) return [];
+  // Fields required to enter the target task, plus fields the current task must
+  // capture before the lead is allowed to leave it (exit gate).
+  const fromTask = fromTaskCode ? TASK_BY_CODE[fromTaskCode] : undefined;
+  const exitGate = fromTask && fromTask.next.includes(toTaskCode) ? (fromTask.required ?? []) : [];
+  const fields = Array.from(new Set([...(task?.required ?? []), ...exitGate]));
+  if (!fields.length) return [];
   const present: Record<RequiredField, unknown> = {
     inspection_date: lead.inspection_date,
     carrier: claim?.carrier,
@@ -332,12 +338,13 @@ export function missingRequirements(
     production_manager_id: lead.production_manager_id,
     install_date: lead.install_date,
   };
-  return task.required.filter((f) => {
+  return fields.filter((f) => {
     const v = present[f];
     if (f === "rcv_amount") return !(Number(v) > 0);
     return v === null || v === undefined || v === "" || v === 0;
   });
 }
+
 
 export function requirementLabel(field: RequiredField) {
   return REQUIRED_FIELD_LABELS[field];
@@ -416,18 +423,28 @@ export async function applyTransition({ lead, toTaskCode, reason, isOverride }: 
   const task = TASK_BY_CODE[toTaskCode];
   if (!task) throw new Error(`Unknown workflow task ${toTaskCode}`);
 
+  if (!isOverride) {
+    const validNext = TASK_BY_CODE[lead.task_code]?.next ?? [];
+    if (!validNext.includes(toTaskCode)) {
+      throw new Error(
+        `${task.code} ${task.name} is not a valid next step from ${lead.task_code}. Valid next steps: ${validNext.join(", ") || "none"}.`,
+      );
+    }
+  }
+
   const { data: claim } = await supabase
     .from("insurance_claims")
     .select("*")
     .eq("lead_id", lead.id)
     .maybeSingle();
 
-  const missing = missingRequirements(lead, claim, toTaskCode);
+  const missing = missingRequirements(lead, claim, toTaskCode, lead.task_code);
   if (missing.length && !isOverride) {
     throw new Error(
       `Cannot advance to ${task.code} ${task.name}. Missing required: ${missing.map(requirementLabel).join(", ")}.`,
     );
   }
+
 
   const { data: auth } = await supabase.auth.getUser();
   const actor = auth.user?.id ?? null;

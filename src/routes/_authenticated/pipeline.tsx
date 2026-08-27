@@ -7,7 +7,19 @@ import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { LeadFormDialog } from "@/components/crm/lead-form-dialog";
 import { LoadingBlock } from "@/components/crm/primitives";
 import { TaskBadge } from "@/components/stage-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
 import { useAuth } from "@/hooks/use-auth";
 import { useAdvanceLead, useLeads, type LeadWithRelations } from "@/lib/crm/api";
 import { currency, shortDate } from "@/lib/crm/format";
@@ -36,6 +48,10 @@ function PipelinePage() {
   const advance = useAdvanceLead();
   const [dragId, setDragId] = useState<string | null>(null);
   const [hoverStage, setHoverStage] = useState<number | null>(null);
+  const [pendingOverride, setPendingOverride] = useState<
+    { lead: LeadWithRelations; toTaskCode: string } | null
+  >(null);
+  const [overrideReason, setOverrideReason] = useState("");
 
   const drop = (stageId: number) => {
     setHoverStage(null);
@@ -50,12 +66,18 @@ function PipelinePage() {
     if (!target) return;
 
     const isValid = current?.next?.includes(target) ?? false;
-    if (!isValid && !canManage) {
-      toast.error(`Not a valid next step from ${lead.task_code}. Use Advance stage to follow the workflow.`);
+    if (!isValid) {
+      if (!canManage) {
+        toast.error(`Not a valid next step from ${lead.task_code}. Use Advance stage to follow the workflow.`);
+        return;
+      }
+      setOverrideReason("");
+      setPendingOverride({ lead, toTaskCode: target });
       return;
     }
-    advance.mutate({ lead, toTaskCode: target, isOverride: !isValid, reason: "Moved on pipeline board" });
+    advance.mutate({ lead, toTaskCode: target, reason: "Moved on pipeline board" });
   };
+
 
   if (isLoading) {
     return (
@@ -120,6 +142,52 @@ function PipelinePage() {
           );
         })}
       </div>
+
+      <Dialog open={Boolean(pendingOverride)} onOpenChange={(o) => !o && setPendingOverride(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manager override required</DialogTitle>
+            <DialogDescription>
+              {pendingOverride
+                ? `${pendingOverride.toTaskCode} is not a valid next step from ${pendingOverride.lead.task_code}. Give a reason to record this override on ${pendingOverride.lead.lead_number}.`
+                : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label htmlFor="override-reason">Override reason</Label>
+            <Textarea
+              id="override-reason"
+              rows={3}
+              value={overrideReason}
+              onChange={(e) => setOverrideReason(e.target.value)}
+              placeholder="Why is this lead skipping workflow steps?"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingOverride(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!overrideReason.trim() || advance.isPending}
+              onClick={() => {
+                if (!pendingOverride) return;
+                advance.mutate(
+                  {
+                    lead: pendingOverride.lead,
+                    toTaskCode: pendingOverride.toTaskCode,
+                    isOverride: true,
+                    reason: `Pipeline override: ${overrideReason.trim()}`,
+                  },
+                  { onSuccess: () => setPendingOverride(null) },
+                );
+              }}
+            >
+              Override and move
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </AppShell>
   );
 }
@@ -137,12 +205,20 @@ function PipelineCard({
   onDragStart: () => void;
   onDragEnd: () => void;
 }) {
+  const followUpDue =
+    Boolean(lead.next_follow_up_at) &&
+    lead.status === "open" &&
+    new Date(`${lead.next_follow_up_at}T23:59:59`).getTime() <= Date.now();
   return (
     <article
       draggable={canEdit}
+      data-followup-due={followUpDue ? "true" : "false"}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className="rounded-md border border-border bg-card p-2.5 shadow-sm"
+      className={cn(
+        "rounded-md border border-border bg-card p-2.5 shadow-sm",
+        followUpDue && "border-primary bg-primary/5 ring-1 ring-primary/40",
+      )}
     >
       <Link
         to="/leads/$leadId"
@@ -154,7 +230,13 @@ function PipelineCard({
       <p className="truncate text-xs text-muted-foreground">{lead.property?.address_line1}</p>
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <TaskBadge code={lead.task_code} />
+        {followUpDue ? (
+          <Badge variant="outline" className="border-primary text-primary">
+            Follow-up due {shortDate(lead.next_follow_up_at)}
+          </Badge>
+        ) : null}
       </div>
+
       <p className="mt-2 text-xs text-muted-foreground">
         {lead.lead_number}
         {canViewFinance ? ` · ${currency(lead.contract_amount ?? lead.estimated_value)}` : ""}

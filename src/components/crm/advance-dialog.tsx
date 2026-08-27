@@ -60,7 +60,7 @@ export function AdvanceDialog({
   const effectiveClaim = fetchedClaim ?? claim ?? null;
 
   const effectiveTarget = options.includes(target) ? target : (options[0] ?? "");
-  const missing = effectiveTarget ? missingRequirements(lead, effectiveClaim, effectiveTarget) : [];
+  const missing = effectiveTarget ? missingRequirements(lead, effectiveClaim, effectiveTarget, lead.task_code) : [];
   const targetTask = effectiveTarget ? TASK_BY_CODE[effectiveTarget] : undefined;
 
   if (!canEdit) return null;
