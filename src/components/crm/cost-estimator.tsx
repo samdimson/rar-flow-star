@@ -202,30 +202,35 @@ export const LABOR_SECTIONS = [
   },
 ] as const;
 
-const LABOR_DESCS = new Set<string>(
-  LABOR_SECTIONS.flatMap((s) => s.items.map((i) => i.desc as string)),
-);
-
-
 type MaterialItem = { cat: string; desc: string; unit: string; price: number };
-type EstimatorSection = { label: string; items: MaterialItem[] };
+export type EstimatorSection = { label: string; items: readonly MaterialItem[] };
 
-const ALL_ITEMS: MaterialItem[] = [...SECTIONS, ...LABOR_SECTIONS].flatMap(
-  (s) => s.items as readonly MaterialItem[],
-);
-
-const defaultPrices = (): Record<string, number> =>
-  Object.fromEntries(ALL_ITEMS.map((i) => [i.desc, i.price]));
+const defaultPrices = (items: MaterialItem[]): Record<string, number> =>
+  Object.fromEntries(items.map((i) => [i.desc, i.price]));
 
 
-export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
+export function CostEstimator({
+  leadId: fixedLeadId,
+  heading,
+  sections,
+  source,
+}: {
+  leadId?: string;
+  heading: string;
+  sections: readonly EstimatorSection[];
+  source: "material" | "labor";
+}) {
+  const ALL_ITEMS: MaterialItem[] = useMemo(
+    () => sections.flatMap((s) => s.items as readonly MaterialItem[]),
+    [sections],
+  );
   const { user, canManage, canEdit } = useAuth();
   const queryClient = useQueryClient();
   const lockedToLead = !!fixedLeadId;
 
   const [customerId, setCustomerId] = useState<string>("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [prices, setPrices] = useState<Record<string, number>>(defaultPrices);
+  const [prices, setPrices] = useState<Record<string, number>>(() => defaultPrices(ALL_ITEMS));
   const [saving, setSaving] = useState(false);
   const [savingPrices, setSavingPrices] = useState(false);
   const [summaryMode, setSummaryMode] = useState(false);
@@ -245,12 +250,12 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
   });
 
   useEffect(() => {
-    const merged = defaultPrices();
+    const merged = defaultPrices(ALL_ITEMS);
     for (const row of savedPrices) {
       if (row.description in merged) merged[row.description] = Number(row.unit_price);
     }
     setPrices(merged);
-  }, [savedPrices]);
+  }, [savedPrices, ALL_ITEMS]);
 
   // ---- resolve lead(s) in scope ----
   const leadIds = useMemo(() => {
@@ -312,7 +317,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
       quantity: qtyOf(item.desc),
       unit: item.unit,
       unit_price: priceOf(item.desc),
-      source: LABOR_DESCS.has(item.desc) ? "labor" : "material",
+      source,
       sort_order: index,
     }));
 
@@ -458,22 +463,14 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
         </div>
       </div>
 
-      {(
-        [
-          { heading: "Materials Cost Estimator", sections: SECTIONS as unknown as EstimatorSection[] },
-          { heading: "Labor Cost Estimator", sections: LABOR_SECTIONS as unknown as EstimatorSection[] },
-        ] as const
-      ).map(({ heading, sections }) => {
+      {(() => {
         const sectionsTotal = sections.reduce(
           (sum, section) =>
             sum + section.items.reduce((s, item) => s + qtyOf(item.desc) * priceOf(item.desc), 0),
           0,
         );
         return (
-          <section key={heading} className="space-y-2">
-            {heading === "Labor Cost Estimator" ? (
-              <div className="mt-6 border-t-4 border-primary pt-4" aria-hidden="true" />
-            ) : null}
+          <section className="space-y-2">
             <h2 className="text-base font-bold uppercase tracking-wide text-foreground">{heading}</h2>
 
             <div className="overflow-x-auto rounded-lg border border-border bg-card">
@@ -609,11 +606,11 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
             </div>
           </section>
         );
-      })}
+      })()}
 
       <div className="overflow-hidden rounded-lg border-2 border-border">
         <div className="flex items-center justify-between bg-yellow-200 px-3 py-3 font-bold text-yellow-950">
-          <span>Total Estimated Cost (Materials + Labor)</span>
+          <span>{heading} — Grand Total</span>
           <span className="text-base">{currencyExact(grandTotal)}</span>
         </div>
       </div>
