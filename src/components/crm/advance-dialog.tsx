@@ -20,6 +20,7 @@ import {
   missingRequirements,
   requirementLabel,
   useAdvanceLead,
+  useClaim,
   type ClaimRow,
   type LeadRow,
 } from "@/lib/crm/api";
@@ -42,9 +43,13 @@ export function AdvanceDialog({
   const [target, setTarget] = useState(options[0] ?? "");
   const [reason, setReason] = useState("");
   const advance = useAdvanceLead();
+  // Required-field checks for rcv_amount live on insurance_claims, so always
+  // read the claim row for this lead rather than trusting the optional prop.
+  const { data: fetchedClaim } = useClaim(lead.id);
+  const effectiveClaim = fetchedClaim ?? claim ?? null;
 
   const effectiveTarget = options.includes(target) ? target : (options[0] ?? "");
-  const missing = effectiveTarget ? missingRequirements(lead, claim, effectiveTarget) : [];
+  const missing = effectiveTarget ? missingRequirements(lead, effectiveClaim, effectiveTarget) : [];
   const targetTask = effectiveTarget ? TASK_BY_CODE[effectiveTarget] : undefined;
 
   if (!canEdit) return null;
@@ -52,7 +57,7 @@ export function AdvanceDialog({
   const submit = () => {
     if (!effectiveTarget) return;
     advance.mutate(
-      { lead, toTaskCode: effectiveTarget, reason: reason || undefined, isOverride: override },
+      { lead, claim: effectiveClaim, toTaskCode: effectiveTarget, reason: reason || undefined, isOverride: override },
       {
         onSuccess: () => {
           setOpen(false);
