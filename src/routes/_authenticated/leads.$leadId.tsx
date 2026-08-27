@@ -1009,6 +1009,12 @@ function LeadDetail() {
           {canViewFinance ? (
             <TabsContent value="billing" className="mt-4 space-y-4">
               <SectionCard title={`Invoices & payments — ${currency(collected)} of ${currency(invoiced)} collected`}>
+                {rcvAccess.allowed ? (
+                  <div className="mb-3">
+                    <RcvInvoiceDialog leadId={leadId} defaultCustomerId={lead.customer_id ?? null} />
+                  </div>
+                ) : null}
+
 
                 {canEdit ? (
                   <div className="grid gap-4 lg:grid-cols-2">
