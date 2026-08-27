@@ -38,7 +38,15 @@ export const runCrmTests = createServerFn({ method: "POST" })
         table: string,
         columns: string,
       ): Promise<T[]> => {
-        const { data, error } = await supabaseAdmin.from(table).select(columns).limit(5000);
+        const client = supabaseAdmin as unknown as {
+          from: (t: string) => {
+            select: (c: string) => {
+              limit: (n: number) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+            };
+          };
+        };
+        const { data, error } = await client.from(table).select(columns).limit(5000);
+
         if (error) throw new Error(`${table}: ${error.message}`);
         return (data ?? []) as T[];
       };
