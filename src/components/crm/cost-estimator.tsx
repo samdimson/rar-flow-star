@@ -135,6 +135,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
   const [prices, setPrices] = useState<Record<string, number>>(defaultPrices);
   const [saving, setSaving] = useState(false);
   const [savingPrices, setSavingPrices] = useState(false);
+  const [summaryMode, setSummaryMode] = useState(false);
 
   const { data: customers = [] } = useCustomers();
   const { data: properties = [] } = useProperties();
