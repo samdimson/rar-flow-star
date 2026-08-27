@@ -492,7 +492,9 @@ function LeadDetail() {
             {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
             <TabsTrigger value="commissions">Commissions</TabsTrigger>
             <TabsTrigger value="history">Status history</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <div className="hidden">
+              <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            </div>
           </TabsList>
 
           {/* Overview -------------------------------------------------- */}
