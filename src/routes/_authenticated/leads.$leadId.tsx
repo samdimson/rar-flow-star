@@ -719,8 +719,13 @@ function LeadDetail() {
             <PolicySummaryCard summary={claim?.policy_summary ?? null} />
           </TabsContent>
 
+          {/* Cost estimator ------------------------------------------ */}
+          <TabsContent value="cost-estimator" className="mt-4">
+            <CostEstimator leadId={leadId} />
+          </TabsContent>
 
           {/* Supplements --------------------------------------------- */}
+
           <TabsContent value="supplements" className="mt-4">
             <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
           </TabsContent>
