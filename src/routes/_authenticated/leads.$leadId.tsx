@@ -945,6 +945,15 @@ function LeadDetail() {
               </EditableSection>
             </SectionCard>
 
+            <IssueCoc
+              leadId={leadId}
+              canEdit={canEdit}
+              cocSignedAt={production?.coc_signed_at ?? null}
+              cocEmailedAt={
+                (production as { coc_emailed_at?: string | null } | null | undefined)?.coc_emailed_at ?? null
+              }
+            />
+
             <SectionCard title="Change orders">
               {canEdit ? (
                 <RecordForm
