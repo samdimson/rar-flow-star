@@ -195,7 +195,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
       return;
     }
     const q: Record<string, number> = {};
-    for (const line of estimateData.lines) q[line.item] = Number(line.quantity);
+    for (const line of estimateData.lines) q[line.item] = Math.round(Number(line.quantity) || 0);
     setQuantities(q);
   }, [estimateData]);
 
@@ -441,16 +441,18 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
                           <Input
                             type="number"
                             min={0}
-                            step={0.5}
+                            step={1}
                             className="h-8 w-24"
                             aria-label={`Quantity for ${item.desc}`}
                             value={qty === 0 ? "0" : String(qty)}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              const parsed = raw === "" ? 0 : parseInt(raw, 10);
                               setQuantities((prev) => ({
                                 ...prev,
-                                [item.desc]: Math.max(0, Number(e.target.value) || 0),
-                              }))
-                            }
+                                [item.desc]: Math.max(0, Number.isNaN(parsed) ? 0 : parsed),
+                              }));
+                            }}
                           />
                         </td>
                         <td className="px-3 py-2 text-xs">{item.unit}</td>
