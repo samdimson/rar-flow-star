@@ -12,7 +12,7 @@ import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
-import { EstimatorPanel } from "@/components/crm/estimator-panel";
+
 import { SECTIONS, LABOR_SECTIONS } from "@/components/crm/cost-estimator";
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { LeadCommissions } from "@/components/crm/lead-commissions";
@@ -28,7 +28,7 @@ import {
   useAppointments,
   useChangeOrders,
   useClaim,
-  useContracts,
+  
   useEstimates,
   useInvoices,
   useLead,
@@ -272,8 +272,8 @@ function LeadDetail() {
   const { data: notes = [] } = useNotes({ column: "lead_id", value: leadId });
   const { data: tasks = [] } = useTasks({ column: "lead_id", value: leadId });
   const { data: appointments = [] } = useAppointments({ column: "lead_id", value: leadId });
-  const { data: estimates = [] } = useEstimates({ column: "lead_id", value: leadId });
-  const { data: contracts = [] } = useContracts({ column: "lead_id", value: leadId });
+  // Kept: estimates query is still written to by the Materials Cost and Labor Cost summaries.
+  useEstimates({ column: "lead_id", value: leadId });
   const { data: invoices = [] } = useInvoices({ column: "lead_id", value: leadId });
   const { data: payments = [] } = usePayments({ column: "lead_id", value: leadId });
   const { data: changeOrders = [] } = useChangeOrders({ column: "lead_id", value: leadId });
