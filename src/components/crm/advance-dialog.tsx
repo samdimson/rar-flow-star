@@ -42,6 +42,7 @@ export function AdvanceDialog({
   const options = override ? WORKFLOW_TASKS.map((t) => t.code) : (current?.next ?? []);
   const [target, setTarget] = useState(options[0] ?? "");
   const [reason, setReason] = useState("");
+  const [confirmDenial, setConfirmDenial] = useState(false);
   const advance = useAdvanceLead();
   // Required-field checks for rcv_amount live on insurance_claims, so always
   // read the claim row for this lead rather than trusting the optional prop.
