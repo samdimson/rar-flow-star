@@ -622,7 +622,6 @@ export type Database = {
           adjuster_name: string | null
           adjuster_phone: string | null
           adjuster_report_received_at: string | null
-          appeal_status: string | null
           carrier: string | null
           claim_number: string | null
           created_at: string
@@ -638,8 +637,6 @@ export type Database = {
           policy_number: string | null
           rcv_amount: number | null
           reinspection_at: string | null
-          supplement_amount: number | null
-          supplement_status: string | null
           updated_at: string
         }
         Insert: {
@@ -649,7 +646,6 @@ export type Database = {
           adjuster_name?: string | null
           adjuster_phone?: string | null
           adjuster_report_received_at?: string | null
-          appeal_status?: string | null
           carrier?: string | null
           claim_number?: string | null
           created_at?: string
@@ -665,8 +661,6 @@ export type Database = {
           policy_number?: string | null
           rcv_amount?: number | null
           reinspection_at?: string | null
-          supplement_amount?: number | null
-          supplement_status?: string | null
           updated_at?: string
         }
         Update: {
@@ -676,7 +670,6 @@ export type Database = {
           adjuster_name?: string | null
           adjuster_phone?: string | null
           adjuster_report_received_at?: string | null
-          appeal_status?: string | null
           carrier?: string | null
           claim_number?: string | null
           created_at?: string
@@ -692,8 +685,6 @@ export type Database = {
           policy_number?: string | null
           rcv_amount?: number | null
           reinspection_at?: string | null
-          supplement_amount?: number | null
-          supplement_status?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1248,6 +1239,92 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      supplements: {
+        Row: {
+          adjuster_email: string | null
+          adjuster_name: string | null
+          adjuster_phone: string | null
+          appeal_outcome: string | null
+          appeal_submitted_at: string | null
+          approved_amount: number | null
+          carrier_response_at: string | null
+          code_upgrade_items: string | null
+          created_at: string
+          created_by: string | null
+          denial_reason: string | null
+          id: string
+          lead_id: string
+          line_items: string | null
+          notes: string | null
+          requested_amount: number | null
+          scope_description: string | null
+          status: string
+          submitted_at: string | null
+          supplement_number: number
+          supporting_docs_notes: string | null
+          updated_at: string
+          xactimate_line_codes: string | null
+        }
+        Insert: {
+          adjuster_email?: string | null
+          adjuster_name?: string | null
+          adjuster_phone?: string | null
+          appeal_outcome?: string | null
+          appeal_submitted_at?: string | null
+          approved_amount?: number | null
+          carrier_response_at?: string | null
+          code_upgrade_items?: string | null
+          created_at?: string
+          created_by?: string | null
+          denial_reason?: string | null
+          id?: string
+          lead_id: string
+          line_items?: string | null
+          notes?: string | null
+          requested_amount?: number | null
+          scope_description?: string | null
+          status?: string
+          submitted_at?: string | null
+          supplement_number?: number
+          supporting_docs_notes?: string | null
+          updated_at?: string
+          xactimate_line_codes?: string | null
+        }
+        Update: {
+          adjuster_email?: string | null
+          adjuster_name?: string | null
+          adjuster_phone?: string | null
+          appeal_outcome?: string | null
+          appeal_submitted_at?: string | null
+          approved_amount?: number | null
+          carrier_response_at?: string | null
+          code_upgrade_items?: string | null
+          created_at?: string
+          created_by?: string | null
+          denial_reason?: string | null
+          id?: string
+          lead_id?: string
+          line_items?: string | null
+          notes?: string | null
+          requested_amount?: number | null
+          scope_description?: string | null
+          status?: string
+          submitted_at?: string | null
+          supplement_number?: number
+          supporting_docs_notes?: string | null
+          updated_at?: string
+          xactimate_line_codes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplements_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
