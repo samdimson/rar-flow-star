@@ -195,7 +195,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
       return;
     }
     const q: Record<string, number> = {};
-    for (const line of estimateData.lines) q[line.item] = Number(line.quantity);
+    for (const line of estimateData.lines) q[line.item] = Math.round(Number(line.quantity) || 0);
     setQuantities(q);
   }, [estimateData]);
 
