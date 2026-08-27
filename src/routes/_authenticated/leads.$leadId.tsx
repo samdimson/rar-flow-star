@@ -915,6 +915,11 @@ function LeadDetail() {
             <MaterialsCostSummary leadId={leadId} />
           </TabsContent>
 
+          {/* Labor Cost ---------------------------------------------- */}
+          <TabsContent value="labor-cost" className="mt-4">
+            <LaborCostSummary leadId={leadId} />
+          </TabsContent>
+
           {/* Supplements --------------------------------------------- */}
 
           <TabsContent value="supplements" className="mt-4">
