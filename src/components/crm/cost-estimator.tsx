@@ -118,7 +118,9 @@ export const SECTIONS = [
   },
 ] as const;
 
-const ALL_ITEMS = SECTIONS.flatMap((s) => s.items);
+type MaterialItem = { cat: string; desc: string; unit: string; price: number };
+
+const ALL_ITEMS: MaterialItem[] = SECTIONS.flatMap((s) => s.items as readonly MaterialItem[]);
 
 const defaultPrices = (): Record<string, number> =>
   Object.fromEntries(ALL_ITEMS.map((i) => [i.desc, i.price]));
