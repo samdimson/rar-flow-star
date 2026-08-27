@@ -26,18 +26,23 @@ export const Route = createFileRoute("/_authenticated/cost-estimator")({
 
 function CostEstimatorPage() {
   const { leadId } = Route.useSearch();
+  const { allowed, loading } = useEstimatorAccess();
 
   return (
     <AppShell
       title="Materials Cost Estimator"
       subtitle="Wholesale material and labor rates — enter quantities to build a total"
     >
-      <CostEstimator
-        heading="Materials Cost Estimator"
-        sections={SECTIONS}
-        source="material"
-        {...(leadId ? { leadId } : {})}
-      />
+      {loading ? null : allowed ? (
+        <CostEstimator
+          heading="Materials Cost Estimator"
+          sections={SECTIONS}
+          source="material"
+          {...(leadId ? { leadId } : {})}
+        />
+      ) : (
+        <AccessDenied message="Only owners and managers can access the cost estimators." />
+      )}
     </AppShell>
   );
 }
