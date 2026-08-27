@@ -1577,6 +1577,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calc_lead_net_amount: {
+        Args: { _contract_amount: number; _lead_id: string }
+        Returns: number
+      }
       can_edit: { Args: never; Returns: boolean }
       can_manage: { Args: never; Returns: boolean }
       can_view_all_leads: { Args: never; Returns: boolean }
