@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { ArrowLeft, CheckCircle2, Clock, Plus } from "lucide-react";
@@ -13,8 +13,7 @@ import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
 import { EstimatorPanel } from "@/components/crm/estimator-panel";
-
-import { CostEstimator } from "@/components/crm/cost-estimator";
+import { SECTIONS } from "@/components/crm/cost-estimator";
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
@@ -22,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   useActivities,
   useAppointments,
@@ -41,7 +41,7 @@ import {
   syncAdjusterMeetingAppointment,
   syncTitledAppointment,
 } from "@/lib/crm/api";
-import { currency, dateTime, shortDate, titleCase } from "@/lib/crm/format";
+import { currency, currencyExact, dateTime, shortDate, titleCase } from "@/lib/crm/format";
 import {
   CARRIERS,
   APPOINTMENT_KINDS,
