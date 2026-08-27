@@ -57,7 +57,7 @@ export function AdvanceDialog({
   const submit = () => {
     if (!effectiveTarget) return;
     advance.mutate(
-      { lead, claim: effectiveClaim, toTaskCode: effectiveTarget, reason: reason || undefined, isOverride: override },
+      { lead, toTaskCode: effectiveTarget, reason: reason || undefined, isOverride: override },
       {
         onSuccess: () => {
           setOpen(false);
