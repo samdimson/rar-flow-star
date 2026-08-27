@@ -29,10 +29,12 @@ export function LeadCommissions({
   const total = payouts.reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
 
   return (
-    <SectionCard
-      title="Commissions"
-      description={`Net commission base: ${currencyExact(netAmount)} · Milestones triggered: ${payouts.length} of 3 · Total ${currencyExact(total)}`}
-    >
+    <SectionCard title="Commissions" contentClassName="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Net commission base: <span className="font-medium text-foreground">{currencyExact(netAmount)}</span> ·
+        Milestones triggered: <span className="font-medium text-foreground">{payouts.length} of 3</span> ·
+        Total <span className="font-medium text-foreground">{currencyExact(total)}</span>
+      </p>
       <MilestoneTable
         payouts={payouts}
         canManage={canManage}
