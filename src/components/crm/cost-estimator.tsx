@@ -343,7 +343,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
             <Button variant="outline" onClick={() => setSummaryMode(false)}>
               Edit estimate
             </Button>
-          ) : (
+          ) : !lockedToLead ? (
             <>
               <Button variant="outline" onClick={() => setQuantities({})}>
                 Reset all
@@ -359,7 +359,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
                 </Button>
               ) : null}
             </>
-          )}
+          ) : null}
         </div>
       </div>
 
