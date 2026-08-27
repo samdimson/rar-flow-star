@@ -118,12 +118,70 @@ export const SECTIONS = [
   },
 ] as const;
 
+export const LABOR_SECTIONS = [
+  {
+    label: "TEAR-OFF & DISPOSAL",
+    items: [
+      { cat: "Tear-off", desc: "Shingle tear-off — per SQ", unit: "SQ", price: 45.0 },
+      { cat: "Tear-off", desc: "Double layer tear-off — per SQ", unit: "SQ", price: 65.0 },
+      { cat: "Tear-off", desc: "Flat/low-slope tear-off — per SQ", unit: "SQ", price: 55.0 },
+      { cat: "Tear-off", desc: "Decking removal — per sheet", unit: "SH", price: 15.0 },
+      { cat: "Tear-off", desc: "Dumpster / haul-away (flat)", unit: "EA", price: 350.0 },
+    ],
+  },
+  {
+    label: "INSTALLATION — SHINGLES",
+    items: [
+      { cat: "Install", desc: "Architectural shingle install — per SQ", unit: "SQ", price: 85.0 },
+      { cat: "Install", desc: "3-tab shingle install — per SQ", unit: "SQ", price: 75.0 },
+      { cat: "Install", desc: "Hip & ridge cap install — per LF", unit: "LF", price: 3.5 },
+      { cat: "Install", desc: "Starter course install — per LF", unit: "LF", price: 2.0 },
+    ],
+  },
+  {
+    label: "DECKING & STRUCTURAL",
+    items: [
+      { cat: "Decking", desc: "OSB/plywood decking install — per sheet", unit: "SH", price: 80.0 },
+      { cat: "Decking", desc: "Fascia board replace — per LF", unit: "LF", price: 8.0 },
+      { cat: "Decking", desc: "Rafter/truss sister repair — per EA", unit: "EA", price: 150.0 },
+    ],
+  },
+  {
+    label: "UNDERLAYMENT & ICE SHIELD",
+    items: [
+      { cat: "Underlayment", desc: "Synthetic underlayment install — per SQ", unit: "SQ", price: 12.0 },
+      { cat: "Underlayment", desc: "Ice & water shield install — per SQ", unit: "SQ", price: 18.0 },
+    ],
+  },
+  {
+    label: "FLASHING & METAL WORK",
+    items: [
+      { cat: "Flashing", desc: "Drip edge install — per LF", unit: "LF", price: 2.5 },
+      { cat: "Flashing", desc: "Step flashing install — per LF", unit: "LF", price: 8.0 },
+      { cat: "Flashing", desc: "Valley metal install — per LF", unit: "LF", price: 9.0 },
+      { cat: "Flashing", desc: "Pipe boot install — per EA", unit: "EA", price: 45.0 },
+      { cat: "Flashing", desc: "Chimney flashing install — per EA", unit: "EA", price: 350.0 },
+    ],
+  },
+  {
+    label: "VENTILATION",
+    items: [
+      { cat: "Ventilation", desc: "Ridge vent install — per LF", unit: "LF", price: 9.0 },
+      { cat: "Ventilation", desc: "Turbine / louver vent install — per EA", unit: "EA", price: 65.0 },
+      { cat: "Ventilation", desc: "Power attic vent install — per EA", unit: "EA", price: 195.0 },
+    ],
+  },
+] as const;
+
 type MaterialItem = { cat: string; desc: string; unit: string; price: number };
 
-const ALL_ITEMS: MaterialItem[] = SECTIONS.flatMap((s) => s.items as readonly MaterialItem[]);
+const ALL_ITEMS: MaterialItem[] = [...SECTIONS, ...LABOR_SECTIONS].flatMap(
+  (s) => s.items as readonly MaterialItem[],
+);
 
 const defaultPrices = (): Record<string, number> =>
   Object.fromEntries(ALL_ITEMS.map((i) => [i.desc, i.price]));
+
 
 export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
   const { user, canManage, canEdit } = useAuth();
