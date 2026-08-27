@@ -15,6 +15,7 @@ import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy
 import { EstimatorPanel } from "@/components/crm/estimator-panel";
 import { SECTIONS, LABOR_SECTIONS } from "@/components/crm/cost-estimator";
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
+import { LeadCommissions } from "@/components/crm/lead-commissions";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
 import { Button } from "@/components/ui/button";
@@ -263,7 +264,7 @@ export const Route = createFileRoute("/_authenticated/leads/$leadId")({
 
 function LeadDetail() {
   const { leadId } = Route.useParams();
-  const { canEdit, canViewFinance, user } = useAuth();
+  const { canEdit, canViewFinance, canManage, user } = useAuth();
   const { data: lead, isLoading } = useLead(leadId);
   const { data: claim } = useClaim(leadId);
   const { data: production } = useProductionJob(leadId);
@@ -516,6 +517,7 @@ function LeadDetail() {
             <TabsTrigger value="labor-cost">Labor Cost</TabsTrigger>
             {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
             {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
+            <TabsTrigger value="commissions">Commissions</TabsTrigger>
             <TabsTrigger value="history">Status history</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
@@ -1205,6 +1207,17 @@ function LeadDetail() {
           <TabsContent value="documents" className="mt-4">
             <DocumentsPanel leadId={leadId} />
           </TabsContent>
+
+          {/* Commissions -------------------------------------------- */}
+          <TabsContent value="commissions" className="mt-4">
+            <LeadCommissions
+              leadId={leadId}
+              netAmount={lead.net_amount ?? null}
+              canManage={canManage}
+              visible={canManage || lead.assigned_rep_id === user?.id}
+            />
+          </TabsContent>
+
 
           {/* History ------------------------------------------------ */}
           <TabsContent value="history" className="mt-4">

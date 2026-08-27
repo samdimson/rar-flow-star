@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Percent,
   Settings,
   ShieldCheck,
   Users,
@@ -73,6 +74,7 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
     heading: "Management",
     items: [
       { to: "/reps", label: "Sales Reps", icon: Wrench },
+      { to: "/commissions", label: "Commissions", icon: Percent },
       { to: "/reports", label: "Reports", icon: Gauge },
       { to: "/settings", label: "Settings & Admin", icon: Settings, manage: true },
     ],
