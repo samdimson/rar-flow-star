@@ -742,8 +742,10 @@ function LeadDetail() {
                       name: "priority",
                       label: "Priority",
                       type: "select",
+                      defaultValue: "normal",
                       options: ["low", "normal", "high"].map((v) => ({ value: v, label: titleCase(v) })),
                     },
+
                     { name: "details", label: "Details", type: "textarea" },
                   ]}
                 />

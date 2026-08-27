@@ -208,7 +208,7 @@ function PipelineCard({
   const followUpDue =
     Boolean(lead.next_follow_up_at) &&
     lead.status === "open" &&
-    new Date(`${lead.next_follow_up_at}T23:59:59`).getTime() <= Date.now();
+    String(lead.next_follow_up_at).slice(0, 10) <= new Date().toISOString().slice(0, 10);
   return (
     <article
       draggable={canEdit}

@@ -20,6 +20,9 @@ export type FieldSpec = {
   required?: boolean;
   placeholder?: string;
   full?: boolean;
+  /** Value used when the record has no stored value for this field. */
+  defaultValue?: string | number | boolean;
+
   /** Excluded from the saved payload (used for UI-only helper inputs). */
   transient?: boolean;
   /** Render/validate this field only when the predicate passes. */
@@ -72,7 +75,14 @@ export function RecordForm<K extends keyof Tables>({
 }) {
   const upsert = useUpsert(table, label);
   const build = () =>
-    Object.fromEntries(fields.map((f) => [f.name, toInput(f, initial?.[f.name])])) as Values;
+    Object.fromEntries(
+      fields.map((f) => {
+        const stored = initial?.[f.name];
+        const source = stored === null || stored === undefined ? f.defaultValue : stored;
+        return [f.name, toInput(f, source)];
+      }),
+    ) as Values;
+
   const [values, setValues] = useState<Values>(build);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -106,12 +116,17 @@ export function RecordForm<K extends keyof Tables>({
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
     let payload: Values = { ...extra };
+    const isCreate = !initial?.["id"];
     for (const f of fields) {
       if (f.transient) continue;
-      payload[f.name] = fromInput(f, values[f.name]);
+      const next = fromInput(f, values[f.name]);
+      // On create, omit empty values so database column defaults apply.
+      if (isCreate && next === null) continue;
+      payload[f.name] = next;
     }
     if (transformPayload) payload = transformPayload(payload, values);
     if (initial?.["id"]) payload["id"] = initial["id"];
+
     upsert.mutate(payload, {
       onSuccess: (row) => {
         if (resetAfterSave) setValues(build());
