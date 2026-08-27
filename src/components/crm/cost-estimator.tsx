@@ -292,6 +292,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
       await queryClient.invalidateQueries({ queryKey: ["cost-estimator-estimate"] });
       await queryClient.invalidateQueries({ queryKey: ["estimates"] });
       await queryClient.invalidateQueries({ queryKey: ["estimate_line_items"] });
+      setSummaryMode(true);
       toast.success("Estimate saved");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not save estimate");
