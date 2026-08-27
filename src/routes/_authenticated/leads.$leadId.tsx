@@ -489,9 +489,8 @@ function LeadDetail() {
       }
     >
       <div className="space-y-5">
+        <StageProgress stageId={lead.stage_id} taskCode={lead.task_code} />
         <div className="flex flex-wrap items-center gap-2">
-          <StageBadge stageId={lead.stage_id} />
-          <TaskBadge code={lead.task_code} />
           <StatusBadge status={lead.status} />
           {lead.rescission_ends_at ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-chart-4/15 px-2.5 py-0.5 text-xs font-medium text-chart-4">
@@ -503,6 +502,7 @@ function LeadDetail() {
             <span className="text-xs text-muted-foreground">{task.description}</span>
           ) : null}
         </div>
+
 
         <Tabs defaultValue="overview">
           <TabsList className="flex h-auto w-full flex-wrap justify-start">
