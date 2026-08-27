@@ -144,6 +144,35 @@ function CommissionsPage() {
           </ul>
         </SectionCard>
 
+        <SectionCard title="Commission base breakdown">
+          <dl className="max-w-md space-y-1 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Contract Amount</dt>
+              <dd className="font-medium">{currencyExact(breakdown.contract)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Less Materials</dt>
+              <dd>−{currencyExact(breakdown.materials)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Less Labor</dt>
+              <dd>−{currencyExact(breakdown.labor)}</dd>
+            </div>
+            <div className="flex justify-between border-t border-border pt-1">
+              <dt className="text-muted-foreground">Gross after costs</dt>
+              <dd>{currencyExact(breakdown.gross)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Less Overhead (15%)</dt>
+              <dd>−{currencyExact(breakdown.overhead)}</dd>
+            </div>
+            <div className="flex justify-between border-t border-border pt-1 font-semibold">
+              <dt>Net (commission base)</dt>
+              <dd>{currencyExact(breakdown.net)}</dd>
+            </div>
+          </dl>
+        </SectionCard>
+
         <div className="grid gap-3 sm:grid-cols-3">
           <KpiCard label="Total pending" value={currencyExact(totals.pending)} />
           <KpiCard label="Total paid" value={currencyExact(totals.paid)} />
