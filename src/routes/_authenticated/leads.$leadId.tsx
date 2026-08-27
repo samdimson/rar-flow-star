@@ -472,8 +472,7 @@ function LeadDetail() {
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="production">Production</TabsTrigger>
-            <TabsTrigger value="cost-estimator">Materials Cost</TabsTrigger>
-            <TabsTrigger value="labor-cost">Labor Cost</TabsTrigger>
+            <TabsTrigger value="job-cost">Job Cost</TabsTrigger>
             
             {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
             <TabsTrigger value="commissions">Commissions</TabsTrigger>
