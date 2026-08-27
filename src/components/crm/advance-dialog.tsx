@@ -15,6 +15,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import {
   missingRequirements,
@@ -42,6 +52,7 @@ export function AdvanceDialog({
   const options = override ? WORKFLOW_TASKS.map((t) => t.code) : (current?.next ?? []);
   const [target, setTarget] = useState(options[0] ?? "");
   const [reason, setReason] = useState("");
+  const [confirmDenial, setConfirmDenial] = useState(false);
   const advance = useAdvanceLead();
   // Required-field checks for rcv_amount live on insurance_claims, so always
   // read the claim row for this lead rather than trusting the optional prop.
@@ -54,8 +65,15 @@ export function AdvanceDialog({
 
   if (!canEdit) return null;
 
+  const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5" && !override;
+
   const submit = () => {
     if (!effectiveTarget) return;
+    if (needsDenialConfirm && !confirmDenial) {
+      setConfirmDenial(true);
+      return;
+    }
+    setConfirmDenial(false);
     advance.mutate(
       { lead, toTaskCode: effectiveTarget, reason: reason || undefined, isOverride: override },
       {
@@ -177,6 +195,21 @@ export function AdvanceDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog open={confirmDenial} onOpenChange={setConfirmDenial}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This marks the claim as denied or underpaid. If the claim was approved, advance to 4.1 instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={submit}>Yes — claim was denied/underpaid</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
