@@ -312,6 +312,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
       quantity: qtyOf(item.desc),
       unit: item.unit,
       unit_price: priceOf(item.desc),
+      source: LABOR_DESCS.has(item.desc) ? "labor" : "material",
       sort_order: index,
     }));
 
@@ -382,6 +383,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
           quantity: l.quantity,
           unit: l.unit,
           unit_price: l.unit_price,
+          source: l.source,
           sort_order: l.sort_order,
         })),
       );
@@ -607,7 +609,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
 
       <div className="overflow-hidden rounded-lg border-2 border-border">
         <div className="flex items-center justify-between bg-yellow-200 px-3 py-3 font-bold text-yellow-950">
-          <span>Grand total (materials + labor)</span>
+          <span>Total Estimated Cost (Materials + Labor)</span>
           <span className="text-base">{currencyExact(grandTotal)}</span>
         </div>
       </div>
