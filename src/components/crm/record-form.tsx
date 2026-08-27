@@ -58,7 +58,7 @@ export function RecordForm<K extends keyof Tables>({
   initial?: Values | null | undefined;
   extra?: Values;
   submitLabel?: string;
-  onSaved?: () => void;
+  onSaved?: (row?: Values | null) => void;
   onCancel?: () => void;
   columns?: 1 | 2 | 3;
   className?: string;
