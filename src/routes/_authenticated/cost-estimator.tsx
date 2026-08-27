@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AppShell } from "@/components/app-shell";
+import { AccessDenied } from "@/components/crm/access-denied";
 import { CostEstimator, SECTIONS } from "@/components/crm/cost-estimator";
+import { useEstimatorAccess } from "@/lib/crm/access";
 
 const title = "Materials Cost Estimator — Rise Above Roofing Oklahoma CRM";
 const description =
