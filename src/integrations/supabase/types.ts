@@ -635,6 +635,7 @@ export type Database = {
           notes: string | null
           policy_details: string | null
           policy_number: string | null
+          policy_summary: Json | null
           rcv_amount: number | null
           reinspection_at: string | null
           updated_at: string
@@ -659,6 +660,7 @@ export type Database = {
           notes?: string | null
           policy_details?: string | null
           policy_number?: string | null
+          policy_summary?: Json | null
           rcv_amount?: number | null
           reinspection_at?: string | null
           updated_at?: string
@@ -683,6 +685,7 @@ export type Database = {
           notes?: string | null
           policy_details?: string | null
           policy_number?: string | null
+          policy_summary?: Json | null
           rcv_amount?: number | null
           reinspection_at?: string | null
           updated_at?: string

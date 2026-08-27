@@ -11,6 +11,8 @@ import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
+import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
+
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
@@ -661,8 +663,10 @@ function LeadDetail() {
           </TabsContent>
 
           {/* Insurance ----------------------------------------------- */}
-          <TabsContent value="insurance" className="mt-4">
+          <TabsContent value="insurance" className="mt-4 space-y-4">
+            <PolicyDocumentsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
             <SectionCard title="Insurance claim">
+
               <EditableSection
                 canEdit={canEdit}
                 form={(close) => (
@@ -709,7 +713,9 @@ function LeadDetail() {
                 </dl>
               </EditableSection>
             </SectionCard>
+            <PolicySummaryCard summary={claim?.policy_summary ?? null} />
           </TabsContent>
+
 
           {/* Supplements --------------------------------------------- */}
           <TabsContent value="supplements" className="mt-4">
