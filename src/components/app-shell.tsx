@@ -6,6 +6,7 @@ import {
   ClipboardList,
   Columns3,
   FileSignature,
+  FlaskConical,
   FolderOpen,
   Gauge,
   HardHat,
