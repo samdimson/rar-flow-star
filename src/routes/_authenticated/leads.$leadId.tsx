@@ -10,6 +10,7 @@ import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
 import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
+import { IssueCoc } from "@/components/crm/issue-coc";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
 
