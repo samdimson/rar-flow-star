@@ -335,19 +335,27 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
           {lastSaved ? (
             <span className="text-xs text-muted-foreground">Last saved {shortDate(lastSaved)}</span>
           ) : null}
-          <Button variant="outline" onClick={() => setQuantities({})}>
-            Reset all
-          </Button>
-          {canManage ? (
-            <Button variant="outline" onClick={savePrices} disabled={savingPrices}>
-              {savingPrices ? "Saving…" : "Save prices"}
+          {summaryMode ? (
+            <Button variant="outline" onClick={() => setSummaryMode(false)}>
+              Edit estimate
             </Button>
-          ) : null}
-          {canEdit ? (
-            <Button onClick={saveToEstimate} disabled={saving}>
-              {saving ? "Saving…" : "Save to estimate"}
-            </Button>
-          ) : null}
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => setQuantities({})}>
+                Reset all
+              </Button>
+              {canManage ? (
+                <Button variant="outline" onClick={savePrices} disabled={savingPrices}>
+                  {savingPrices ? "Saving…" : "Save prices"}
+                </Button>
+              ) : null}
+              {canEdit ? (
+                <Button onClick={saveToEstimate} disabled={saving}>
+                  {saving ? "Saving…" : "Save to estimate"}
+                </Button>
+              ) : null}
+            </>
+          )}
         </div>
       </div>
 
