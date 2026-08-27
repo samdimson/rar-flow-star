@@ -471,7 +471,11 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
         );
         return (
           <section key={heading} className="space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">{heading}</h2>
+            {heading === "Labor Cost Estimator" ? (
+              <div className="mt-6 border-t-4 border-primary pt-4" aria-hidden="true" />
+            ) : null}
+            <h2 className="text-base font-bold uppercase tracking-wide text-foreground">{heading}</h2>
+
             <div className="overflow-x-auto rounded-lg border border-border bg-card">
               {summaryMode ? (
                 <table className="w-full min-w-[600px] text-sm">
