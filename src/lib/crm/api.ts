@@ -28,6 +28,7 @@ export type PaymentRow = Tables["payments"]["Row"];
 export type ProfileRow = Tables["profiles"]["Row"];
 export type CommissionRow = Tables["commissions"]["Row"];
 export type ChangeOrderRow = Tables["change_orders"]["Row"];
+export type SupplementRow = Tables["supplements"]["Row"];
 
 export type LeadWithRelations = LeadRow & {
   customer: CustomerRow | null;
