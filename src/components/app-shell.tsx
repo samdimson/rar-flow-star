@@ -77,7 +77,23 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
       { to: "/settings", label: "Settings & Admin", icon: Settings, manage: true },
     ],
   },
+  ...(import.meta.env.DEV
+    ? [
+        {
+          heading: "Developer",
+          items: [
+            {
+              to: "/dev/test-runner",
+              label: "Test Runner",
+              icon: FlaskConical,
+              manage: true,
+            } as NavItem,
+          ],
+        },
+      ]
+    : []),
 ];
+
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const { canViewFinance, canManage } = useAuth();
