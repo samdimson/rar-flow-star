@@ -69,7 +69,7 @@ function JobCostPanel({ leadId }: { leadId: string }) {
     queryFn: async () => {
       const { data: estimate, error } = await supabase
         .from("estimates")
-        .select("id, updated_at")
+        .select("id, updated_at, labor_type, labor_squares")
         .eq("lead_id", leadId)
         .order("updated_at", { ascending: false })
         .limit(1)
