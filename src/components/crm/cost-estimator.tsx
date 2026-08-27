@@ -156,22 +156,56 @@ export const LABOR_SECTIONS = [
   {
     label: "FLASHING & METAL WORK",
     items: [
-      { cat: "Flashing", desc: "Drip edge install — per LF", unit: "LF", price: 2.5 },
-      { cat: "Flashing", desc: "Step flashing install — per LF", unit: "LF", price: 8.0 },
-      { cat: "Flashing", desc: "Valley metal install — per LF", unit: "LF", price: 9.0 },
-      { cat: "Flashing", desc: "Pipe boot install — per EA", unit: "EA", price: 45.0 },
-      { cat: "Flashing", desc: "Chimney flashing install — per EA", unit: "EA", price: 350.0 },
+      { cat: "Flashing", desc: "Drip edge install — per LF", unit: "LF", price: 3.0 },
+      { cat: "Flashing", desc: "Step flashing — per LF", unit: "LF", price: 8.0 },
+      { cat: "Flashing", desc: "Valley flashing — per LF", unit: "LF", price: 10.0 },
+      { cat: "Flashing", desc: "Pipe boot/flashing — per EA", unit: "EA", price: 45.0 },
+      { cat: "Flashing", desc: "Chimney re-flash — per EA", unit: "EA", price: 250.0 },
+      { cat: "Flashing", desc: "Skylight re-flash — per EA", unit: "EA", price: 200.0 },
+      { cat: "Flashing", desc: "Wall/headwall flashing — per LF", unit: "LF", price: 12.0 },
     ],
   },
   {
     label: "VENTILATION",
     items: [
-      { cat: "Ventilation", desc: "Ridge vent install — per LF", unit: "LF", price: 9.0 },
-      { cat: "Ventilation", desc: "Turbine / louver vent install — per EA", unit: "EA", price: 65.0 },
-      { cat: "Ventilation", desc: "Power attic vent install — per EA", unit: "EA", price: 195.0 },
+      { cat: "Ventilation", desc: "Ridge vent install — per LF", unit: "LF", price: 5.0 },
+      { cat: "Ventilation", desc: "Turbine vent install — per EA", unit: "EA", price: 75.0 },
+      { cat: "Ventilation", desc: "Box/louver vent install — per EA", unit: "EA", price: 65.0 },
+      { cat: "Ventilation", desc: "Soffit vent install — per EA", unit: "EA", price: 25.0 },
+      { cat: "Ventilation", desc: "Power attic vent install — per EA", unit: "EA", price: 150.0 },
+    ],
+  },
+  {
+    label: "GUTTERS & DOWNSPOUTS",
+    items: [
+      { cat: "Gutters", desc: "K-style gutter install — per LF", unit: "LF", price: 8.0 },
+      { cat: "Gutters", desc: "Downspout install — per LF", unit: "LF", price: 6.0 },
+      { cat: "Gutters", desc: "Gutter guard install — per LF", unit: "LF", price: 4.0 },
+      { cat: "Gutters", desc: "Gutter removal — per LF", unit: "LF", price: 2.5 },
+    ],
+  },
+  {
+    label: "PERMITS & INSPECTIONS",
+    items: [
+      { cat: "Permits", desc: "Building permit (flat estimate)", unit: "EA", price: 250.0 },
+      { cat: "Permits", desc: "Final inspection coordination", unit: "EA", price: 100.0 },
+    ],
+  },
+  {
+    label: "MISCELLANEOUS LABOR",
+    items: [
+      { cat: "Misc", desc: "Crew mobilization / setup (flat)", unit: "EA", price: 200.0 },
+      { cat: "Misc", desc: "General laborer — per hour", unit: "HR", price: 45.0 },
+      { cat: "Misc", desc: "Cleanup & magnetic nail sweep", unit: "EA", price: 150.0 },
+      { cat: "Misc", desc: "Satellite dish/solar panel work-around", unit: "EA", price: 125.0 },
     ],
   },
 ] as const;
+
+const LABOR_DESCS = new Set<string>(
+  LABOR_SECTIONS.flatMap((s) => s.items.map((i) => i.desc as string)),
+);
+
 
 type MaterialItem = { cat: string; desc: string; unit: string; price: number };
 type EstimatorSection = { label: string; items: MaterialItem[] };
@@ -278,6 +312,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
       quantity: qtyOf(item.desc),
       unit: item.unit,
       unit_price: priceOf(item.desc),
+      source: LABOR_DESCS.has(item.desc) ? "labor" : "material",
       sort_order: index,
     }));
 
@@ -348,6 +383,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
           quantity: l.quantity,
           unit: l.unit,
           unit_price: l.unit_price,
+          source: l.source,
           sort_order: l.sort_order,
         })),
       );
@@ -435,7 +471,11 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
         );
         return (
           <section key={heading} className="space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">{heading}</h2>
+            {heading === "Labor Cost Estimator" ? (
+              <div className="mt-6 border-t-4 border-primary pt-4" aria-hidden="true" />
+            ) : null}
+            <h2 className="text-base font-bold uppercase tracking-wide text-foreground">{heading}</h2>
+
             <div className="overflow-x-auto rounded-lg border border-border bg-card">
               {summaryMode ? (
                 <table className="w-full min-w-[600px] text-sm">
@@ -573,7 +613,7 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
 
       <div className="overflow-hidden rounded-lg border-2 border-border">
         <div className="flex items-center justify-between bg-yellow-200 px-3 py-3 font-bold text-yellow-950">
-          <span>Grand total (materials + labor)</span>
+          <span>Total Estimated Cost (Materials + Labor)</span>
           <span className="text-base">{currencyExact(grandTotal)}</span>
         </div>
       </div>

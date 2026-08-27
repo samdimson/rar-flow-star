@@ -572,6 +572,7 @@ export type Database = {
           item: string
           quantity: number
           sort_order: number
+          source: string
           total: number | null
           unit: string | null
           unit_price: number
@@ -584,6 +585,7 @@ export type Database = {
           item: string
           quantity?: number
           sort_order?: number
+          source?: string
           total?: number | null
           unit?: string | null
           unit_price?: number
@@ -596,6 +598,7 @@ export type Database = {
           item?: string
           quantity?: number
           sort_order?: number
+          source?: string
           total?: number | null
           unit?: string | null
           unit_price?: number
