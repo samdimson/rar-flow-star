@@ -711,7 +711,9 @@ function LeadDetail() {
                 </dl>
               </EditableSection>
             </SectionCard>
+            <PolicySummaryCard summary={claim?.policy_summary ?? null} />
           </TabsContent>
+
 
           {/* Supplements --------------------------------------------- */}
           <TabsContent value="supplements" className="mt-4">
