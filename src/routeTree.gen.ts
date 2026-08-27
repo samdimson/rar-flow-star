@@ -21,6 +21,7 @@ import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedEstimatesRouteImport } from './routes/_authenticated/estimates'
 import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticated/invoices'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
+import { Route as AuthenticatedLaborEstimatorRouteImport } from './routes/_authenticated/labor-estimator'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
 import { Route as AuthenticatedProductionRouteImport } from './routes/_authenticated/production'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -90,6 +91,12 @@ const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
   path: '/jobs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLaborEstimatorRoute =
+  AuthenticatedLaborEstimatorRouteImport.update({
+    id: '/labor-estimator',
+    path: '/labor-estimator',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
   id: '/pipeline',
   path: '/pipeline',
@@ -144,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/estimates': typeof AuthenticatedEstimatesRoute
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/jobs': typeof AuthenticatedJobsRoute
+  '/labor-estimator': typeof AuthenticatedLaborEstimatorRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/production': typeof AuthenticatedProductionRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -164,6 +172,7 @@ export interface FileRoutesByTo {
   '/estimates': typeof AuthenticatedEstimatesRoute
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/jobs': typeof AuthenticatedJobsRoute
+  '/labor-estimator': typeof AuthenticatedLaborEstimatorRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/production': typeof AuthenticatedProductionRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -187,6 +196,7 @@ export interface FileRoutesById {
   '/_authenticated/estimates': typeof AuthenticatedEstimatesRoute
   '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
+  '/_authenticated/labor-estimator': typeof AuthenticatedLaborEstimatorRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/production': typeof AuthenticatedProductionRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/estimates'
     | '/invoices'
     | '/jobs'
+    | '/labor-estimator'
     | '/pipeline'
     | '/production'
     | '/reports'
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/estimates'
     | '/invoices'
     | '/jobs'
+    | '/labor-estimator'
     | '/pipeline'
     | '/production'
     | '/reports'
@@ -253,6 +265,7 @@ export interface FileRouteTypes {
     | '/_authenticated/estimates'
     | '/_authenticated/invoices'
     | '/_authenticated/jobs'
+    | '/_authenticated/labor-estimator'
     | '/_authenticated/pipeline'
     | '/_authenticated/production'
     | '/_authenticated/reports'
@@ -355,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/labor-estimator': {
+      id: '/_authenticated/labor-estimator'
+      path: '/labor-estimator'
+      fullPath: '/labor-estimator'
+      preLoaderRoute: typeof AuthenticatedLaborEstimatorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pipeline': {
       id: '/_authenticated/pipeline'
       path: '/pipeline'
@@ -424,6 +444,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEstimatesRoute: typeof AuthenticatedEstimatesRoute
   AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
+  AuthenticatedLaborEstimatorRoute: typeof AuthenticatedLaborEstimatorRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedProductionRoute: typeof AuthenticatedProductionRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -445,6 +466,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEstimatesRoute: AuthenticatedEstimatesRoute,
   AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
+  AuthenticatedLaborEstimatorRoute: AuthenticatedLaborEstimatorRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedProductionRoute: AuthenticatedProductionRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
