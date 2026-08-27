@@ -63,6 +63,17 @@ function CommissionsPage() {
     return { pending: sum("pending"), paid: sum("paid"), clawback: sum("clawback") };
   }, [payouts]);
 
+  const jobLeadIds = useMemo(() => jobs.map((j) => j.leadId), [jobs]);
+  const { data: costs } = useLeadCostBreakdown(jobLeadIds);
+  const breakdown = useMemo(() => {
+    const contract = jobs.reduce((acc, j) => acc + Number(j.contractAmount ?? 0), 0);
+    const materials = Number(costs?.materials ?? 0);
+    const labor = Number(costs?.labor ?? 0);
+    const gross = contract - materials - labor;
+    const overhead = Number((gross * 0.15).toFixed(2));
+    return { contract, materials, labor, gross, overhead, net: Number((gross - overhead).toFixed(2)) };
+  }, [jobs, costs]);
+
   if (loading) {
     return (
       <AppShell title="Commissions">
