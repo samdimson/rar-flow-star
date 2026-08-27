@@ -1,0 +1,416 @@
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Download, FileText, Loader2, Mail } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { currencyExact, shortDate, todayIso } from "@/lib/crm/format";
+import { generateRcvInvoice, emailRcvInvoice } from "@/lib/crm/rcv-invoice.functions";
+import { roofTypeLabel } from "@/lib/crm/workflow";
+
+type Form = {
+  invoiceNumber: string;
+  invoiceDate: string;
+  claimNumber: string;
+  policyNumber: string;
+  carrier: string;
+  typeOfLoss: string;
+  workCompleted: string;
+  billToName: string;
+  billToAddress: string;
+  billToPhone: string;
+  billToEmail: string;
+  scope: string;
+  rcv: string;
+  deductible: string;
+  payment1: string;
+  payment2: string;
+  paymentsReceived: string;
+};
+
+const EMPTY: Form = {
+  invoiceNumber: "",
+  invoiceDate: todayIso(),
+  claimNumber: "",
+  policyNumber: "",
+  carrier: "",
+  typeOfLoss: "Windstorm and Hail",
+  workCompleted: "",
+  billToName: "",
+  billToAddress: "",
+  billToPhone: "",
+  billToEmail: "",
+  scope: "",
+  rcv: "0",
+  deductible: "0",
+  payment1: "0",
+  payment2: "0",
+  paymentsReceived: "0",
+};
+
+const num = (value: string) => {
+  const n = Number(String(value).replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+};
+
+const addressOf = (property: { address_line1: string; city: string; state: string; postal_code: string } | null) =>
+  property ? `${property.address_line1}, ${property.city}, ${property.state} ${property.postal_code}` : "";
+
+function buildScope(roofType: string | null, adjusterReportDate: string | null) {
+  const shingles = roofType ? roofTypeLabel(roofType) : "architectural";
+  const dated = adjusterReportDate ? shortDate(adjusterReportDate) : "on file";
+  return (
+    `Complete tear-off of existing shingles; ${shingles} shingles; ice & water membrane and underlayment dry-in; ` +
+    `ridge vent, flashings & penetrations; 6-nail high-wind fastening pattern; cleanup, haul-off & magnetic nail sweep; ` +
+    `final inspection with photo documentation. Includes all approved roofing, elevation and general items per ` +
+    `adjuster estimate dated ${dated}.`
+  );
+}
+
+export function RcvInvoiceDialog({
+  leadId,
+  defaultCustomerId,
+}: {
+  leadId: string;
+  defaultCustomerId: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const [customerId, setCustomerId] = useState<string | null>(defaultCustomerId);
+  const [targetLeadId, setTargetLeadId] = useState(leadId);
+  const [form, setForm] = useState<Form>(EMPTY);
+  const [busy, setBusy] = useState(false);
+  const [emailing, setEmailing] = useState(false);
+  const [result, setResult] = useState<{ downloadUrl: string | null } | null>(null);
+  const [propertyAddress, setPropertyAddress] = useState("");
+
+  const generate = useServerFn(generateRcvInvoice);
+  const sendEmail = useServerFn(emailRcvInvoice);
+  const queryClient = useQueryClient();
+
+  const { data: customers = [] } = useQuery({
+    queryKey: ["rcv-customers"],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("customers")
+        .select("id, first_name, last_name, phone, email, property:properties(*)")
+        .order("last_name", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: loaded } = useQuery({
+    queryKey: ["rcv-customer-context", customerId],
+    enabled: open && !!customerId,
+    queryFn: async () => {
+      const { data: leads, error } = await supabase
+        .from("leads")
+        .select("id, lead_number, customer_id, property:properties(*), customer:customers(*)")
+        .eq("customer_id", customerId!)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      const lead = leads?.[0] ?? null;
+      if (!lead) return { lead: null, claim: null, job: null, paid: 0, nextNumber: null };
+
+      const [{ data: claim }, { data: job }, { data: payments }, { data: invoices }] = await Promise.all([
+        supabase
+          .from("insurance_claims")
+          .select("*")
+          .eq("lead_id", lead.id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("production_jobs")
+          .select("qc_passed_at, coc_signed_at")
+          .eq("lead_id", lead.id)
+          .limit(1)
+          .maybeSingle(),
+        supabase.from("payments").select("amount").eq("lead_id", lead.id),
+        supabase
+          .from("invoices")
+          .select("invoice_number")
+          .like("invoice_number", `RAR-${new Date().getFullYear()}-%`)
+          .order("invoice_number", { ascending: false })
+          .limit(1),
+      ]);
+
+      const last = invoices?.[0]?.invoice_number ?? null;
+      const seq = last ? Number(last.split("-").pop()) + 1 : 1;
+      const nextNumber = `RAR-${new Date().getFullYear()}-${String(Number.isFinite(seq) ? seq : 1).padStart(4, "0")}`;
+
+      return {
+        lead,
+        claim,
+        job,
+        paid: (payments ?? []).reduce((s, p) => s + Number(p.amount), 0),
+        nextNumber,
+      };
+    },
+  });
+
+  useEffect(() => {
+    if (!loaded?.lead) return;
+    const lead = loaded.lead;
+    const claim = loaded.claim as Record<string, unknown> | null;
+    const job = loaded.job as Record<string, string | null> | null;
+    const property = (lead.property ?? null) as never;
+    const address = addressOf(property);
+    setTargetLeadId(lead.id);
+    setPropertyAddress(address);
+    setResult(null);
+    setForm({
+      invoiceNumber: loaded.nextNumber ?? "",
+      invoiceDate: todayIso(),
+      claimNumber: String(claim?.["claim_number"] ?? ""),
+      policyNumber: String(claim?.["policy_number"] ?? ""),
+      carrier: String(claim?.["carrier"] ?? ""),
+      typeOfLoss: "Windstorm and Hail",
+      workCompleted: (job?.qc_passed_at ?? job?.coc_signed_at ?? "")?.slice(0, 10) ?? "",
+      billToName: `${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim(),
+      billToAddress: address,
+      billToPhone: lead.customer?.phone ?? "",
+      billToEmail: lead.customer?.email ?? "",
+      scope: buildScope(
+        (property as { roof_type?: string | null } | null)?.roof_type ?? null,
+        (claim?.["adjuster_report_received_at"] as string | null) ?? null,
+      ),
+      rcv: String(Number(claim?.["rcv_amount"] ?? 0)),
+      deductible: String(Number(claim?.["deductible"] ?? 0)),
+      payment1: String(Number(claim?.["acv_amount"] ?? 0)),
+      payment2: String(Number(claim?.["depreciation_amount"] ?? 0)),
+      paymentsReceived: String(loaded.paid ?? 0),
+    });
+  }, [loaded]);
+
+  const totals = useMemo(() => {
+    const proceeds = num(form.rcv) - Math.abs(num(form.deductible));
+    const invoiceTotal = num(form.payment1) + num(form.payment2);
+    return { proceeds, invoiceTotal, balance: invoiceTotal - num(form.paymentsReceived) };
+  }, [form]);
+
+  const set = (key: keyof Form) => (value: string) => setForm((f) => ({ ...f, [key]: value }));
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      const res = await generate({
+        data: {
+          leadId: targetLeadId,
+          customerId,
+          invoiceNumber: form.invoiceNumber,
+          invoiceDate: form.invoiceDate || todayIso(),
+          claimNumber: form.claimNumber || null,
+          policyNumber: form.policyNumber || null,
+          carrier: form.carrier || null,
+          typeOfLoss: form.typeOfLoss,
+          workCompleted: form.workCompleted || null,
+          billToName: form.billToName,
+          billToAddress: form.billToAddress,
+          billToPhone: form.billToPhone || null,
+          billToEmail: form.billToEmail || null,
+          propertyAddress: propertyAddress || form.billToAddress,
+          scope: form.scope,
+          rcv: num(form.rcv),
+          deductible: num(form.deductible),
+          payment1: num(form.payment1),
+          payment2: num(form.payment2),
+          paymentsReceived: num(form.paymentsReceived),
+          origin: window.location.origin,
+        },
+      });
+      setResult({ downloadUrl: res.downloadUrl });
+      await queryClient.invalidateQueries();
+      toast.success("RCV invoice generated");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not generate the invoice");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const email = async () => {
+    if (!form.billToEmail) {
+      toast.error("This customer has no email address");
+      return;
+    }
+    setEmailing(true);
+    try {
+      await sendEmail({
+        data: {
+          leadId: targetLeadId,
+          invoiceNumber: form.invoiceNumber,
+          customerEmail: form.billToEmail,
+          propertyAddress: propertyAddress || form.billToAddress,
+        },
+      });
+      await queryClient.invalidateQueries();
+      toast.success(`Invoice emailed to ${form.billToEmail}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send the invoice");
+    } finally {
+      setEmailing(false);
+    }
+  };
+
+  const money = (n: number) => currencyExact(n);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <FileText className="size-4" aria-hidden="true" /> Generate RCV Invoice
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Generate RCV Invoice</DialogTitle>
+          <DialogDescription>
+            Select the customer, review the insurance figures, then generate the PDF invoice.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Customer</Label>
+            <Select value={customerId ?? undefined} onValueChange={setCustomerId}>
+              <SelectTrigger aria-label="Customer">
+                <SelectValue placeholder="Select a customer" />
+              </SelectTrigger>
+              <SelectContent>
+                {customers.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.first_name} {c.last_name}
+                    {addressOf(c.property as never) ? ` — ${addressOf(c.property as never)}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                ["invoiceNumber", "Invoice #"],
+                ["invoiceDate", "Invoice date"],
+                ["claimNumber", "Claim #"],
+                ["policyNumber", "Policy #"],
+                ["carrier", "Carrier"],
+                ["typeOfLoss", "Type of loss"],
+                ["workCompleted", "Work completed"],
+                ["billToName", "Bill to — name"],
+                ["billToPhone", "Bill to — phone"],
+                ["billToEmail", "Bill to — email"],
+              ] as [keyof Form, string][]
+            ).map(([key, label]) => (
+              <div key={key} className="space-y-1.5">
+                <Label htmlFor={`rcv-${key}`}>{label}</Label>
+                <Input
+                  id={`rcv-${key}`}
+                  type={key === "invoiceDate" || key === "workCompleted" ? "date" : "text"}
+                  value={form[key]}
+                  onChange={(e) => set(key)(e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="rcv-address">Bill to — property address</Label>
+            <Input id="rcv-address" value={form.billToAddress} onChange={(e) => set("billToAddress")(e.target.value)} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="rcv-scope">Scope description</Label>
+            <Textarea id="rcv-scope" rows={5} value={form.scope} onChange={(e) => set("scope")(e.target.value)} />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                ["rcv", "RCV ($)"],
+                ["deductible", "Deductible ($, shown as negative)"],
+                ["payment1", "Payment 1 — Initial ACV ($)"],
+                ["payment2", "Payment 2 — Recoverable depreciation ($)"],
+                ["paymentsReceived", "Payments received ($)"],
+              ] as [keyof Form, string][]
+            ).map(([key, label]) => (
+              <div key={key} className="space-y-1.5">
+                <Label htmlFor={`rcv-${key}`}>{label}</Label>
+                <Input
+                  id={`rcv-${key}`}
+                  type="number"
+                  step="0.01"
+                  value={form[key]}
+                  onChange={(e) => set(key)(e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+
+          <dl className="rounded-lg border border-border p-3 text-sm">
+            <div className="flex justify-between py-1">
+              <dt>Total insurance proceeds (RCV − deductible)</dt>
+              <dd className="font-medium">{money(totals.proceeds)}</dd>
+            </div>
+            <div className="flex justify-between py-1">
+              <dt>Invoice total (Payment 1 + Payment 2)</dt>
+              <dd className="font-medium">{money(totals.invoiceTotal)}</dd>
+            </div>
+            <div className="flex justify-between py-1">
+              <dt className="font-semibold">Balance due</dt>
+              <dd className="font-semibold text-orange-500">{money(totals.balance)}</dd>
+            </div>
+          </dl>
+
+          {result ? (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/40 p-3">
+              {result.downloadUrl ? (
+                <Button asChild variant="outline" size="sm">
+                  <a href={result.downloadUrl} target="_blank" rel="noopener noreferrer">
+                    <Download className="size-4" aria-hidden="true" /> Download PDF
+                  </a>
+                </Button>
+              ) : null}
+              <Button size="sm" onClick={() => void email()} disabled={emailing}>
+                {emailing ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Mail className="size-4" aria-hidden="true" />
+                )}
+                Email to customer
+              </Button>
+            </div>
+          ) : null}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Close
+          </Button>
+          <Button onClick={() => void submit()} disabled={busy || !customerId}>
+            {busy ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
+            {busy ? "Generating…" : "Generate PDF"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
