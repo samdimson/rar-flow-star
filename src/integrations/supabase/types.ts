@@ -564,6 +564,53 @@ export type Database = {
           },
         ]
       }
+      estimate_line_items: {
+        Row: {
+          created_at: string
+          estimate_id: string
+          id: string
+          item: string
+          quantity: number
+          sort_order: number
+          total: number | null
+          unit: string | null
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estimate_id: string
+          id?: string
+          item: string
+          quantity?: number
+          sort_order?: number
+          total?: number | null
+          unit?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          item?: string
+          quantity?: number
+          sort_order?: number
+          total?: number | null
+          unit?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_line_items_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimates: {
         Row: {
           created_at: string

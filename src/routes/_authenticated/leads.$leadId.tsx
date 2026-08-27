@@ -12,6 +12,7 @@ import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
+import { EstimatorPanel } from "@/components/crm/estimator-panel";
 
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -321,6 +322,7 @@ function LeadDetail() {
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
             <TabsTrigger value="supplements">Supplements</TabsTrigger>
             {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
+            {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
             <TabsTrigger value="production">Production</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="history">Status history</TabsTrigger>
@@ -756,18 +758,29 @@ function LeadDetail() {
                 {estimates.length === 0 ? (
                   <p className="mt-3 text-sm text-muted-foreground">No estimates yet.</p>
                 ) : (
-                  <ul className="mt-3 divide-y divide-border">
+                  <div className="mt-3 space-y-3">
                     {estimates.map((e) => (
-                      <li key={e.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                        <span>
-                          {e.estimate_number || "Estimate"} · {titleCase(e.source)} · {titleCase(e.status)}
-                          {e.scope_gap_amount ? ` · gap ${currency(e.scope_gap_amount)}` : ""}
-                        </span>
-                        <span className="font-medium">{currency(e.total_amount)}</span>
-                      </li>
+                      <div key={e.id} className="rounded-lg border border-border p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                          <span>
+                            {e.estimate_number || "Estimate"} · {titleCase(e.source)} · {titleCase(e.status)}
+                            {e.scope_gap_amount ? ` · gap ${currency(e.scope_gap_amount)}` : ""}
+                          </span>
+                          <span className="font-medium">{currency(e.total_amount)}</span>
+                        </div>
+                        <details className="mt-2">
+                          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Estimator calculator
+                          </summary>
+                          <div className="mt-3">
+                            <EstimatorPanel estimateId={e.id} canEdit={canEdit} />
+                          </div>
+                        </details>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 )}
+
               </SectionCard>
 
               <SectionCard title="Contract">
@@ -811,8 +824,14 @@ function LeadDetail() {
                   )}
                 </EditableSection>
               </SectionCard>
+            </TabsContent>
+          ) : null}
 
+          {/* Invoices & Payments ------------------------------------- */}
+          {canViewFinance ? (
+            <TabsContent value="billing" className="mt-4 space-y-4">
               <SectionCard title={`Invoices & payments — ${currency(collected)} of ${currency(invoiced)} collected`}>
+
                 {canEdit ? (
                   <div className="grid gap-4 lg:grid-cols-2">
                     <RecordForm
