@@ -118,7 +118,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
         if (!items.length) return null;
         return (
           <div key={group.heading}>
-            <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-orange-400">
               {group.heading}
             </p>
             <div className="flex flex-col gap-0.5">
@@ -128,7 +128,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                   to={to}
                   onClick={onNavigate}
                   activeOptions={{ exact: to === "/" }}
-                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-accent/20 hover:text-sidebar-foreground"
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/20 hover:text-white"
                   activeProps={{
                     className: "bg-accent text-white font-semibold hover:bg-accent",
                   }}
