@@ -202,23 +202,28 @@ export const LABOR_SECTIONS = [
   },
 ] as const;
 
-const LABOR_DESCS = new Set<string>(
-  LABOR_SECTIONS.flatMap((s) => s.items.map((i) => i.desc as string)),
-);
-
-
 type MaterialItem = { cat: string; desc: string; unit: string; price: number };
-type EstimatorSection = { label: string; items: MaterialItem[] };
+export type EstimatorSection = { label: string; items: readonly MaterialItem[] };
 
-const ALL_ITEMS: MaterialItem[] = [...SECTIONS, ...LABOR_SECTIONS].flatMap(
-  (s) => s.items as readonly MaterialItem[],
-);
-
-const defaultPrices = (): Record<string, number> =>
-  Object.fromEntries(ALL_ITEMS.map((i) => [i.desc, i.price]));
+const defaultPrices = (items: MaterialItem[]): Record<string, number> =>
+  Object.fromEntries(items.map((i) => [i.desc, i.price]));
 
 
-export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
+export function CostEstimator({
+  leadId: fixedLeadId,
+  heading,
+  sections,
+  source,
+}: {
+  leadId?: string;
+  heading: string;
+  sections: EstimatorSection[];
+  source: "material" | "labor";
+}) {
+  const ALL_ITEMS: MaterialItem[] = useMemo(
+    () => sections.flatMap((s) => s.items as readonly MaterialItem[]),
+    [sections],
+  );
   const { user, canManage, canEdit } = useAuth();
   const queryClient = useQueryClient();
   const lockedToLead = !!fixedLeadId;
