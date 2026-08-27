@@ -63,11 +63,11 @@ export function useRepCommission(repId: string | null) {
   });
 }
 
-export function useMilestonePayouts(opts: { repId?: string | null; leadId?: string | null }) {
-  const { repId = null, leadId = null } = opts;
+export function useMilestonePayouts(opts: { repId?: string | null; leadId?: string | null; allReps?: boolean }) {
+  const { repId = null, leadId = null, allReps = false } = opts;
   return useQuery({
-    queryKey: ["milestone-payouts", repId, leadId],
-    enabled: !!repId || !!leadId,
+    queryKey: ["milestone-payouts", repId, leadId, allReps],
+    enabled: allReps || !!repId || !!leadId,
     queryFn: async () => {
       let query = supabase
         .from("milestone_payouts")
