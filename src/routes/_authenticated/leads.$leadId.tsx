@@ -255,6 +255,7 @@ function LeadDetail() {
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
             <TabsTrigger value="calendar">Appointments</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
+            <TabsTrigger value="supplements">Supplements</TabsTrigger>
             {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
             <TabsTrigger value="production">Production</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
