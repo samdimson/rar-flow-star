@@ -174,6 +174,7 @@ export const LABOR_SECTIONS = [
 ] as const;
 
 type MaterialItem = { cat: string; desc: string; unit: string; price: number };
+type EstimatorSection = { label: string; items: MaterialItem[] };
 
 const ALL_ITEMS: MaterialItem[] = [...SECTIONS, ...LABOR_SECTIONS].flatMap(
   (s) => s.items as readonly MaterialItem[],

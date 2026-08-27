@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { CostEstimator } from "@/components/crm/cost-estimator";
 
-const title = "Cost Estimator — Rise Above Roofing Oklahoma CRM";
+const title = "Materials Cost Estimator — Rise Above Roofing Oklahoma CRM";
 const description =
   "Wholesale roofing material and labor cost estimator with live line totals and one-click save to a customer estimate.";
 
@@ -27,7 +27,7 @@ function CostEstimatorPage() {
 
   return (
     <AppShell
-      title="Cost Estimator"
+      title="Materials Cost Estimator"
       subtitle="Wholesale material and labor rates — enter quantities to build a total"
     >
       <CostEstimator {...(leadId ? { leadId } : {})} />
