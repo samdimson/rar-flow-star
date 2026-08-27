@@ -183,7 +183,7 @@ export function RcvInvoiceDialog({
       policyNumber: String(claim?.["policy_number"] ?? ""),
       carrier: String(claim?.["carrier"] ?? ""),
       typeOfLoss: "Windstorm and Hail",
-      workCompleted: (job?.qc_passed_at ?? job?.coc_signed_at ?? "")?.slice(0, 10) ?? "",
+      workCompleted: (job?.["qc_passed_at"] ?? job?.["coc_signed_at"] ?? "").slice(0, 10),
       billToName: `${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim(),
       billToAddress: address,
       billToPhone: lead.customer?.phone ?? "",
@@ -290,7 +290,7 @@ export function RcvInvoiceDialog({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label>Customer</Label>
-            <Select value={customerId ?? undefined} onValueChange={setCustomerId}>
+            <Select value={customerId ?? ""} onValueChange={setCustomerId}>
               <SelectTrigger aria-label="Customer">
                 <SelectValue placeholder="Select a customer" />
               </SelectTrigger>
