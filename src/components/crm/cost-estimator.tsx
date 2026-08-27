@@ -199,6 +199,10 @@ export function CostEstimator({ leadId: fixedLeadId }: { leadId?: string }) {
     setQuantities(q);
   }, [estimateData]);
 
+  useEffect(() => {
+    setSummaryMode(false);
+  }, [leadIds.join(",")]);
+
   const priceOf = (desc: string) => prices[desc] ?? 0;
   const qtyOf = (desc: string) => quantities[desc] ?? 0;
 
