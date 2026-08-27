@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Wrench } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -35,14 +36,14 @@ function RepsPage() {
 
   if (isLoading) {
     return (
-      <AppShell title="Sales Reps">
+      <AppShell icon={Wrench} title="Sales Reps">
         <LoadingBlock label="Loading reps" />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Sales Reps" subtitle="Individual performance, pipeline and follow-up load">
+    <AppShell icon={Wrench} title="Sales Reps" subtitle="Individual performance, pipeline and follow-up load">
       <div className="space-y-5">
         {visible.length === 0 ? (
           <EmptyState message="No team members found." />

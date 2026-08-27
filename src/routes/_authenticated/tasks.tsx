@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react", ClipboardList };
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -52,7 +52,7 @@ function TasksPage() {
   const leadFor = (id: string | null) => leads.find((l) => l.id === id);
 
   return (
-    <AppShell title="Tasks" subtitle="Automated workflow follow-ups plus anything your team adds.">
+    <AppShell icon={ClipboardList} title="Tasks" subtitle="Automated workflow follow-ups plus anything your team adds.">
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <KpiCard label="Open tasks" value={open.length} />

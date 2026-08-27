@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { FileSignature } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock } from "@/components/crm/primitives";
@@ -34,7 +35,7 @@ function ContractsPage() {
   const value = contracts.reduce((s, c) => s + Number(c.contract_amount), 0);
 
   return (
-    <AppShell title="Contracts" subtitle="Signed agreements and rescission windows">
+    <AppShell icon={FileSignature} title="Contracts" subtitle="Signed agreements and rescission windows">
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <KpiCard label="Contracts signed" value={signed.length} />

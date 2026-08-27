@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Banknote } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -30,7 +31,7 @@ function InvoicesPage() {
 
   if (loading) {
     return (
-      <AppShell title="Invoices & Payments">
+      <AppShell icon={Banknote} title="Invoices & Payments">
         <LoadingBlock />
       </AppShell>
     );
@@ -38,7 +39,7 @@ function InvoicesPage() {
 
   if (!canViewFinance) {
     return (
-      <AppShell title="Invoices & Payments">
+      <AppShell icon={Banknote} title="Invoices & Payments">
         <EmptyState message="Your role does not have access to financial records." />
       </AppShell>
     );
@@ -50,7 +51,7 @@ function InvoicesPage() {
   const leadFor = (id: string) => leads.find((l) => l.id === id);
 
   return (
-    <AppShell title="Invoices & Payments" subtitle="Job costing and carrier collections">
+    <AppShell icon={Banknote} title="Invoices & Payments" subtitle="Job costing and carrier collections">
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <KpiCard label="Invoiced" value={currency(invoiced)} />

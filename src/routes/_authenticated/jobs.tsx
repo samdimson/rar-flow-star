@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { Gauge } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock } from "@/components/crm/primitives";
@@ -37,7 +38,7 @@ function JobsPage() {
   const contractValue = jobs.reduce((s, l) => s + Number(l.contract_amount ?? 0), 0);
 
   return (
-    <AppShell title="Opportunities & Jobs" subtitle="Qualified claims through closeout">
+    <AppShell icon={Gauge} title="Opportunities & Jobs" subtitle="Qualified claims through closeout">
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <KpiCard label="Open opportunities" value={opportunities.length} hint="Inspection → estimate" />

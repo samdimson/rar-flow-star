@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Wrench } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { AccessDenied } from "@/components/crm/access-denied";
@@ -29,7 +30,7 @@ function LaborEstimatorPage() {
   const { allowed, loading } = useEstimatorAccess();
 
   return (
-    <AppShell
+    <AppShell icon={Wrench}
       title="Labor Cost Estimator"
       subtitle="Labor rate per square — choose a labor type and enter squares"
     >

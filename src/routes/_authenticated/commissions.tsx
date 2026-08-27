@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { Percent } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -76,7 +77,7 @@ function CommissionsPage() {
 
   if (loading) {
     return (
-      <AppShell title="Commissions">
+      <AppShell icon={Percent} title="Commissions">
         <LoadingBlock />
       </AppShell>
     );
@@ -88,7 +89,7 @@ function CommissionsPage() {
   const repName = showAllReps ? "All reps" : (profiles.find((p) => p.id === repId)?.full_name ?? "You");
 
   return (
-    <AppShell
+    <AppShell icon={Percent}
       title="Commissions"
       subtitle="Tier rates, progress and milestone payouts"
       actions={

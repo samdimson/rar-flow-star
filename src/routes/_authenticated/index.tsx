@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   TrendingUp,
   Users,
-} from "lucide-react";
+} from "lucide-react", LayoutDashboard };
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -46,7 +46,7 @@ function Dashboard() {
 
   if (isLoading) {
     return (
-      <AppShell title="Management Dashboard">
+      <AppShell icon={LayoutDashboard} title="Management Dashboard">
         <LoadingBlock label="Loading pipeline" />
       </AppShell>
     );
@@ -115,7 +115,7 @@ function Dashboard() {
     .sort((a, b) => b.revenue - a.revenue);
 
   return (
-    <AppShell
+    <AppShell icon={LayoutDashboard}
       title="Management Dashboard"
       subtitle={`Welcome back${profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""} — live view of every roofing lead and job.`}
       actions={

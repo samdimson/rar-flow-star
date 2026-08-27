@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search } from "lucide-react", UserSquare2 };
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -45,7 +45,7 @@ function CustomersPage() {
   });
 
   return (
-    <AppShell title="Customers" subtitle={`${customers.length} homeowner records`}>
+    <AppShell icon={UserSquare2} title="Customers" subtitle={`${customers.length} homeowner records`}>
       <div className="space-y-4">
         <div className="relative max-w-md">
           <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" aria-hidden="true" />

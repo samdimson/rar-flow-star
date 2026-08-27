@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { HardHat } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -35,7 +36,7 @@ function ProductionPage() {
   const openChangeOrders = changeOrders.filter((c) => c.status === "pending");
 
   return (
-    <AppShell title="Production" subtitle="Every job from job creation through Certificate of Completion">
+    <AppShell icon={HardHat} title="Production" subtitle="Every job from job creation through Certificate of Completion">
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard label="Production jobs" value={jobs.length} />

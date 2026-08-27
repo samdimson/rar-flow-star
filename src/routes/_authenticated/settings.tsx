@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Settings } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -39,7 +40,7 @@ function SettingsPage() {
 
   if (loading) {
     return (
-      <AppShell title="Settings & Admin">
+      <AppShell icon={Settings} title="Settings & Admin">
         <LoadingBlock />
       </AppShell>
     );
@@ -47,7 +48,7 @@ function SettingsPage() {
 
   if (!canManage) {
     return (
-      <AppShell title="Settings & Admin">
+      <AppShell icon={Settings} title="Settings & Admin">
         <EmptyState message="Only Admins and Owners/Managers can access settings." />
       </AppShell>
     );
@@ -76,7 +77,7 @@ function SettingsPage() {
   };
 
   return (
-    <AppShell title="Settings & Admin" subtitle="Roles, commission rules and audit history">
+    <AppShell icon={Settings} title="Settings & Admin" subtitle="Roles, commission rules and audit history">
       <Tabs defaultValue="team">
         <TabsList>
           <TabsTrigger value="team">Team &amp; roles</TabsTrigger>

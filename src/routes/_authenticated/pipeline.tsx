@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Columns3 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
@@ -81,14 +82,14 @@ function PipelinePage() {
 
   if (isLoading) {
     return (
-      <AppShell title="Pipeline">
+      <AppShell icon={Columns3} title="Pipeline">
         <LoadingBlock label="Loading pipeline" />
       </AppShell>
     );
   }
 
   return (
-    <AppShell
+    <AppShell icon={Columns3}
       title="Pipeline"
       subtitle="Drag a card between stages — the workflow engine records history, tasks and automation."
       actions={<LeadFormDialog />}
