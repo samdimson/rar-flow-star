@@ -628,8 +628,6 @@ function LeadDetail() {
                   {canViewFinance ? <Field label="Depreciation" value={currency(claim?.depreciation_amount)} /> : null}
                   {canViewFinance ? <Field label="Deductible" value={currency(claim?.deductible)} /> : null}
                   <Field label="Depreciation released" value={shortDate(claim?.depreciation_released_at)} />
-                  <Field label="Supplement status" value={claim?.supplement_status || "—"} />
-                  <Field label="Appeal status" value={claim?.appeal_status || "—"} />
                   <Field label="Reinspection" value={dateTime(claim?.reinspection_at)} />
                   <Field label="Notes" value={claim?.notes || "—"} />
                 </dl>
