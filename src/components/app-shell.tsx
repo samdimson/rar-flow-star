@@ -190,14 +190,14 @@ export function AppShell({
             {initials(profile?.full_name || user?.email)}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-sidebar-foreground">
+            <p className="truncate text-xs font-semibold text-white">
               {profile?.full_name || user?.email}
             </p>
-            <p className="truncate text-[11px] text-muted-foreground">
+            <p className="truncate text-[11px] text-sidebar-muted-foreground">
               {primaryRole ? titleCase(primaryRole) : "No role"}
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
+          <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out" className="text-white hover:bg-white/10 hover:text-white">
             <LogOut className="size-4" />
           </Button>
         </div>
