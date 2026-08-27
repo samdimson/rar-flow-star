@@ -5,7 +5,7 @@ import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm
 import { StageBadge, TaskBadge } from "@/components/stage-badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
-import { useLeads } from "@/lib/crm/api";
+import { useLeads, useProfiles } from "@/lib/crm/api";
 import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { LEAD_SOURCES, STAGES, TASK_BY_CODE, WORKFLOW_TASKS } from "@/lib/crm/workflow";
 
@@ -26,8 +26,9 @@ export const Route = createFileRoute("/_authenticated/reports")({
 });
 
 function ReportsPage() {
-  const { canViewFinance } = useAuth();
+  const { canViewFinance, canManage } = useAuth();
   const { data: leads = [], isLoading } = useLeads();
+  const { data: profiles = [] } = useProfiles();
 
   if (isLoading) {
     return (
@@ -83,6 +84,33 @@ function ReportsPage() {
     count: leads.filter((l) => l.task_code === t.code).length,
   })).filter((t) => t.count > 0);
 
+  const repRows = Array.from(
+    leads.reduce((map, l) => {
+      const id = l.assigned_rep_id ?? "unassigned";
+      const row = map.get(id) ?? { id, count: 0, sold: 0, won: 0, lost: 0, revenue: 0 };
+      row.count += 1;
+      if (l.stage_id >= 5) row.sold += 1;
+      if (l.status === "won") {
+        row.won += 1;
+        row.revenue += Number(l.contract_amount ?? 0);
+      }
+      if (l.status === "lost") row.lost += 1;
+      map.set(id, row);
+      return map;
+    }, new Map<string, { id: string; count: number; sold: number; won: number; lost: number; revenue: number }>()),
+  )
+    .map(([, r]) => {
+      const closed = r.won + r.lost;
+      const profile = profiles.find((p) => p.id === r.id);
+      return {
+        ...r,
+        name: r.id === "unassigned" ? "Unassigned" : (profile?.full_name || profile?.email || "Unknown rep"),
+        winRate: closed ? Math.round((r.won / closed) * 100) : 0,
+      };
+    })
+    .sort((a, b) => b.won - a.won || b.count - a.count);
+
+
   return (
     <AppShell title="Reports" subtitle="Funnel, source performance and aging analysis">
       <div className="space-y-5">
@@ -92,6 +120,48 @@ function ReportsPage() {
           <KpiCard label="Closed won / lost" value={`${won.length} / ${lost.length}`} tone="positive" />
           {canViewFinance ? <KpiCard label="Avg contract" value={currency(avgContract)} /> : null}
         </div>
+
+        <SectionCard title={canManage ? "Performance by sales rep" : "My numbers"}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2 pr-3">Rep</th>
+                  <th className="py-2 pr-3">Leads</th>
+                  <th className="py-2 pr-3">Sold</th>
+                  <th className="py-2 pr-3">Won</th>
+                  <th className="py-2 pr-3">Lost</th>
+                  <th className="py-2 pr-3">Win rate</th>
+                  {canViewFinance ? <th className="py-2">Won revenue</th> : null}
+                </tr>
+              </thead>
+              <tbody>
+                {repRows.map((r) => (
+                  <tr key={r.id} className="border-b border-border/60 last:border-0">
+                    <td className="py-2 pr-3 font-medium">{r.name}</td>
+                    <td className="py-2 pr-3">{r.count}</td>
+                    <td className="py-2 pr-3">{r.sold}</td>
+                    <td className="py-2 pr-3">{r.won}</td>
+                    <td className="py-2 pr-3">{r.lost}</td>
+                    <td className="py-2 pr-3">{r.winRate}%</td>
+                    {canViewFinance ? <td className="py-2">{currency(r.revenue)}</td> : null}
+                  </tr>
+                ))}
+                {repRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-4 text-center text-xs text-muted-foreground">
+                      No assigned leads yet
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Win rate = closed won ÷ (closed won + closed lost).
+          </p>
+        </SectionCard>
+
 
         <SectionCard title="Stage funnel (records that reached each stage)">
           <div className="space-y-3">

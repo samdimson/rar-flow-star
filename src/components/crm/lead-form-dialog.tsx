@@ -61,9 +61,21 @@ export function LeadFormDialog() {
   };
 
   const REQUIRED_FIELDS: {
-    key: "address_line1" | "city" | "state" | "postal_code" | "property_type" | "roof_type";
+    key:
+      | "first_name"
+      | "last_name"
+      | "phone"
+      | "address_line1"
+      | "city"
+      | "state"
+      | "postal_code"
+      | "property_type"
+      | "roof_type";
     label: string;
   }[] = [
+    { key: "first_name", label: "First name" },
+    { key: "last_name", label: "Last name" },
+    { key: "phone", label: "Phone" },
     { key: "address_line1", label: "Address" },
     { key: "city", label: "City" },
     { key: "state", label: "State" },
@@ -71,6 +83,7 @@ export function LeadFormDialog() {
     { key: "property_type", label: "Property type" },
     { key: "roof_type", label: "Roof type" },
   ];
+
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,22 +127,47 @@ export function LeadFormDialog() {
             </legend>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="l-first">First name</Label>
-                <Input id="l-first" required value={form.first_name} onChange={(e) => set("first_name", e.target.value)} />
+                <Label htmlFor="l-first">
+                  First name<span className="ml-0.5 text-destructive">*</span>
+                </Label>
+                <Input
+                  id="l-first"
+                  aria-invalid={Boolean(errors["first_name"])}
+                  value={form.first_name}
+                  onChange={(e) => set("first_name", e.target.value)}
+                />
+                {errors["first_name"] ? <p className="text-xs font-medium text-destructive">{errors["first_name"]}</p> : null}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="l-last">Last name</Label>
-                <Input id="l-last" required value={form.last_name} onChange={(e) => set("last_name", e.target.value)} />
+                <Label htmlFor="l-last">
+                  Last name<span className="ml-0.5 text-destructive">*</span>
+                </Label>
+                <Input
+                  id="l-last"
+                  aria-invalid={Boolean(errors["last_name"])}
+                  value={form.last_name}
+                  onChange={(e) => set("last_name", e.target.value)}
+                />
+                {errors["last_name"] ? <p className="text-xs font-medium text-destructive">{errors["last_name"]}</p> : null}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="l-phone">Phone</Label>
-                <Input id="l-phone" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+                <Label htmlFor="l-phone">
+                  Phone<span className="ml-0.5 text-destructive">*</span>
+                </Label>
+                <Input
+                  id="l-phone"
+                  aria-invalid={Boolean(errors["phone"])}
+                  value={form.phone}
+                  onChange={(e) => set("phone", e.target.value)}
+                />
+                {errors["phone"] ? <p className="text-xs font-medium text-destructive">{errors["phone"]}</p> : null}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="l-email">Email</Label>
                 <Input id="l-email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
               </div>
             </div>
+
           </fieldset>
 
           <fieldset className="space-y-3">
