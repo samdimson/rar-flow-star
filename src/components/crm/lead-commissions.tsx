@@ -17,8 +17,11 @@ export function LeadCommissions({
   canManage: boolean;
   visible: boolean;
 }) {
-  const { data: payouts = [], isLoading } = useMilestonePayouts({ leadId: visible ? leadId : null });
+  const { data: payouts = [], isLoading: isLoadingPayouts } = useMilestonePayouts({ leadId: visible ? leadId : null });
   const { data: costs } = useLeadCostBreakdown(visible ? [leadId] : []);
+  const { data: lead, isLoading: isLoadingLead } = useLead(leadId);
+  const { data: profiles = [], isLoading: isLoadingProfiles } = useProfiles();
+  const { data: commission, isLoading: isLoadingCommission } = useRepCommission(lead?.assigned_rep_id ?? null);
 
   if (!visible) {
     return (
@@ -28,7 +31,9 @@ export function LeadCommissions({
     );
   }
 
-  if (isLoading) return <LoadingBlock label="Loading commissions" />;
+  if (isLoadingPayouts || isLoadingLead || isLoadingProfiles || isLoadingCommission) {
+    return <LoadingBlock label="Loading commissions" />;
+  }
 
   const total = payouts.reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
   const contract = Number(contractAmount ?? 0);
@@ -37,6 +42,15 @@ export function LeadCommissions({
   const grossAfterCosts = contract - materials - labor;
   const overhead = Number((grossAfterCosts * 0.15).toFixed(2));
   const net = Number((grossAfterCosts - overhead).toFixed(2));
+  const netValue = netAmount ?? net;
+
+  const repProfile = profiles.find((p) => p.id === lead?.assigned_rep_id);
+  const isOwner =
+    repProfile?.email === "kba@riseaboveroofingok.com" ||
+    repProfile?.email === "sdimson@riseaboveroofingok.com";
+  const tierRate = Number(commission?.tier_rate ?? 0);
+  const repCommission = isOwner ? 0 : Number((netValue * tierRate).toFixed(2));
+  const companyNet = isOwner ? netValue : Number((netValue - repCommission).toFixed(2));
 
   return (
     <SectionCard title="Commissions" contentClassName="space-y-3">
@@ -63,8 +77,27 @@ export function LeadCommissions({
         </div>
         <div className="flex justify-between border-t border-border pt-1 font-semibold">
           <dt>Net (commission base)</dt>
-          <dd>{currencyExact(netAmount ?? net)}</dd>
+          <dd>{currencyExact(netValue)}</dd>
         </div>
+        {isOwner ? (
+          <div className="flex justify-between border-t border-border/50 pt-1">
+            <dt className="text-muted-foreground">Rise Above Roofing (net)</dt>
+            <dd className="font-medium">{currencyExact(companyNet)}</dd>
+          </div>
+        ) : repProfile ? (
+          <>
+            <div className="flex justify-between border-t border-border/50 pt-1">
+              <dt className="text-muted-foreground">
+                Sales Rep Commission ({(tierRate * 100).toFixed(0)}%)
+              </dt>
+              <dd className="font-medium">{currencyExact(repCommission)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Rise Above Roofing</dt>
+              <dd className="font-medium">{currencyExact(companyNet)}</dd>
+            </div>
+          </>
+        ) : null}
       </dl>
       <p className="text-sm text-muted-foreground">
         Milestones triggered: <span className="font-medium text-foreground">{payouts.length} of 3</span> ·
