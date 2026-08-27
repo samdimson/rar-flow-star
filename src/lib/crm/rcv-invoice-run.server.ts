@@ -67,13 +67,15 @@ export async function runGenerateRcvInvoice(input: RcvInvoiceInput, userId: stri
     .eq("storage_path", storagePath)
     .maybeSingle();
 
+  const invoiceFileName = fileName(input.invoiceNumber);
+
   if (existingDoc) {
     await db
       .from("documents")
       .update({
         customer_id: input.customerId,
         category: "invoice",
-        file_name: FILE_NAME,
+        file_name: invoiceFileName,
         file_size: pdfBytes.length,
         uploaded_at: nowIso,
       })
@@ -83,7 +85,7 @@ export async function runGenerateRcvInvoice(input: RcvInvoiceInput, userId: stri
       lead_id: input.leadId,
       customer_id: input.customerId,
       category: "invoice",
-      file_name: FILE_NAME,
+      file_name: invoiceFileName,
       storage_path: storagePath,
       mime_type: "application/pdf",
       file_size: pdfBytes.length,
