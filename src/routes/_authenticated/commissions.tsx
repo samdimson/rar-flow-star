@@ -38,9 +38,11 @@ function CommissionsPage() {
   const { data: tiers = [] } = useCommissionTiers();
   const [selectedRep, setSelectedRep] = useState<string | null>(null);
 
-  const repId = isManager ? (selectedRep ?? user?.id ?? null) : (user?.id ?? null);
+  const showAllReps = isManager && selectedRep === "all";
+  const repId = showAllReps ? null : isManager ? (selectedRep ?? user?.id ?? null) : (user?.id ?? null);
   const { data: commission } = useRepCommission(repId);
-  const { data: payouts = [], isLoading } = useMilestonePayouts({ repId });
+  const { data: payouts = [], isLoading } = useMilestonePayouts({ repId, leadId: showAllReps ? "__all__" : null });
+  const { data: jobs = [], isLoading: jobsLoading } = useJobsCommissionDetail({ repId, allReps: showAllReps });
 
   const repOptions = useMemo(() => {
     const repIds = new Set(
