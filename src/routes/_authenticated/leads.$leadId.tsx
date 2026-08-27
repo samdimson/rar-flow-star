@@ -1207,6 +1207,17 @@ function LeadDetail() {
             <DocumentsPanel leadId={leadId} />
           </TabsContent>
 
+          {/* Commissions -------------------------------------------- */}
+          <TabsContent value="commissions" className="mt-4">
+            <LeadCommissions
+              leadId={leadId}
+              netAmount={lead.net_amount ?? null}
+              canManage={canManage}
+              visible={canManage || lead.assigned_rep_id === user?.id}
+            />
+          </TabsContent>
+
+
           {/* History ------------------------------------------------ */}
           <TabsContent value="history" className="mt-4">
             <SectionCard title="Status history">
