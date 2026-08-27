@@ -56,16 +56,22 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
       { to: "/calendar", label: "Calendar", icon: CalendarDays },
       { to: "/tasks", label: "Tasks", icon: ClipboardList },
       { to: "/production", label: "Production", icon: HardHat },
-      { to: "/claims", label: "Insurance Claims", icon: ShieldCheck },
     ],
   },
   {
-    heading: "Documents & Money",
+    heading: "Money",
     items: [
       { to: "/cost-estimator", label: "Materials Cost Estimator", icon: Calculator },
       { to: "/labor-estimator", label: "Labor Cost Estimator", icon: Wrench },
-      { to: "/contracts", label: "Contracts", icon: FileSignature },
       { to: "/invoices", label: "Invoices & Payments", icon: Banknote, finance: true },
+      { to: "/commissions", label: "Commissions", icon: Percent },
+    ],
+  },
+  {
+    heading: "Documents",
+    items: [
+      { to: "/contracts", label: "Contracts", icon: FileSignature },
+      { to: "/claims", label: "Insurance Claims", icon: ShieldCheck },
       { to: "/documents", label: "Documents & Photos", icon: FolderOpen },
     ],
   },
@@ -73,7 +79,6 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
     heading: "Management",
     items: [
       { to: "/reps", label: "Sales Reps", icon: Wrench },
-      { to: "/commissions", label: "Commissions", icon: Percent },
       { to: "/reports", label: "Reports", icon: Gauge },
       { to: "/settings", label: "Settings & Admin", icon: Settings, manage: true },
     ],
