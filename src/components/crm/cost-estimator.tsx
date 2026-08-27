@@ -217,7 +217,7 @@ export function CostEstimator({
 }: {
   leadId?: string;
   heading: string;
-  sections: EstimatorSection[];
+  sections: readonly EstimatorSection[];
   source: "material" | "labor";
 }) {
   const ALL_ITEMS: MaterialItem[] = useMemo(
