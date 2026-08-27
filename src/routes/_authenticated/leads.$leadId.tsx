@@ -10,6 +10,7 @@ import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
+import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
 import { Button } from "@/components/ui/button";
