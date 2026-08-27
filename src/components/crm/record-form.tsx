@@ -20,6 +20,10 @@ export type FieldSpec = {
   required?: boolean;
   placeholder?: string;
   full?: boolean;
+  /** Excluded from the saved payload (used for UI-only helper inputs). */
+  transient?: boolean;
+  /** Render/validate this field only when the predicate passes. */
+  showIf?: (values: Record<string, unknown>) => boolean;
 };
 
 type Values = Record<string, unknown>;
@@ -51,6 +55,7 @@ export function RecordForm<K extends keyof Tables>({
   columns = 2,
   className,
   resetAfterSave = false,
+  transformPayload,
 }: {
   table: K;
   label: string;
@@ -63,6 +68,7 @@ export function RecordForm<K extends keyof Tables>({
   columns?: 1 | 2 | 3;
   className?: string;
   resetAfterSave?: boolean;
+  transformPayload?: (payload: Values, values: Values) => Values;
 }) {
   const upsert = useUpsert(table, label);
   const build = () =>
@@ -89,7 +95,8 @@ export function RecordForm<K extends keyof Tables>({
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const nextErrors: Record<string, string> = {};
-    for (const f of fields) {
+    const visible = fields.filter((f) => !f.showIf || f.showIf(values));
+    for (const f of visible) {
       if (!f.required || f.type === "checkbox") continue;
       const raw = values[f.name];
       if (raw === null || raw === undefined || String(raw).trim() === "") {
@@ -98,8 +105,12 @@ export function RecordForm<K extends keyof Tables>({
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
-    const payload: Values = { ...extra };
-    for (const f of fields) payload[f.name] = fromInput(f, values[f.name]);
+    let payload: Values = { ...extra };
+    for (const f of fields) {
+      if (f.transient) continue;
+      payload[f.name] = fromInput(f, values[f.name]);
+    }
+    if (transformPayload) payload = transformPayload(payload, values);
     if (initial?.["id"]) payload["id"] = initial["id"];
     upsert.mutate(payload, {
       onSuccess: (row) => {
@@ -114,7 +125,7 @@ export function RecordForm<K extends keyof Tables>({
   return (
     <form onSubmit={submit} className={cn("space-y-4", className)}>
       <div className={cn("grid gap-3", gridClass)}>
-        {fields.map((f) => {
+        {fields.filter((f) => !f.showIf || f.showIf(values)).map((f) => {
           const id = `${String(table)}-${f.name}`;
           const value = values[f.name];
           return (
