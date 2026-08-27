@@ -550,7 +550,12 @@ function LeadDetail() {
                 <RecordForm
                   table="appointments"
                   label="Appointment"
-                  initial={{ assigned_to: lead.assigned_rep_id }}
+                  initial={{
+                    assigned_to: lead.assigned_rep_id,
+                    location: lead.property
+                      ? `${lead.property.address_line1}, ${lead.property.city}, ${lead.property.state} ${lead.property.postal_code}`
+                      : "",
+                  }}
                   extra={{ lead_id: leadId, created_by: user?.id ?? null }}
                   resetAfterSave
                   submitLabel="Schedule"
