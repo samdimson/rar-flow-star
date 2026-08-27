@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Percent,
   Settings,
   ShieldCheck,
   Users,
