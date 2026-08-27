@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock } from "@/components/crm/primitives";
 import { TaskBadge } from "@/components/stage-badge";
 import { useAuth } from "@/hooks/use-auth";
-import { useClaims, useLeads } from "@/lib/crm/api";
+import { useClaims, useLeads, useSupplements } from "@/lib/crm/api";
 import { currency, dateTime, shortDate } from "@/lib/crm/format";
 
 const title = "Insurance Claims — Rise Above Roofing Oklahoma CRM";
@@ -27,10 +27,11 @@ function ClaimsPage() {
   const { canViewFinance } = useAuth();
   const { data: claims = [], isLoading } = useClaims();
   const { data: leads = [] } = useLeads();
+  const { data: supplements = [] } = useSupplements();
 
   const leadFor = (id: string) => leads.find((l) => l.id === id);
   const pendingAdjuster = claims.filter((c) => !c.adjuster_report_received_at);
-  const supplements = claims.filter((c) => c.supplement_status && c.supplement_status !== "none");
+  const openSupplements = supplements.filter((s) => s.status !== "approved" && s.status !== "denied");
   const awaitingDepreciation = claims.filter((c) => c.depreciation_amount && !c.depreciation_released_at);
   const depreciationOutstanding = awaitingDepreciation.reduce((s, c) => s + Number(c.depreciation_amount ?? 0), 0);
 
@@ -40,7 +41,7 @@ function ClaimsPage() {
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard label="Open claims" value={claims.length} />
           <KpiCard label="Awaiting adjuster report" value={pendingAdjuster.length} tone="warning" />
-          <KpiCard label="Supplements / appeals" value={supplements.length} tone="warning" />
+          <KpiCard label="Supplements / appeals" value={openSupplements.length} tone="warning" />
           <KpiCard
             label="Depreciation outstanding"
             value={canViewFinance ? currency(depreciationOutstanding) : awaitingDepreciation.length}
@@ -111,8 +112,19 @@ function ClaimsPage() {
                         </td>
                       ) : null}
                       <td className="px-3 py-2.5 text-xs">
-                        {c.supplement_status || "—"}
-                        {c.appeal_status ? <span className="block text-muted-foreground">appeal: {c.appeal_status}</span> : null}
+                        {(() => {
+                          const rows = supplements.filter((s) => s.lead_id === c.lead_id);
+                          if (rows.length === 0) return "—";
+                          const latest = rows[rows.length - 1]!;
+                          return (
+                            <>
+                              <span className="capitalize">{latest.status}</span>
+                              <span className="block text-muted-foreground">
+                                {rows.length} supplement{rows.length === 1 ? "" : "s"}
+                              </span>
+                            </>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );

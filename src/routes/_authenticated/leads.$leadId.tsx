@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { ArrowLeft, CheckCircle2, Clock, Plus } from "lucide-react";
@@ -10,6 +11,7 @@ import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
+import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,7 @@ import {
   useStageHistory,
   useTasks,
   useUpsert,
+  syncAdjusterMeetingAppointment,
 } from "@/lib/crm/api";
 import { currency, dateTime, shortDate, titleCase } from "@/lib/crm/format";
 import {
@@ -85,6 +88,23 @@ function LeadDetail() {
   const saveNote = useUpsert("notes", "Note");
   const [noteBody, setNoteBody] = useState("");
   const sendEmail = useServerFn(sendAppointmentEmail);
+  const queryClient = useQueryClient();
+
+  const syncAdjusterMeeting = async (row?: Record<string, unknown> | null) => {
+    const startsAt = row?.["adjuster_meeting_at"] as string | null | undefined;
+    if (!startsAt || !lead) return;
+    const property = lead.property;
+    await syncAdjusterMeetingAppointment({
+      leadId,
+      startsAt,
+      location: property
+        ? `${property.address_line1}, ${property.city} ${property.state} ${property.postal_code}`
+        : null,
+      assignedTo: lead.assigned_rep_id,
+    });
+    await queryClient.invalidateQueries({ queryKey: ["appointments"] });
+  };
+
 
   const notifyAttendees = async (row?: Record<string, unknown> | null) => {
     const attendees = String(row?.["attendees"] ?? "").trim();
@@ -179,9 +199,6 @@ function LeadDetail() {
     { name: "depreciation_amount", label: "Depreciation ($)", type: "number" },
     { name: "deductible", label: "Deductible ($)", type: "number" },
     { name: "depreciation_released_at", label: "Depreciation released", type: "date" },
-    { name: "supplement_amount", label: "Supplement ($)", type: "number" },
-    { name: "supplement_status", label: "Supplement status" },
-    { name: "appeal_status", label: "Appeal status" },
     { name: "reinspection_at", label: "Reinspection", type: "datetime" },
     { name: "policy_details", label: "Policy details", type: "textarea" },
     { name: "notes", label: "Claim notes", type: "textarea" },
@@ -258,6 +275,7 @@ function LeadDetail() {
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
             <TabsTrigger value="calendar">Appointments</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
+            <TabsTrigger value="supplements">Supplements</TabsTrigger>
             {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
             <TabsTrigger value="production">Production</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -608,7 +626,10 @@ function LeadDetail() {
                     extra={{ lead_id: leadId }}
                     fields={claimFields}
                     columns={3}
-                    onSaved={close}
+                    onSaved={(row) => {
+                      void syncAdjusterMeeting(row);
+                      close();
+                    }}
                     onCancel={close}
                   />
                 )}
@@ -628,13 +649,16 @@ function LeadDetail() {
                   {canViewFinance ? <Field label="Depreciation" value={currency(claim?.depreciation_amount)} /> : null}
                   {canViewFinance ? <Field label="Deductible" value={currency(claim?.deductible)} /> : null}
                   <Field label="Depreciation released" value={shortDate(claim?.depreciation_released_at)} />
-                  <Field label="Supplement status" value={claim?.supplement_status || "—"} />
-                  <Field label="Appeal status" value={claim?.appeal_status || "—"} />
                   <Field label="Reinspection" value={dateTime(claim?.reinspection_at)} />
                   <Field label="Notes" value={claim?.notes || "—"} />
                 </dl>
               </EditableSection>
             </SectionCard>
+          </TabsContent>
+
+          {/* Supplements --------------------------------------------- */}
+          <TabsContent value="supplements" className="mt-4">
+            <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
           </TabsContent>
 
           {/* Money --------------------------------------------------- */}

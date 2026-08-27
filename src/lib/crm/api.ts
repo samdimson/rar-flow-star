@@ -28,6 +28,7 @@ export type PaymentRow = Tables["payments"]["Row"];
 export type ProfileRow = Tables["profiles"]["Row"];
 export type CommissionRow = Tables["commissions"]["Row"];
 export type ChangeOrderRow = Tables["change_orders"]["Row"];
+export type SupplementRow = Tables["supplements"]["Row"];
 
 export type LeadWithRelations = LeadRow & {
   customer: CustomerRow | null;
@@ -103,6 +104,45 @@ export const useCommissions = listHook("commissions", "created_at");
 export const useCommissionRules = listHook("commission_rules", "created_at");
 export const useStageHistory = listHook("lead_stage_history", "created_at");
 export const useAuditLog = listHook("audit_log", "created_at");
+export const useSupplements = listHook("supplements", "supplement_number", true);
+
+/**
+ * Keeps a single `adjuster_meeting` appointment in sync with the claim's
+ * adjuster meeting date/time. Updates the existing row instead of duplicating.
+ */
+export async function syncAdjusterMeetingAppointment(input: {
+  leadId: string;
+  startsAt: string | null | undefined;
+  location?: string | null;
+  assignedTo?: string | null;
+}) {
+  if (!input.startsAt) return;
+  const startsAt = new Date(
+    String(input.startsAt).length <= 10 ? `${input.startsAt}T09:00:00` : String(input.startsAt),
+  ).toISOString();
+  const { data: auth } = await supabase.auth.getUser();
+  const actor = auth.user?.id ?? null;
+  const { data: existing } = await supabase
+    .from("appointments")
+    .select("id")
+    .eq("lead_id", input.leadId)
+    .eq("kind", "adjuster_meeting")
+    .maybeSingle();
+  const payload = {
+    lead_id: input.leadId,
+    kind: "adjuster_meeting" as const,
+    title: "Adjuster Meeting",
+    starts_at: startsAt,
+    location: input.location ?? null,
+  };
+  if (existing) {
+    await supabase.from("appointments").update(payload).eq("id", existing.id);
+  } else {
+    await supabase
+      .from("appointments")
+      .insert({ ...payload, assigned_to: input.assignedTo ?? actor, created_by: actor });
+  }
+}
 
 export function useClaim(leadId: string | null) {
   return useQuery({
