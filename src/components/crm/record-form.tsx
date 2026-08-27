@@ -116,12 +116,17 @@ export function RecordForm<K extends keyof Tables>({
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
     let payload: Values = { ...extra };
+    const isCreate = !initial?.["id"];
     for (const f of fields) {
       if (f.transient) continue;
-      payload[f.name] = fromInput(f, values[f.name]);
+      const next = fromInput(f, values[f.name]);
+      // On create, omit empty values so database column defaults apply.
+      if (isCreate && next === null) continue;
+      payload[f.name] = next;
     }
     if (transformPayload) payload = transformPayload(payload, values);
     if (initial?.["id"]) payload["id"] = initial["id"];
+
     upsert.mutate(payload, {
       onSuccess: (row) => {
         if (resetAfterSave) setValues(build());
