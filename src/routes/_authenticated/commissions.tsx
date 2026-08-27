@@ -9,7 +9,13 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useAllRoles, useProfiles } from "@/lib/crm/api";
-import { useCommissionTiers, useJobsCommissionDetail, useMilestonePayouts, useRepCommission } from "@/lib/crm/commissions";
+import {
+  useCommissionTiers,
+  useJobsCommissionDetail,
+  useLeadCostBreakdown,
+  useMilestonePayouts,
+  useRepCommission,
+} from "@/lib/crm/commissions";
 import { currencyExact } from "@/lib/crm/format";
 
 const title = "Commissions — Rise Above Roofing Oklahoma CRM";
