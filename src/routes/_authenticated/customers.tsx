@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search } from "lucide-react", UserSquare2 };
+import { Search, UserSquare2 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, LoadingBlock, SectionCard } from "@/components/crm/primitives";

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react", ClipboardList };
+import { CheckCircle2, ClipboardList } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";

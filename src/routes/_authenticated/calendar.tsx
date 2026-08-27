@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react", CalendarDays };
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, SectionCard } from "@/components/crm/primitives";

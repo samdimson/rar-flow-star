@@ -5,10 +5,11 @@ import {
   CalendarClock,
   FileSignature,
   HardHat,
+  LayoutDashboard,
   ShieldCheck,
   TrendingUp,
   Users,
-} from "lucide-react", LayoutDashboard };
+} from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
