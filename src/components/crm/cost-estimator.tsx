@@ -265,7 +265,7 @@ export function CostEstimator({
   }, [fixedLeadId, customerId, leads]);
 
   const { data: estimateData } = useQuery({
-    queryKey: ["cost-estimator-estimate", leadIds.join(",")],
+    queryKey: ["cost-estimator-estimate", source, leadIds.join(",")],
     enabled: leadIds.length > 0,
     queryFn: async () => {
       const { data: estimates, error } = await supabase
@@ -281,7 +281,8 @@ export function CostEstimator({
       const { data: lines, error: lineError } = await supabase
         .from("estimate_line_items")
         .select("item, quantity, unit_price")
-        .eq("estimate_id", estimate.id);
+        .eq("estimate_id", estimate.id)
+        .eq("source", source);
       if (lineError) throw lineError;
       return { estimate, lines: lines ?? [] };
     },
