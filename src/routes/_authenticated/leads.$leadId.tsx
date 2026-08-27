@@ -35,6 +35,7 @@ import {
   useTasks,
   useUpsert,
   syncAdjusterMeetingAppointment,
+  syncTitledAppointment,
 } from "@/lib/crm/api";
 import { currency, dateTime, shortDate, titleCase } from "@/lib/crm/format";
 import {
@@ -105,6 +106,23 @@ function LeadDetail() {
     await queryClient.invalidateQueries({ queryKey: ["appointments"] });
   };
 
+
+  const syncReinspection = async (row?: Record<string, unknown> | null) => {
+    const startsAt = row?.["reinspection_at"] as string | null | undefined;
+    if (!startsAt || !lead) return;
+    const property = lead.property;
+    await syncTitledAppointment({
+      leadId,
+      title: "Reinspection",
+      kind: "other",
+      startsAt,
+      location: property
+        ? `${property.address_line1}, ${property.city} ${property.state} ${property.postal_code}`
+        : null,
+      assignedTo: lead.assigned_rep_id,
+    });
+    await queryClient.invalidateQueries({ queryKey: ["appointments"] });
+  };
 
   const notifyAttendees = async (row?: Record<string, unknown> | null) => {
     const attendees = String(row?.["attendees"] ?? "").trim();
@@ -183,10 +201,33 @@ function LeadDetail() {
     { name: "notes", label: "Lead notes", type: "textarea" },
   ];
 
+  const knownCarrier = claim?.carrier && CARRIERS.includes(claim.carrier as (typeof CARRIERS)[number]);
+  const claimInitial = claim
+    ? {
+        ...claim,
+        carrier_select: claim.carrier ? (knownCarrier ? claim.carrier : "Other") : "",
+        carrier_other: claim.carrier && !knownCarrier ? claim.carrier : "",
+      }
+    : null;
+
   const claimFields: FieldSpec[] = [
-    { name: "carrier", label: "Insurance carrier" },
-    { name: "claim_number", label: "Claim number" },
-    { name: "policy_number", label: "Policy number" },
+    {
+      name: "carrier_select",
+      label: "Insurance carrier",
+      type: "select",
+      required: true,
+      transient: true,
+      options: CARRIERS.map((c) => ({ value: c, label: c })),
+    },
+    {
+      name: "carrier_other",
+      label: "Carrier name",
+      required: true,
+      transient: true,
+      showIf: (v) => v["carrier_select"] === "Other",
+    },
+    { name: "claim_number", label: "Claim number", required: true },
+    { name: "policy_number", label: "Policy number", required: true },
     { name: "date_of_loss", label: "Date of loss", type: "date" },
     { name: "date_filed", label: "Claim filed", type: "date" },
     { name: "adjuster_name", label: "Adjuster name" },
@@ -627,12 +668,20 @@ function LeadDetail() {
                   <RecordForm
                     table="insurance_claims"
                     label="Insurance claim"
-                    initial={claim}
+                    initial={claimInitial}
                     extra={{ lead_id: leadId }}
                     fields={claimFields}
                     columns={3}
+                    transformPayload={(payload, values) => ({
+                      ...payload,
+                      carrier:
+                        values["carrier_select"] === "Other"
+                          ? String(values["carrier_other"] ?? "").trim()
+                          : (values["carrier_select"] ?? null),
+                    })}
                     onSaved={(row) => {
                       void syncAdjusterMeeting(row);
+                      void syncReinspection(row);
                       close();
                     }}
                     onCancel={close}
