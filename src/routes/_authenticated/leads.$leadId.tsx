@@ -14,6 +14,7 @@ import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/re
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
 import { EstimatorPanel } from "@/components/crm/estimator-panel";
 
+import { CostEstimator } from "@/components/crm/cost-estimator";
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
@@ -320,7 +321,9 @@ function LeadDetail() {
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
             <TabsTrigger value="calendar">Appointments</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
+            <TabsTrigger value="cost-estimator">Cost Estimator</TabsTrigger>
             <TabsTrigger value="supplements">Supplements</TabsTrigger>
+
             {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
             {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
             <TabsTrigger value="production">Production</TabsTrigger>
@@ -717,8 +720,13 @@ function LeadDetail() {
             <PolicySummaryCard summary={claim?.policy_summary ?? null} />
           </TabsContent>
 
+          {/* Cost estimator ------------------------------------------ */}
+          <TabsContent value="cost-estimator" className="mt-4">
+            <CostEstimator leadId={leadId} />
+          </TabsContent>
 
           {/* Supplements --------------------------------------------- */}
+
           <TabsContent value="supplements" className="mt-4">
             <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
           </TabsContent>
