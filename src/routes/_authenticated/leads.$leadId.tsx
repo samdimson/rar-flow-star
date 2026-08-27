@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { ArrowLeft, CheckCircle2, Clock, Plus } from "lucide-react";
+import { toast } from "sonner";
+
+import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
 
 import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
