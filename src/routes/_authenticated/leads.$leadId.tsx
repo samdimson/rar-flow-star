@@ -661,8 +661,10 @@ function LeadDetail() {
           </TabsContent>
 
           {/* Insurance ----------------------------------------------- */}
-          <TabsContent value="insurance" className="mt-4">
+          <TabsContent value="insurance" className="mt-4 space-y-4">
+            <PolicyDocumentsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
             <SectionCard title="Insurance claim">
+
               <EditableSection
                 canEdit={canEdit}
                 form={(close) => (
