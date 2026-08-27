@@ -49,6 +49,7 @@ import {
   PROPERTY_TYPES,
   ROOF_TYPES,
   TASK_BY_CODE,
+  WORKFLOW_TASKS,
   propertyTypeLabel,
   roofTypeLabel,
   stageName,
