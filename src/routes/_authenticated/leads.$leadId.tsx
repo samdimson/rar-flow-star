@@ -423,7 +423,6 @@ function LeadDetail() {
     { name: "qc_passed_at", label: "QC passed", type: "date" },
     { name: "punch_list", label: "Punch list", type: "textarea" },
     { name: "walkthrough_at", label: "Homeowner walkthrough", type: "date" },
-    { name: "coc_signed_at", label: "Certificate of Completion signed", type: "date" },
     { name: "warranty_registered_at", label: "Warranty registered", type: "date" },
     { name: "notes", label: "Production notes", type: "textarea" },
   ];
