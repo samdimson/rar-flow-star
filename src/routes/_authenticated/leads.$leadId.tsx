@@ -1128,9 +1128,23 @@ function LeadDetail() {
                   ))}
                 </ul>
               )}
+              {(() => {
+                const cocSends = activities.filter((a) => a.type === "coc_emailed");
+                if (cocSends.length === 0) return null;
+                return (
+                  <ul className="mt-3 divide-y divide-border border-t border-border">
+                    {cocSends.map((a) => (
+                      <li key={a.id} className="py-2.5">
+                        <p className="text-sm font-medium">COC sent to {a.body ?? a.subject}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{dateTime(a.occurred_at)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
             </SectionCard>
           </TabsContent>
-        
+
           {/* Timeline -------------------------------------------------- */}
           <div className="hidden">
             <TabsContent value="timeline" className="mt-4">
