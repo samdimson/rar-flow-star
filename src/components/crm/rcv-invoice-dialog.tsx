@@ -209,6 +209,10 @@ export function RcvInvoiceDialog({
   const set = (key: keyof Form) => (value: string) => setForm((f) => ({ ...f, [key]: value }));
 
   const submit = async () => {
+    if (!targetLeadId) {
+      toast.error("Select a customer with an existing lead first");
+      return;
+    }
     setBusy(true);
     try {
       const res = await generate({
