@@ -163,7 +163,7 @@ export function AppShell({
   children,
 }: {
   title: ReactNode;
-  subtitle?: string;
+  subtitle?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
 }) {

@@ -225,9 +225,9 @@ function PipelineCard({
         params={{ leadId: lead.id }}
         className="text-sm font-medium text-foreground hover:text-primary hover:underline"
       >
-        {lead.customer?.first_name} {lead.customer?.last_name}
+        <span className="text-orange-500">{lead.customer?.first_name} {lead.customer?.last_name}</span>
       </Link>
-      <p className="truncate text-xs text-muted-foreground">{lead.property?.address_line1}</p>
+      <p className="truncate text-xs text-sky-400">{lead.property?.address_line1}</p>
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <TaskBadge code={lead.task_code} />
         {followUpDue ? (
