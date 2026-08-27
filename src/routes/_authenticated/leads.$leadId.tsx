@@ -147,44 +147,17 @@ function JobCostPanel({ leadId }: { leadId: string }) {
       </SectionCard>
 
       <SectionCard title="Labor Cost">
-        {labor.length === 0 ? (
+        {laborSquares <= 0 ? (
           <p className="text-sm text-muted-foreground">
             No labor estimate saved — use the Labor Cost Estimator to build and save one.
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border bg-card">
-            <table className="w-full min-w-[600px] text-sm">
-              <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2.5 font-semibold">Description</th>
-                  <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
-                  <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
-                  <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
-                  <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {labor.map((line) => (
-                  <tr key={`l-${line.item}`} className="border-t border-border">
-                    <td className="px-3 py-2">{line.item}</td>
-                    <td className="px-3 py-2">{line.quantity}</td>
-                    <td className="px-3 py-2 text-xs">{line.unit}</td>
-                    <td className="px-3 py-2 text-right">{currencyExact(line.unit_price)}</td>
-                    <td className="px-3 py-2 text-right font-medium">
-                      {currencyExact(Number(line.quantity) * Number(line.unit_price))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-border bg-secondary/50 font-semibold text-foreground">
-                  <td className="px-3 py-2.5" colSpan={4}>
-                    Labor subtotal
-                  </td>
-                  <td className="px-3 py-2.5 text-right">{currencyExact(laborTotal)}</td>
-                </tr>
-              </tfoot>
-            </table>
+          <div className="rounded-lg border border-border bg-card px-3 py-3">
+            <p className="text-sm font-medium text-foreground">
+              Labor: {laborSquares} SQ × {currencyExact(laborRateValue)}/SQ ={" "}
+              <span className="font-semibold">{currencyExact(laborTotal)}</span>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{laborLabel(laborTypeValue)}</p>
           </div>
         )}
       </SectionCard>
