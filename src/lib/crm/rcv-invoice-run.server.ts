@@ -8,7 +8,7 @@ import {
 } from "./rcv-invoice.server";
 
 const BUCKET = "crm-files";
-const FILE_NAME = "RCV Invoice.pdf";
+const fileName = (invoiceNumber: string) => `RCV Invoice ${invoiceNumber}.pdf`;
 
 export type RcvInvoiceInput = {
   leadId: string;
