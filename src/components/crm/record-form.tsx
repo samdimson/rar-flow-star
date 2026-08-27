@@ -75,7 +75,14 @@ export function RecordForm<K extends keyof Tables>({
 }) {
   const upsert = useUpsert(table, label);
   const build = () =>
-    Object.fromEntries(fields.map((f) => [f.name, toInput(f, initial?.[f.name])])) as Values;
+    Object.fromEntries(
+      fields.map((f) => {
+        const stored = initial?.[f.name];
+        const source = stored === null || stored === undefined ? f.defaultValue : stored;
+        return [f.name, toInput(f, source)];
+      }),
+    ) as Values;
+
   const [values, setValues] = useState<Values>(build);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
