@@ -33,6 +33,7 @@ import {
   useStageHistory,
   useTasks,
   useUpsert,
+  syncAdjusterMeetingAppointment,
 } from "@/lib/crm/api";
 import { currency, dateTime, shortDate, titleCase } from "@/lib/crm/format";
 import {
