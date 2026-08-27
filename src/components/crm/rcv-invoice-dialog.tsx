@@ -83,12 +83,12 @@ function buildScope(roofType: string | null, adjusterReportDate: string | null) 
 }
 
 export function RcvInvoiceDialog({
-  leadId,
-  defaultCustomerId,
+  leadId = "",
+  defaultCustomerId = null,
 }: {
-  leadId: string;
-  defaultCustomerId: string | null;
-}) {
+  leadId?: string;
+  defaultCustomerId?: string | null;
+} = {}) {
   const [open, setOpen] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(defaultCustomerId);
   const [targetLeadId, setTargetLeadId] = useState(leadId);
