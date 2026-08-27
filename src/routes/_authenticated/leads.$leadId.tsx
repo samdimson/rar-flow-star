@@ -276,6 +276,23 @@ function LeadDetail() {
     await queryClient.invalidateQueries({ queryKey: ["appointments"] });
   };
 
+  const syncWalkthrough = async (row?: Record<string, unknown> | null) => {
+    const startsAt = row?.["walkthrough_at"] as string | null | undefined;
+    if (!startsAt || !lead) return;
+    const property = lead.property;
+    await syncTitledAppointment({
+      leadId,
+      title: "Homeowner Walkthrough",
+      kind: "other",
+      startsAt,
+      location: property
+        ? `${property.address_line1}, ${property.city} ${property.state} ${property.postal_code}`
+        : null,
+      assignedTo: lead.assigned_rep_id,
+    });
+    await queryClient.invalidateQueries({ queryKey: ["appointments"] });
+  };
+
   const notifyAttendees = async (row?: Record<string, unknown> | null) => {
     const attendees = String(row?.["attendees"] ?? "").trim();
     if (!row || !attendees || !lead) return;
@@ -871,7 +888,10 @@ function LeadDetail() {
                     extra={{ lead_id: leadId }}
                     fields={productionFields}
                     columns={3}
-                    onSaved={close}
+                    onSaved={(row) => {
+                      void syncWalkthrough(row);
+                      close();
+                    }}
                     onCancel={close}
                   />
                 )}
