@@ -606,11 +606,11 @@ export function CostEstimator({
             </div>
           </section>
         );
-      })}
+      })()}
 
       <div className="overflow-hidden rounded-lg border-2 border-border">
         <div className="flex items-center justify-between bg-yellow-200 px-3 py-3 font-bold text-yellow-950">
-          <span>Total Estimated Cost (Materials + Labor)</span>
+          <span>{heading} — Grand Total</span>
           <span className="text-base">{currencyExact(grandTotal)}</span>
         </div>
       </div>
