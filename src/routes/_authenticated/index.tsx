@@ -229,7 +229,7 @@ function Dashboard() {
                       >
                         {l.lead_number}
                       </Link>
-                      <span className="block truncate text-xs text-muted-foreground">
+                      <span className="block truncate text-xs text-sky-400">
                         {l.property?.address_line1} · last touched {shortDate(l.updated_at)}
                       </span>
                     </li>
@@ -298,9 +298,9 @@ function Dashboard() {
                         params={{ leadId: l.id }}
                         className="text-sm font-medium text-primary hover:underline"
                       >
-                        {l.lead_number} · {l.customer?.first_name} {l.customer?.last_name}
+                        {l.lead_number} · <span className="text-orange-500">{l.customer?.first_name} {l.customer?.last_name}</span>
                       </Link>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="truncate text-xs text-sky-400">
                         {l.property?.address_line1}, {l.property?.city}
                       </p>
                     </div>

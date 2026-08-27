@@ -167,14 +167,14 @@ function LeadsPage() {
                       >
                         {l.lead_number}
                       </Link>
-                      <span className="block text-xs text-muted-foreground">
+                      <span className="block text-xs text-orange-500">
                         {l.customer?.first_name} {l.customer?.last_name}
                       </span>
                       <StatusBadge status={l.status} className="mt-1" />
                     </td>
                     <td className="px-3 py-2.5">
-                      <span className="block max-w-[220px] truncate">{l.property?.address_line1 ?? "—"}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="block max-w-[220px] truncate text-sky-400">{l.property?.address_line1 ?? "—"}</span>
+                      <span className="text-xs text-sky-400">
                         {l.property?.city}
                         {l.property?.city ? ", " : ""}
                         {l.property?.state}

@@ -99,7 +99,7 @@ function TasksPage() {
                       <p className="text-xs text-muted-foreground">
                         {lead ? (
                           <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="text-primary hover:underline">
-                            {lead.lead_number} · {lead.customer?.last_name}
+                            {lead.lead_number} · <span className="text-orange-500">{lead.customer?.last_name}</span>
                           </Link>
                         ) : (
                           "No linked lead"

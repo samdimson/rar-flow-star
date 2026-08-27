@@ -85,7 +85,7 @@ function ClaimsPage() {
                         ) : (
                           "—"
                         )}
-                        <span className="block text-xs text-muted-foreground">{lead?.property?.address_line1}</span>
+                        <span className="block text-xs text-sky-400">{lead?.property?.address_line1}</span>
                       </td>
                       <td className="px-3 py-2.5">{lead ? <TaskBadge code={lead.task_code} /> : "—"}</td>
                       <td className="px-3 py-2.5 text-xs">

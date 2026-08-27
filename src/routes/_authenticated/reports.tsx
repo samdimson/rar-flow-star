@@ -241,7 +241,7 @@ function ReportsPage() {
                         params={{ leadId: lead.id }}
                         className="text-primary hover:underline"
                       >
-                        {lead.lead_number} · {lead.property?.address_line1}
+                        {lead.lead_number} · <span className="text-sky-400">{lead.property?.address_line1}</span>
                       </Link>
                     </td>
                     <td className="py-2 pr-3"><TaskBadge code={lead.task_code} /></td>

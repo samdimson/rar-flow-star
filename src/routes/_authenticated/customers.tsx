@@ -71,11 +71,11 @@ function CustomersPage() {
                 .filter((l) => l.status === "won")
                 .reduce((s, l) => s + Number(l.contract_amount ?? 0), 0);
               return (
-                <SectionCard key={c.id} title={`${c.first_name} ${c.last_name}`}>
-                  <dl className="grid gap-2 text-sm sm:grid-cols-2">
+              <SectionCard key={c.id} title={<span className="text-orange-500">{c.first_name} {c.last_name}</span>}>
+                <dl className="grid gap-2 text-sm sm:grid-cols-2">
                     <p className="text-muted-foreground">{c.phone || "No phone"}</p>
                     <p className="truncate text-muted-foreground">{c.email || "No email"}</p>
-                    <p className="sm:col-span-2">
+                    <p className="sm:col-span-2 text-sky-400">
                       {property ? `${property.address_line1}, ${property.city}, ${property.state} ${property.postal_code}` : "No property linked"}
                     </p>
                     {canViewFinance ? (

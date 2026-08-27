@@ -437,13 +437,21 @@ function LeadDetail() {
     <AppShell
       title={
         <>
-          {lead.lead_number} · {customerName || "Lead"}
+          {lead.lead_number} · <span className="text-orange-500">{customerName || "Lead"}</span>
           {rep ? (
             <span className="text-sm font-normal text-muted-foreground"> — (Sales Rep: {rep.full_name})</span>
           ) : null}
         </>
       }
-      subtitle={`${lead.property?.address_line1 ?? ""}${lead.property?.city ? `, ${lead.property.city}` : ""} — Stage ${lead.stage_id}: ${stageName(lead.stage_id)}`}
+      subtitle={
+        <>
+          <span className="text-sky-400">
+            {lead.property?.address_line1 ?? ""}
+            {lead.property?.city ? `, ${lead.property.city}` : ""}
+          </span>
+          <span> — Stage {lead.stage_id}: {stageName(lead.stage_id)}</span>
+        </>
+      }
       actions={
         <>
           <Button asChild variant="outline" size="sm">
@@ -544,7 +552,7 @@ function LeadDetail() {
                   )}
                 >
                   <dl className="grid gap-3 sm:grid-cols-2">
-                    <Field label="Name" value={customerName || "—"} />
+                    <Field label="Name" value={<span className="text-orange-500">{customerName || "—"}</span>} />
                     <Field label="Phone" value={lead.customer?.phone || "—"} />
                     <Field label="Email" value={lead.customer?.email || "—"} />
                     <Field label="Preferred contact" value={lead.customer?.preferred_contact || "—"} />
@@ -552,7 +560,7 @@ function LeadDetail() {
                       label="Address"
                       value={
                         lead.customer?.address_line1
-                          ? `${lead.customer.address_line1}, ${lead.customer.city ?? ""} ${lead.customer.state ?? ""} ${lead.customer.postal_code ?? ""}`
+                          ? <span className="text-sky-400">{`${lead.customer.address_line1}, ${lead.customer.city ?? ""} ${lead.customer.state ?? ""} ${lead.customer.postal_code ?? ""}`}</span>
                           : "Same as property"
                       }
                     />
@@ -602,7 +610,7 @@ function LeadDetail() {
                   <dl className="grid gap-3 sm:grid-cols-2">
                     <Field
                       label="Address"
-                      value={`${lead.property?.address_line1 ?? "—"}${lead.property?.city ? `, ${lead.property.city}, ${lead.property.state} ${lead.property.postal_code}` : ""}`}
+                      value={<span className="text-sky-400">{`${lead.property?.address_line1 ?? "—"}${lead.property?.city ? `, ${lead.property.city}, ${lead.property.state} ${lead.property.postal_code}` : ""}`}</span>}
                     />
                     <Field label="Property type" value={propertyTypeLabel(lead.property?.property_type)} />
                     <Field label="Roof type" value={roofTypeLabel(lead.property?.roof_type)} />
