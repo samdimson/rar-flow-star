@@ -14,6 +14,7 @@ import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/re
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
 import { EstimatorPanel } from "@/components/crm/estimator-panel";
 
+import { CostEstimator } from "@/components/crm/cost-estimator";
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
 import { EmptyState, Field, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { StageBadge, StatusBadge, TaskBadge } from "@/components/stage-badge";
