@@ -41,6 +41,7 @@ import {
   syncTitledAppointment,
 } from "@/lib/crm/api";
 import { currency, currencyExact, dateTime, shortDate, titleCase } from "@/lib/crm/format";
+import { laborLabel, laborRate } from "@/lib/crm/labor";
 import {
   CARRIERS,
   APPOINTMENT_KINDS,

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useUpsert } from "@/lib/crm/api";
+import { laborRate } from "@/lib/crm/labor";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,10 @@ import { cn } from "@/lib/utils";
 /** Recompute lead.net_amount = (contract_amount - materials - labor) * 0.85 after a 15% overhead deduction. */
 async function recalcLeadNetAmount(leadId: string) {
   const { data: lead } = await supabase.from("leads").select("contract_amount").eq("id", leadId).maybeSingle();
-  const { data: estimates } = await supabase.from("estimates").select("id").eq("lead_id", leadId);
+  const { data: estimates } = await supabase
+    .from("estimates")
+    .select("id, labor_type, labor_squares")
+    .eq("lead_id", leadId);
   const estimateIds = (estimates ?? []).map((e) => e.id);
   let lines: { quantity: number | null; unit_price: number | null; source: string | null }[] = [];
   if (estimateIds.length > 0) {
@@ -29,7 +33,15 @@ async function recalcLeadNetAmount(leadId: string) {
       .filter((l) => predicate(l.source ?? "material"))
       .reduce((s, l) => s + Number(l.quantity ?? 0) * Number(l.unit_price ?? 0), 0);
   const materialsTotal = sumFor((s) => s !== "labor");
-  const laborTotal = sumFor((s) => s === "labor");
+  // labor = squares * rate when the estimate carries the simplified fields
+  const squares = (estimates ?? []).reduce((s, e) => s + Number(e.labor_squares ?? 0), 0);
+  const laborTotal =
+    squares > 0
+      ? (estimates ?? []).reduce(
+          (s, e) => s + Number(e.labor_squares ?? 0) * laborRate(e.labor_type),
+          0,
+        )
+      : sumFor((s) => s === "labor");
   const grossAfterCosts = Number(lead?.contract_amount ?? 0) - materialsTotal - laborTotal;
   const overheadAmount = Number((grossAfterCosts * 0.15).toFixed(2));
   const netAmount = Number((grossAfterCosts - overheadAmount).toFixed(2));
