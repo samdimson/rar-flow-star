@@ -466,7 +466,31 @@ function LeadDetail() {
       <div className="space-y-5">
         <div className="flex flex-wrap items-center gap-2">
           <StageBadge stageId={lead.stage_id} />
-          <TaskBadge code={lead.task_code} />
+          <div className="flex flex-wrap items-center gap-2">
+            {(() => {
+              const stageTasks = WORKFLOW_TASKS.filter((t) => t.stageId === lead.stage_id);
+              const currentIndex = stageTasks.findIndex((t) => t.code === lead.task_code);
+              return stageTasks.map((t, idx) => {
+                const isCurrent = t.code === lead.task_code;
+                const isPast = currentIndex !== -1 && idx < currentIndex;
+                const tone = isCurrent
+                  ? "border-transparent bg-green-500 text-white"
+                  : isPast
+                    ? "border-transparent bg-muted text-muted-foreground"
+                    : "border-border bg-transparent text-muted-foreground";
+                return (
+                  <span
+                    key={t.code}
+                    className={`inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${tone}`}
+                    title={t.description}
+                  >
+                    <span className="font-mono text-[11px] font-semibold">{t.code}</span>
+                    <span className="truncate">{t.name}</span>
+                  </span>
+                );
+              });
+            })()}
+          </div>
           <StatusBadge status={lead.status} />
           {lead.rescission_ends_at ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-chart-4/15 px-2.5 py-0.5 text-xs font-medium text-chart-4">
