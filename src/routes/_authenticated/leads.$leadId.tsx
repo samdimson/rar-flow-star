@@ -888,7 +888,10 @@ function LeadDetail() {
                     extra={{ lead_id: leadId }}
                     fields={productionFields}
                     columns={3}
-                    onSaved={close}
+                    onSaved={(row) => {
+                      void syncWalkthrough(row);
+                      close();
+                    }}
                     onCancel={close}
                   />
                 )}
