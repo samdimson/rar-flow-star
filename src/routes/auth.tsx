@@ -74,17 +74,13 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/40 px-4 py-10">
       <div className="w-full max-w-md">
-        <div className="mb-6 flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
-            RAR
-          </span>
-          <div>
-            <p className="font-display text-lg font-semibold leading-tight text-foreground">
-              Rise Above Roofing
-            </p>
-            <p className="text-sm text-muted-foreground">Oklahoma — Roofing CRM</p>
+        <div className="mb-6 flex flex-col items-center gap-3 text-center">
+          <div className="rounded-xl bg-primary px-6 py-4">
+            <img src="/logo.png" alt="Rise Above Roofing Oklahoma" className="h-16 w-auto" />
           </div>
+          <p className="text-sm text-muted-foreground">Oklahoma — Roofing CRM</p>
         </div>
+
 
         <Card>
           <CardHeader>
