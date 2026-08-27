@@ -321,6 +321,7 @@ function LeadDetail() {
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
             <TabsTrigger value="supplements">Supplements</TabsTrigger>
             {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
+            {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
             <TabsTrigger value="production">Production</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="history">Status history</TabsTrigger>
