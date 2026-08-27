@@ -231,8 +231,6 @@ function LeadDetail() {
   const { data: notes = [] } = useNotes({ column: "lead_id", value: leadId });
   const { data: tasks = [] } = useTasks({ column: "lead_id", value: leadId });
   const { data: appointments = [] } = useAppointments({ column: "lead_id", value: leadId });
-  // Kept: estimates query is still written to by the Materials Cost and Labor Cost summaries.
-  useEstimates({ column: "lead_id", value: leadId });
   const { data: invoices = [] } = useInvoices({ column: "lead_id", value: leadId });
   const { data: payments = [] } = usePayments({ column: "lead_id", value: leadId });
   const { data: changeOrders = [] } = useChangeOrders({ column: "lead_id", value: leadId });
