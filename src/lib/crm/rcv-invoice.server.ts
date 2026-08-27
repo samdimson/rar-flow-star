@@ -95,7 +95,7 @@ export async function buildRcvInvoicePdf(data: RcvInvoiceData): Promise<Uint8Arr
 
   if (logo) {
     const scale = 52 / logo.height;
-    page.drawImage(logo, { x: right - logo.width * scale, y: y - 14, width: logo.width * scale, height: 52 });
+    page.drawImage(logo, { x: right - logo.width * scale, y: y - 22, width: logo.width * scale, height: 52 });
   } else {
     const w = bold.widthOfTextAtSize(RCV_COMPANY, 12);
     page.drawText(RCV_COMPANY, { x: right - w, y: y + 10, size: 12, font: bold, color: NAVY });
