@@ -171,7 +171,7 @@ export async function runEmailRcvInvoice(
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")}</pre>`,
-      attachments: [{ filename: FILE_NAME, content: pdfBase64 }],
+      attachments: [{ filename: invoiceFileName, content: pdfBase64 }],
     }),
   });
   if (!response.ok) {
