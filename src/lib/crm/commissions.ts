@@ -63,11 +63,11 @@ export function useRepCommission(repId: string | null) {
   });
 }
 
-export function useMilestonePayouts(opts: { repId?: string | null; leadId?: string | null }) {
-  const { repId = null, leadId = null } = opts;
+export function useMilestonePayouts(opts: { repId?: string | null; leadId?: string | null; allReps?: boolean }) {
+  const { repId = null, leadId = null, allReps = false } = opts;
   return useQuery({
-    queryKey: ["milestone-payouts", repId, leadId],
-    enabled: !!repId || !!leadId,
+    queryKey: ["milestone-payouts", repId, leadId, allReps],
+    enabled: allReps || !!repId || !!leadId,
     queryFn: async () => {
       let query = supabase
         .from("milestone_payouts")
@@ -78,6 +78,116 @@ export function useMilestonePayouts(opts: { repId?: string | null; leadId?: stri
       const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as unknown as PayoutWithLead[];
+    },
+  });
+}
+
+export type JobCommissionPayout = {
+  milestone: number;
+  amount: number;
+  status: string;
+  triggered_at: string;
+};
+
+export type JobCommissionRow = {
+  leadId: string;
+  leadNumber: string;
+  customer: string;
+  address: string;
+  taskCode: string;
+  contractAmount: number;
+  netAmount: number;
+  tierRate: number;
+  totalCommission: number;
+  milestones: Record<number, JobCommissionPayout>;
+  totalPaid: number;
+  latestTriggeredAt: string;
+};
+
+export function useJobsCommissionDetail(opts: { repId: string | null; allReps: boolean }) {
+  const { repId, allReps } = opts;
+  return useQuery({
+    queryKey: ["jobs-commission-detail", repId, allReps],
+    enabled: allReps || !!repId,
+    queryFn: async () => {
+      let query = supabase
+        .from("milestone_payouts")
+        .select(
+          "milestone, amount, status, triggered_at, rep_id, lead_id, " +
+            "lead:leads!lead_id(id, lead_number, task_code, net_amount, contract_amount, " +
+            "customer:customers!customer_id(first_name, last_name), " +
+            "property:properties!property_id(address_line1, city, state, postal_code))",
+        )
+        .order("triggered_at", { ascending: false });
+      if (repId) query = query.eq("rep_id", repId);
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const rows = (data ?? []) as unknown as Array<{
+        milestone: number;
+        amount: number;
+        status: string;
+        triggered_at: string;
+        rep_id: string | null;
+        lead_id: string;
+        lead: {
+          id: string;
+          lead_number: string;
+          task_code: string;
+          net_amount: number | null;
+          contract_amount: number | null;
+          customer: { first_name: string; last_name: string } | null;
+          property: { address_line1: string; city: string; state: string; postal_code: string } | null;
+        } | null;
+      }>;
+
+      // tier rate per distinct rep
+      const repIds = [...new Set(rows.map((r) => r.rep_id).filter((v): v is string => !!v))];
+      const rateMap = new Map<string, number>();
+      await Promise.all(
+        repIds.map(async (id) => {
+          const { data: rate } = await supabase.rpc("get_rep_tier_rate", { _rep_id: id });
+          rateMap.set(id, Number(rate ?? 0));
+        }),
+      );
+
+      const byLead = new Map<string, JobCommissionRow>();
+      for (const r of rows) {
+        const lead = r.lead;
+        if (!lead) continue;
+        let job = byLead.get(r.lead_id);
+        if (!job) {
+          const tierRate = r.rep_id ? (rateMap.get(r.rep_id) ?? 0) : 0;
+          const netAmount = Number(lead.net_amount ?? 0);
+          job = {
+            leadId: lead.id,
+            leadNumber: lead.lead_number,
+            customer: lead.customer ? `${lead.customer.first_name} ${lead.customer.last_name}`.trim() : "—",
+            address: lead.property
+              ? `${lead.property.address_line1}, ${lead.property.city}, ${lead.property.state} ${lead.property.postal_code}`
+              : "—",
+            taskCode: lead.task_code,
+            contractAmount: Number(lead.contract_amount ?? 0),
+            netAmount,
+            tierRate,
+            totalCommission: netAmount * tierRate,
+            milestones: {},
+            totalPaid: 0,
+            latestTriggeredAt: r.triggered_at,
+          };
+          byLead.set(r.lead_id, job);
+        }
+        job.milestones[r.milestone] = {
+          milestone: r.milestone,
+          amount: Number(r.amount ?? 0),
+          status: r.status,
+          triggered_at: r.triggered_at,
+        };
+        if (r.status === "paid") job.totalPaid += Number(r.amount ?? 0);
+        if (r.triggered_at > job.latestTriggeredAt) job.latestTriggeredAt = r.triggered_at;
+      }
+
+      return [...byLead.values()].sort((a, b) => b.latestTriggeredAt.localeCompare(a.latestTriggeredAt));
     },
   });
 }

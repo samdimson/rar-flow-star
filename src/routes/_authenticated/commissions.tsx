@@ -3,12 +3,13 @@ import { useMemo, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
+import { JobsCommissionTable } from "@/components/crm/jobs-commission-table";
 import { MilestoneTable } from "@/components/crm/milestone-table";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useAllRoles, useProfiles } from "@/lib/crm/api";
-import { useCommissionTiers, useMilestonePayouts, useRepCommission } from "@/lib/crm/commissions";
+import { useCommissionTiers, useJobsCommissionDetail, useMilestonePayouts, useRepCommission } from "@/lib/crm/commissions";
 import { currencyExact } from "@/lib/crm/format";
 
 const title = "Commissions — Rise Above Roofing Oklahoma CRM";
@@ -37,9 +38,11 @@ function CommissionsPage() {
   const { data: tiers = [] } = useCommissionTiers();
   const [selectedRep, setSelectedRep] = useState<string | null>(null);
 
-  const repId = isManager ? (selectedRep ?? user?.id ?? null) : (user?.id ?? null);
+  const showAllReps = isManager && selectedRep === "all";
+  const repId = showAllReps ? null : isManager ? (selectedRep ?? user?.id ?? null) : (user?.id ?? null);
   const { data: commission } = useRepCommission(repId);
-  const { data: payouts = [], isLoading } = useMilestonePayouts({ repId });
+  const { data: payouts = [], isLoading } = useMilestonePayouts({ repId, allReps: showAllReps });
+  const { data: jobs = [], isLoading: jobsLoading } = useJobsCommissionDetail({ repId, allReps: showAllReps });
 
   const repOptions = useMemo(() => {
     const repIds = new Set(
@@ -65,7 +68,7 @@ function CommissionsPage() {
   const closed = Number(commission?.lifetime_closed ?? 0);
   const nextMin = commission?.next_tier_min ?? null;
   const progress = nextMin ? Math.min(100, Math.round((closed / nextMin) * 100)) : 100;
-  const repName = profiles.find((p) => p.id === repId)?.full_name ?? "You";
+  const repName = showAllReps ? "All reps" : (profiles.find((p) => p.id === repId)?.full_name ?? "You");
 
   return (
     <AppShell
@@ -74,13 +77,14 @@ function CommissionsPage() {
       actions={
         isManager && repOptions.length ? (
           <Select
-            value={repId ?? ""}
+            value={showAllReps ? "all" : (repId ?? "")}
             onValueChange={(v) => setSelectedRep(v)}
           >
             <SelectTrigger className="w-56" aria-label="Select rep">
               <SelectValue placeholder="Select rep" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">All reps</SelectItem>
               {repOptions.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.full_name || p.email}
@@ -132,10 +136,20 @@ function CommissionsPage() {
         <SectionCard title={`Milestone payouts — ${repName}`}>
           {isLoading ? (
             <LoadingBlock label="Loading payouts" />
-          ) : !repId ? (
+          ) : !repId && !showAllReps ? (
             <EmptyState message="Select a rep to view milestone payouts." />
           ) : (
             <MilestoneTable payouts={payouts} canManage={canManage} />
+          )}
+        </SectionCard>
+
+        <SectionCard title={`Jobs & Commission Detail — ${repName}`}>
+          {jobsLoading ? (
+            <LoadingBlock label="Loading jobs" />
+          ) : jobs.length === 0 ? (
+            <EmptyState message="No jobs with milestone payouts yet." />
+          ) : (
+            <JobsCommissionTable jobs={jobs} />
           )}
         </SectionCard>
       </div>
