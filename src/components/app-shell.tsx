@@ -37,6 +37,7 @@ type NavItem = {
   icon: typeof LayoutDashboard;
   finance?: boolean;
   manage?: boolean;
+  estimator?: boolean;
 };
 
 const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
