@@ -230,7 +230,7 @@ export function CostEstimator({
 
   const [customerId, setCustomerId] = useState<string>("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [prices, setPrices] = useState<Record<string, number>>(defaultPrices);
+  const [prices, setPrices] = useState<Record<string, number>>(() => defaultPrices(ALL_ITEMS));
   const [saving, setSaving] = useState(false);
   const [savingPrices, setSavingPrices] = useState(false);
   const [summaryMode, setSummaryMode] = useState(false);
@@ -250,12 +250,12 @@ export function CostEstimator({
   });
 
   useEffect(() => {
-    const merged = defaultPrices();
+    const merged = defaultPrices(ALL_ITEMS);
     for (const row of savedPrices) {
       if (row.description in merged) merged[row.description] = Number(row.unit_price);
     }
     setPrices(merged);
-  }, [savedPrices]);
+  }, [savedPrices, ALL_ITEMS]);
 
   // ---- resolve lead(s) in scope ----
   const leadIds = useMemo(() => {
@@ -317,7 +317,7 @@ export function CostEstimator({
       quantity: qtyOf(item.desc),
       unit: item.unit,
       unit_price: priceOf(item.desc),
-      source: LABOR_DESCS.has(item.desc) ? "labor" : "material",
+      source,
       sort_order: index,
     }));
 
