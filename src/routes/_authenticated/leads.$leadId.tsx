@@ -945,14 +945,9 @@ function LeadDetail() {
             </SectionCard>
           </TabsContent>
 
-          {/* Materials Cost ------------------------------------------ */}
-          <TabsContent value="cost-estimator" className="mt-4">
-            <MaterialsCostSummary leadId={leadId} />
-          </TabsContent>
-
-          {/* Labor Cost ---------------------------------------------- */}
-          <TabsContent value="labor-cost" className="mt-4">
-            <LaborCostSummary leadId={leadId} />
+          {/* Job Cost ------------------------------------------------ */}
+          <TabsContent value="job-cost" className="mt-4">
+            <JobCostPanel leadId={leadId} />
           </TabsContent>
 
 
