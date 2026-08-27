@@ -29,6 +29,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { useEstimatorAccess } from "@/lib/crm/access";
 import { initials, titleCase } from "@/lib/crm/format";
 
 type NavItem = {
@@ -62,8 +63,8 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
   {
     heading: "Money",
     items: [
-      { to: "/cost-estimator", label: "Materials Cost Estimator", icon: Calculator },
-      { to: "/labor-estimator", label: "Labor Cost Estimator", icon: Wrench },
+      { to: "/cost-estimator", label: "Materials Cost Estimator", icon: Calculator, estimator: true },
+      { to: "/labor-estimator", label: "Labor Cost Estimator", icon: Wrench, estimator: true },
       { to: "/invoices", label: "Invoices & Payments", icon: Banknote, finance: true },
       { to: "/commissions", label: "Commissions", icon: Percent },
     ],
@@ -104,11 +105,15 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const { canViewFinance, canManage } = useAuth();
+  const { allowed: canUseEstimators } = useEstimatorAccess();
   return (
     <nav className="flex flex-col gap-5 pb-6">
       {NAV_GROUPS.map((group) => {
         const items = group.items.filter(
-          (i) => (!i.finance || canViewFinance) && (!i.manage || canManage),
+          (i) =>
+            (!i.finance || canViewFinance) &&
+            (!i.manage || canManage) &&
+            (!i.estimator || canUseEstimators),
         );
         if (!items.length) return null;
         return (
