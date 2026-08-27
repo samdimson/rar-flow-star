@@ -19,7 +19,6 @@ import { Route as AuthenticatedContractsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCostEstimatorRouteImport } from './routes/_authenticated/cost-estimator'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
-import { Route as AuthenticatedEstimatesRouteImport } from './routes/_authenticated/estimates'
 import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticated/invoices'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedLaborEstimatorRouteImport } from './routes/_authenticated/labor-estimator'
@@ -81,11 +80,6 @@ const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedEstimatesRoute = AuthenticatedEstimatesRouteImport.update({
-  id: '/estimates',
-  path: '/estimates',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInvoicesRoute = AuthenticatedInvoicesRouteImport.update({
@@ -156,7 +150,6 @@ export interface FileRoutesByFullPath {
   '/cost-estimator': typeof AuthenticatedCostEstimatorRoute
   '/customers': typeof AuthenticatedCustomersRoute
   '/documents': typeof AuthenticatedDocumentsRoute
-  '/estimates': typeof AuthenticatedEstimatesRoute
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/labor-estimator': typeof AuthenticatedLaborEstimatorRoute
@@ -178,7 +171,6 @@ export interface FileRoutesByTo {
   '/cost-estimator': typeof AuthenticatedCostEstimatorRoute
   '/customers': typeof AuthenticatedCustomersRoute
   '/documents': typeof AuthenticatedDocumentsRoute
-  '/estimates': typeof AuthenticatedEstimatesRoute
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/labor-estimator': typeof AuthenticatedLaborEstimatorRoute
@@ -203,7 +195,6 @@ export interface FileRoutesById {
   '/_authenticated/cost-estimator': typeof AuthenticatedCostEstimatorRoute
   '/_authenticated/customers': typeof AuthenticatedCustomersRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
-  '/_authenticated/estimates': typeof AuthenticatedEstimatesRoute
   '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/labor-estimator': typeof AuthenticatedLaborEstimatorRoute
@@ -229,7 +220,6 @@ export interface FileRouteTypes {
     | '/cost-estimator'
     | '/customers'
     | '/documents'
-    | '/estimates'
     | '/invoices'
     | '/jobs'
     | '/labor-estimator'
@@ -251,7 +241,6 @@ export interface FileRouteTypes {
     | '/cost-estimator'
     | '/customers'
     | '/documents'
-    | '/estimates'
     | '/invoices'
     | '/jobs'
     | '/labor-estimator'
@@ -275,7 +264,6 @@ export interface FileRouteTypes {
     | '/_authenticated/cost-estimator'
     | '/_authenticated/customers'
     | '/_authenticated/documents'
-    | '/_authenticated/estimates'
     | '/_authenticated/invoices'
     | '/_authenticated/jobs'
     | '/_authenticated/labor-estimator'
@@ -367,13 +355,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/estimates': {
-      id: '/_authenticated/estimates'
-      path: '/estimates'
-      fullPath: '/estimates'
-      preLoaderRoute: typeof AuthenticatedEstimatesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/invoices': {
       id: '/_authenticated/invoices'
       path: '/invoices'
@@ -462,7 +443,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCostEstimatorRoute: typeof AuthenticatedCostEstimatorRoute
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
-  AuthenticatedEstimatesRoute: typeof AuthenticatedEstimatesRoute
   AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedLaborEstimatorRoute: typeof AuthenticatedLaborEstimatorRoute
@@ -485,7 +465,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCostEstimatorRoute: AuthenticatedCostEstimatorRoute,
   AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
-  AuthenticatedEstimatesRoute: AuthenticatedEstimatesRoute,
   AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedLaborEstimatorRoute: AuthenticatedLaborEstimatorRoute,

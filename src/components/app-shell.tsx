@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Columns3,
   FileSignature,
-  FileText,
   FolderOpen,
   Gauge,
   HardHat,
@@ -62,7 +61,6 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
   {
     heading: "Documents & Money",
     items: [
-      { to: "/estimates", label: "Estimates", icon: FileText },
       { to: "/cost-estimator", label: "Materials Cost Estimator", icon: Calculator },
       { to: "/labor-estimator", label: "Labor Cost Estimator", icon: Wrench },
       { to: "/contracts", label: "Contracts", icon: FileSignature },
