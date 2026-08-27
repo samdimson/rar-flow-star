@@ -605,7 +605,10 @@ function LeadDetail() {
                     extra={{ lead_id: leadId }}
                     fields={claimFields}
                     columns={3}
-                    onSaved={close}
+                    onSaved={(row) => {
+                      void syncAdjusterMeeting(row);
+                      close();
+                    }}
                     onCancel={close}
                   />
                 )}
