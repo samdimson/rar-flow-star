@@ -54,8 +54,15 @@ export function AdvanceDialog({
 
   if (!canEdit) return null;
 
+  const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5" && !override;
+
   const submit = () => {
     if (!effectiveTarget) return;
+    if (needsDenialConfirm && !confirmDenial) {
+      setConfirmDenial(true);
+      return;
+    }
+    setConfirmDenial(false);
     advance.mutate(
       { lead, toTaskCode: effectiveTarget, reason: reason || undefined, isOverride: override },
       {
