@@ -945,6 +945,39 @@ export type Database = {
           },
         ]
       }
+      material_prices: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          unit: string | null
+          unit_price: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          unit?: string | null
+          unit_price?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          unit?: string | null
+          unit_price?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           author_id: string | null
