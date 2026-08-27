@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Columns3,
   FileSignature,
-  FileText,
   FolderOpen,
   Gauge,
   HardHat,
