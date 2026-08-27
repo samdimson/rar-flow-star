@@ -209,3 +209,40 @@ export function useMarkPayoutPaid() {
     onError: (error: Error) => toast.error(error.message),
   });
 }
+
+/**
+ * Materials/labor cost breakdown for a set of leads.
+ * net = (contract - materials - labor) * 0.85 after 15% overhead deduction
+ */
+export const OVERHEAD_RATE = 0.15;
+
+export function useLeadCostBreakdown(leadIds: string[]) {
+  const key = [...leadIds].sort().join(",");
+  return useQuery({
+    queryKey: ["lead-cost-breakdown", key],
+    enabled: leadIds.length > 0,
+    queryFn: async () => {
+      const { data: estimates, error: estError } = await supabase
+        .from("estimates")
+        .select("id, lead_id")
+        .in("lead_id", leadIds);
+      if (estError) throw estError;
+      const ids = (estimates ?? []).map((e) => e.id);
+      let materials = 0;
+      let labor = 0;
+      if (ids.length > 0) {
+        const { data: lines, error } = await supabase
+          .from("estimate_line_items")
+          .select("quantity, unit_price, source")
+          .in("estimate_id", ids);
+        if (error) throw error;
+        for (const l of lines ?? []) {
+          const amount = Number(l.quantity ?? 0) * Number(l.unit_price ?? 0);
+          if ((l.source ?? "material") === "labor") labor += amount;
+          else materials += amount;
+        }
+      }
+      return { materials: Number(materials.toFixed(2)), labor: Number(labor.toFixed(2)) };
+    },
+  });
+}
