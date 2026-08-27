@@ -53,6 +53,14 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
     ],
   },
   {
+    heading: "Documents",
+    items: [
+      { to: "/contracts", label: "Contracts", icon: FileSignature },
+      { to: "/claims", label: "Insurance Claims", icon: ShieldCheck },
+      { to: "/documents", label: "Documents & Photos", icon: FolderOpen },
+    ],
+  },
+  {
     heading: "Work",
     items: [
       { to: "/calendar", label: "Calendar", icon: CalendarDays },
@@ -67,14 +75,6 @@ const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
       { to: "/labor-estimator", label: "Labor Cost Estimator", icon: Wrench, estimator: true },
       { to: "/invoices", label: "Invoices & Payments", icon: Banknote, finance: true },
       { to: "/commissions", label: "Commissions", icon: Percent },
-    ],
-  },
-  {
-    heading: "Documents",
-    items: [
-      { to: "/contracts", label: "Contracts", icon: FileSignature },
-      { to: "/claims", label: "Insurance Claims", icon: ShieldCheck },
-      { to: "/documents", label: "Documents & Photos", icon: FolderOpen },
     ],
   },
   {
