@@ -134,6 +134,7 @@ export async function runEmailRcvInvoice(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const db: any = supabaseAdmin;
   const storagePath = `leads/${input.leadId}/rcv-invoice.pdf`;
+  const invoiceFileName = fileName(input.invoiceNumber);
 
   const { data: file, error: downloadError } = await db.storage.from(BUCKET).download(storagePath);
   if (downloadError || !file) throw new Error(downloadError?.message ?? "Invoice PDF not found — generate it first.");
