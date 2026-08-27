@@ -20,6 +20,9 @@ export type FieldSpec = {
   required?: boolean;
   placeholder?: string;
   full?: boolean;
+  /** Value used when the record has no stored value for this field. */
+  defaultValue?: string | number | boolean;
+
   /** Excluded from the saved payload (used for UI-only helper inputs). */
   transient?: boolean;
   /** Render/validate this field only when the predicate passes. */
