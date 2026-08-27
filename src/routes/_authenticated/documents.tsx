@@ -57,13 +57,9 @@ function DocumentsPage() {
   };
 
   return (
-    <AppShell icon={FolderOpen}
-      title={
-        <span className="flex items-center gap-2.5 text-sm font-semibold text-orange-500">
-          <FolderOpen className="size-4 shrink-0" aria-hidden="true" />
-          Documents & Photos
-        </span>
-      }
+    <AppShell
+      icon={FolderOpen}
+      title="Documents & Photos"
       subtitle={`${docs.length} files stored privately`}
     >
       <div className="space-y-4">
