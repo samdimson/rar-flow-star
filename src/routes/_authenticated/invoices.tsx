@@ -79,7 +79,7 @@ function InvoicesPage() {
                       <p className="text-xs text-muted-foreground">
                         {lead ? (
                           <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="text-primary hover:underline">
-                            {lead.lead_number} · {lead.property?.address_line1}
+                            {lead.lead_number} · <span className="text-sky-400">{lead.property?.address_line1}</span>
                           </Link>
                         ) : null}
                         {i.due_at ? ` · due ${shortDate(i.due_at)}` : ""}
