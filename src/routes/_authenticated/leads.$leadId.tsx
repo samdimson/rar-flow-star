@@ -702,87 +702,63 @@ function LeadDetail() {
             </SectionCard>
           </TabsContent>
 
-          {/* Timeline -------------------------------------------------- */}
-          <TabsContent value="timeline" className="mt-4">
-            <SectionCard title="Activity timeline">
-              {activities.length === 0 ? (
-                <EmptyState message="No activity recorded yet." />
-              ) : (
-                <ol className="relative space-y-4 border-l border-border pl-5">
-                  {activities.map((a) => (
-                    <li key={a.id} className="relative">
-                      <span className="absolute -left-[26px] top-1.5 size-2.5 rounded-full bg-primary" aria-hidden="true" />
-                      <p className="text-sm font-medium">{a.subject}</p>
-                      {a.body ? <p className="text-sm text-muted-foreground">{a.body}</p> : null}
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {titleCase(a.type)} · {dateTime(a.occurred_at)}
-                      </p>
-                    </li>
-                  ))}
-                </ol>
-              )}
+          {/* Insurance ----------------------------------------------- */}
+          <TabsContent value="insurance" className="mt-4 space-y-4">
+            <SectionCard title="Insurance claim">
+              <EditableSection
+                canEdit={canEdit}
+                form={(close) => (
+                  <RecordForm
+                    table="insurance_claims"
+                    label="Insurance claim"
+                    initial={claimInitial}
+                    extra={{ lead_id: leadId }}
+                    fields={claimFields}
+                    columns={3}
+                    transformPayload={(payload, values) => ({
+                      ...payload,
+                      carrier:
+                        values["carrier_select"] === "Other"
+                          ? String(values["carrier_other"] ?? "").trim()
+                          : (values["carrier_select"] ?? null),
+                    })}
+                    onSaved={(row) => {
+                      void syncAdjusterMeeting(row);
+                      void syncReinspection(row);
+                      close();
+                    }}
+                    onCancel={close}
+                  />
+                )}
+              >
+                <dl className="grid gap-3 sm:grid-cols-3">
+                  <Field label="Carrier" value={claim?.carrier || "—"} />
+                  <Field label="Claim number" value={claim?.claim_number || "—"} />
+                  <Field label="Policy number" value={claim?.policy_number || "—"} />
+                  <Field label="Date of loss" value={shortDate(claim?.date_of_loss)} />
+                  <Field label="Filed" value={shortDate(claim?.date_filed)} />
+                  <Field label="Adjuster" value={claim?.adjuster_name || "—"} />
+                  <Field label="Adjuster phone" value={claim?.adjuster_phone || "—"} />
+                  <Field label="Adjuster meeting" value={dateTime(claim?.adjuster_meeting_at)} />
+                  <Field label="Report received" value={shortDate(claim?.adjuster_report_received_at)} />
+                  {canViewFinance ? <Field label="RCV" value={currency(claim?.rcv_amount)} /> : null}
+                  {canViewFinance ? <Field label="ACV" value={currency(claim?.acv_amount)} /> : null}
+                  {canViewFinance ? <Field label="Depreciation" value={currency(claim?.depreciation_amount)} /> : null}
+                  {canViewFinance ? <Field label="Deductible" value={currency(claim?.deductible)} /> : null}
+                  <Field label="Depreciation released" value={shortDate(claim?.depreciation_released_at)} />
+                  <Field label="Reinspection" value={dateTime(claim?.reinspection_at)} />
+                  <Field label="Notes" value={claim?.notes || "—"} />
+                </dl>
+              </EditableSection>
             </SectionCard>
+            <PolicyDocumentsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
+            <PolicySummaryCard summary={claim?.policy_summary ?? null} />
           </TabsContent>
 
-          {/* Tasks ---------------------------------------------------- */}
-          <TabsContent value="tasks" className="mt-4 space-y-4">
-            {canEdit ? (
-              <SectionCard title="Add task">
-                <RecordForm
-                  table="tasks"
-                  label="Task"
-                  extra={{ lead_id: leadId, created_by: user?.id ?? null, status: "open" }}
-                  resetAfterSave
-                  submitLabel="Create task"
-                  fields={[
-                    { name: "title", label: "Title", required: true },
-                    { name: "due_at", label: "Due", type: "datetime" },
-                    { name: "assigned_to", label: "Assigned to", type: "select", options: repOptions },
-                    {
-                      name: "priority",
-                      label: "Priority",
-                      type: "select",
-                      defaultValue: "normal",
-                      options: ["low", "normal", "high"].map((v) => ({ value: v, label: titleCase(v) })),
-                    },
+          {/* Supplements --------------------------------------------- */}
 
-                    { name: "details", label: "Details", type: "textarea" },
-                  ]}
-                />
-              </SectionCard>
-            ) : null}
-            <SectionCard title={`Tasks (${tasks.filter((t) => t.status === "open").length} open)`}>
-              {tasks.length === 0 ? (
-                <EmptyState message="No tasks for this record." />
-              ) : (
-                <ul className="divide-y divide-border">
-                  {tasks.map((t) => (
-                    <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium">{t.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {t.due_at ? `Due ${dateTime(t.due_at)}` : "No due date"} · {titleCase(t.priority)}
-                          {t.auto_generated ? " · automated" : ""}
-                        </p>
-                      </div>
-                      {t.status === "open" && canEdit ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            saveTask.mutate({ id: t.id, status: "completed", completed_at: new Date().toISOString() })
-                          }
-                        >
-                          <CheckCircle2 className="size-4" /> Complete
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">{titleCase(t.status)}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </SectionCard>
+          <TabsContent value="supplements" className="mt-4">
+            <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
           </TabsContent>
 
           {/* Appointments -------------------------------------------- */}
@@ -860,57 +836,155 @@ function LeadDetail() {
             </SectionCard>
           </TabsContent>
 
-          {/* Insurance ----------------------------------------------- */}
-          <TabsContent value="insurance" className="mt-4 space-y-4">
-            <SectionCard title="Insurance claim">
+          {/* Tasks ---------------------------------------------------- */}
+          <TabsContent value="tasks" className="mt-4 space-y-4">
+            {canEdit ? (
+              <SectionCard title="Add task">
+                <RecordForm
+                  table="tasks"
+                  label="Task"
+                  extra={{ lead_id: leadId, created_by: user?.id ?? null, status: "open" }}
+                  resetAfterSave
+                  submitLabel="Create task"
+                  fields={[
+                    { name: "title", label: "Title", required: true },
+                    { name: "due_at", label: "Due", type: "datetime" },
+                    { name: "assigned_to", label: "Assigned to", type: "select", options: repOptions },
+                    {
+                      name: "priority",
+                      label: "Priority",
+                      type: "select",
+                      defaultValue: "normal",
+                      options: ["low", "normal", "high"].map((v) => ({ value: v, label: titleCase(v) })),
+                    },
+
+                    { name: "details", label: "Details", type: "textarea" },
+                  ]}
+                />
+              </SectionCard>
+            ) : null}
+            <SectionCard title={`Tasks (${tasks.filter((t) => t.status === "open").length} open)`}>
+              {tasks.length === 0 ? (
+                <EmptyState message="No tasks for this record." />
+              ) : (
+                <ul className="divide-y divide-border">
+                  {tasks.map((t) => (
+                    <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">{t.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t.due_at ? `Due ${dateTime(t.due_at)}` : "No due date"} · {titleCase(t.priority)}
+                          {t.auto_generated ? " · automated" : ""}
+                        </p>
+                      </div>
+                      {t.status === "open" && canEdit ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            saveTask.mutate({ id: t.id, status: "completed", completed_at: new Date().toISOString() })
+                          }
+                        >
+                          <CheckCircle2 className="size-4" /> Complete
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{titleCase(t.status)}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </SectionCard>
+          </TabsContent>
+
+          {/* Documents ---------------------------------------------- */}
+          <TabsContent value="documents" className="mt-4">
+            <DocumentsPanel leadId={leadId} />
+          </TabsContent>
+
+          {/* Production ---------------------------------------------- */}
+          <TabsContent value="production" className="mt-4 space-y-4">
+            <SectionCard title="Production job">
               <EditableSection
                 canEdit={canEdit}
                 form={(close) => (
                   <RecordForm
-                    table="insurance_claims"
-                    label="Insurance claim"
-                    initial={claimInitial}
+                    table="production_jobs"
+                    label="Production job"
+                    initial={production}
                     extra={{ lead_id: leadId }}
-                    fields={claimFields}
+                    fields={productionFields}
                     columns={3}
-                    transformPayload={(payload, values) => ({
-                      ...payload,
-                      carrier:
-                        values["carrier_select"] === "Other"
-                          ? String(values["carrier_other"] ?? "").trim()
-                          : (values["carrier_select"] ?? null),
-                    })}
-                    onSaved={(row) => {
-                      void syncAdjusterMeeting(row);
-                      void syncReinspection(row);
-                      close();
-                    }}
+                    onSaved={close}
                     onCancel={close}
                   />
                 )}
               >
                 <dl className="grid gap-3 sm:grid-cols-3">
-                  <Field label="Carrier" value={claim?.carrier || "—"} />
-                  <Field label="Claim number" value={claim?.claim_number || "—"} />
-                  <Field label="Policy number" value={claim?.policy_number || "—"} />
-                  <Field label="Date of loss" value={shortDate(claim?.date_of_loss)} />
-                  <Field label="Filed" value={shortDate(claim?.date_filed)} />
-                  <Field label="Adjuster" value={claim?.adjuster_name || "—"} />
-                  <Field label="Adjuster phone" value={claim?.adjuster_phone || "—"} />
-                  <Field label="Adjuster meeting" value={dateTime(claim?.adjuster_meeting_at)} />
-                  <Field label="Report received" value={shortDate(claim?.adjuster_report_received_at)} />
-                  {canViewFinance ? <Field label="RCV" value={currency(claim?.rcv_amount)} /> : null}
-                  {canViewFinance ? <Field label="ACV" value={currency(claim?.acv_amount)} /> : null}
-                  {canViewFinance ? <Field label="Depreciation" value={currency(claim?.depreciation_amount)} /> : null}
-                  {canViewFinance ? <Field label="Deductible" value={currency(claim?.deductible)} /> : null}
-                  <Field label="Depreciation released" value={shortDate(claim?.depreciation_released_at)} />
-                  <Field label="Reinspection" value={dateTime(claim?.reinspection_at)} />
-                  <Field label="Notes" value={claim?.notes || "—"} />
+                  <Field
+                    label="Production manager"
+                    value={profiles.find((p) => p.id === production?.production_manager_id)?.full_name ?? "—"}
+                  />
+                  <Field label="Crew" value={production?.crew_name || "—"} />
+                  <Field label="Install date" value={shortDate(production?.install_date)} />
+                  <Field label="Permit status" value={titleCase(production?.permit_status) || "—"} />
+                  <Field label="Permit submitted" value={shortDate(production?.permit_submitted_at)} />
+                  <Field label="Permit approved" value={shortDate(production?.permit_approved_at)} />
+                  <Field label="Materials" value={titleCase(production?.material_order_status) || "—"} />
+                  <Field label="Material delivery" value={shortDate(production?.material_delivery_date)} />
+                  <Field label="Rescheduled to" value={shortDate(production?.rescheduled_to)} />
+                  <Field label="QC passed" value={shortDate(production?.qc_passed_at)} />
+                  <Field label="Walkthrough" value={shortDate(production?.walkthrough_at)} />
+                  <Field label="COC signed" value={shortDate(production?.coc_signed_at)} />
+                  <Field label="Warranty registered" value={shortDate(production?.warranty_registered_at)} />
+                  <Field label="Punch list" value={production?.punch_list || "None"} />
+                  <Field label="Weather delays" value={production?.weather_delay_notes || "None"} />
                 </dl>
               </EditableSection>
             </SectionCard>
-            <PolicyDocumentsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
-            <PolicySummaryCard summary={claim?.policy_summary ?? null} />
+
+            <SectionCard title="Change orders">
+              {canEdit ? (
+                <RecordForm
+                  table="change_orders"
+                  label="Change order"
+                  extra={{ lead_id: leadId, production_job_id: production?.id ?? null }}
+                  resetAfterSave
+                  submitLabel="Add change order"
+                  columns={3}
+                  fields={[
+                    { name: "description", label: "Description", required: true, full: true },
+                    { name: "amount", label: "Amount ($)", type: "number", required: true },
+                    {
+                      name: "status",
+                      label: "Status",
+                      type: "select",
+                      options: ["pending", "approved", "rejected"].map((v) => ({ value: v, label: titleCase(v) })),
+                    },
+                    { name: "supplement_submitted", label: "Supplement submitted", type: "checkbox" },
+                    { name: "homeowner_approved", label: "Homeowner approved", type: "checkbox" },
+                  ]}
+                />
+              ) : null}
+              {changeOrders.length === 0 ? (
+                <p className="mt-3 text-sm text-muted-foreground">No change orders.</p>
+              ) : (
+                <ul className="mt-3 divide-y divide-border">
+                  {changeOrders.map((c) => (
+                    <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                      <span className="min-w-0">
+                        {c.description}
+                        <span className="block text-xs text-muted-foreground">
+                          {titleCase(c.status)} · supplement {c.supplement_submitted ? "submitted" : "pending"} ·
+                          homeowner {c.homeowner_approved ? "approved" : "pending"}
+                        </span>
+                      </span>
+                      <span className="font-medium">{currency(c.amount)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </SectionCard>
           </TabsContent>
 
           {/* Materials Cost ------------------------------------------ */}
@@ -921,12 +995,6 @@ function LeadDetail() {
           {/* Labor Cost ---------------------------------------------- */}
           <TabsContent value="labor-cost" className="mt-4">
             <LaborCostSummary leadId={leadId} />
-          </TabsContent>
-
-          {/* Supplements --------------------------------------------- */}
-
-          <TabsContent value="supplements" className="mt-4">
-            <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
           </TabsContent>
 
 
@@ -1017,96 +1085,6 @@ function LeadDetail() {
             </TabsContent>
           ) : null}
 
-          {/* Production ---------------------------------------------- */}
-          <TabsContent value="production" className="mt-4 space-y-4">
-            <SectionCard title="Production job">
-              <EditableSection
-                canEdit={canEdit}
-                form={(close) => (
-                  <RecordForm
-                    table="production_jobs"
-                    label="Production job"
-                    initial={production}
-                    extra={{ lead_id: leadId }}
-                    fields={productionFields}
-                    columns={3}
-                    onSaved={close}
-                    onCancel={close}
-                  />
-                )}
-              >
-                <dl className="grid gap-3 sm:grid-cols-3">
-                  <Field
-                    label="Production manager"
-                    value={profiles.find((p) => p.id === production?.production_manager_id)?.full_name ?? "—"}
-                  />
-                  <Field label="Crew" value={production?.crew_name || "—"} />
-                  <Field label="Install date" value={shortDate(production?.install_date)} />
-                  <Field label="Permit status" value={titleCase(production?.permit_status) || "—"} />
-                  <Field label="Permit submitted" value={shortDate(production?.permit_submitted_at)} />
-                  <Field label="Permit approved" value={shortDate(production?.permit_approved_at)} />
-                  <Field label="Materials" value={titleCase(production?.material_order_status) || "—"} />
-                  <Field label="Material delivery" value={shortDate(production?.material_delivery_date)} />
-                  <Field label="Rescheduled to" value={shortDate(production?.rescheduled_to)} />
-                  <Field label="QC passed" value={shortDate(production?.qc_passed_at)} />
-                  <Field label="Walkthrough" value={shortDate(production?.walkthrough_at)} />
-                  <Field label="COC signed" value={shortDate(production?.coc_signed_at)} />
-                  <Field label="Warranty registered" value={shortDate(production?.warranty_registered_at)} />
-                  <Field label="Punch list" value={production?.punch_list || "None"} />
-                  <Field label="Weather delays" value={production?.weather_delay_notes || "None"} />
-                </dl>
-              </EditableSection>
-            </SectionCard>
-
-            <SectionCard title="Change orders">
-              {canEdit ? (
-                <RecordForm
-                  table="change_orders"
-                  label="Change order"
-                  extra={{ lead_id: leadId, production_job_id: production?.id ?? null }}
-                  resetAfterSave
-                  submitLabel="Add change order"
-                  columns={3}
-                  fields={[
-                    { name: "description", label: "Description", required: true, full: true },
-                    { name: "amount", label: "Amount ($)", type: "number", required: true },
-                    {
-                      name: "status",
-                      label: "Status",
-                      type: "select",
-                      options: ["pending", "approved", "rejected"].map((v) => ({ value: v, label: titleCase(v) })),
-                    },
-                    { name: "supplement_submitted", label: "Supplement submitted", type: "checkbox" },
-                    { name: "homeowner_approved", label: "Homeowner approved", type: "checkbox" },
-                  ]}
-                />
-              ) : null}
-              {changeOrders.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">No change orders.</p>
-              ) : (
-                <ul className="mt-3 divide-y divide-border">
-                  {changeOrders.map((c) => (
-                    <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
-                      <span className="min-w-0">
-                        {c.description}
-                        <span className="block text-xs text-muted-foreground">
-                          {titleCase(c.status)} · supplement {c.supplement_submitted ? "submitted" : "pending"} ·
-                          homeowner {c.homeowner_approved ? "approved" : "pending"}
-                        </span>
-                      </span>
-                      <span className="font-medium">{currency(c.amount)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </SectionCard>
-          </TabsContent>
-
-          {/* Documents ---------------------------------------------- */}
-          <TabsContent value="documents" className="mt-4">
-            <DocumentsPanel leadId={leadId} />
-          </TabsContent>
-
           {/* Commissions -------------------------------------------- */}
           <TabsContent value="commissions" className="mt-4">
             <LeadCommissions
@@ -1144,7 +1122,29 @@ function LeadDetail() {
               )}
             </SectionCard>
           </TabsContent>
-        </Tabs>
+        
+          {/* Timeline -------------------------------------------------- */}
+          <TabsContent value="timeline" className="mt-4">
+            <SectionCard title="Activity timeline">
+              {activities.length === 0 ? (
+                <EmptyState message="No activity recorded yet." />
+              ) : (
+                <ol className="relative space-y-4 border-l border-border pl-5">
+                  {activities.map((a) => (
+                    <li key={a.id} className="relative">
+                      <span className="absolute -left-[26px] top-1.5 size-2.5 rounded-full bg-primary" aria-hidden="true" />
+                      <p className="text-sm font-medium">{a.subject}</p>
+                      {a.body ? <p className="text-sm text-muted-foreground">{a.body}</p> : null}
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {titleCase(a.type)} · {dateTime(a.occurred_at)}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </SectionCard>
+          </TabsContent>
+</Tabs>
       </div>
     </AppShell>
   );
