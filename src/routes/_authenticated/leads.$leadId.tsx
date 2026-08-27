@@ -11,7 +11,6 @@ import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { IssueCoc } from "@/components/crm/issue-coc";
-import { RcvInvoiceDialog } from "@/components/crm/rcv-invoice-dialog";
 
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
@@ -25,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { useEstimatorAccess } from "@/lib/crm/access";
 import { supabase } from "@/integrations/supabase/client";
 
 import {
@@ -51,7 +49,6 @@ import {
   CARRIERS,
   APPOINTMENT_KINDS,
   LEAD_SOURCES,
-  PAYMENT_KINDS,
   PROPERTY_TYPES,
   ROOF_TYPES,
   TASK_BY_CODE,
@@ -213,7 +210,6 @@ export const Route = createFileRoute("/_authenticated/leads/$leadId")({
 function LeadDetail() {
   const { leadId } = Route.useParams();
   const { canEdit, canViewFinance, canManage, user } = useAuth();
-  const rcvAccess = useEstimatorAccess();
 
   const { data: lead, isLoading } = useLead(leadId);
   const { data: claim } = useClaim(leadId);
