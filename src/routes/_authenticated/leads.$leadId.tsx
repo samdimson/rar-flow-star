@@ -11,7 +11,6 @@ import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { IssueCoc } from "@/components/crm/issue-coc";
-import { RcvInvoiceDialog } from "@/components/crm/rcv-invoice-dialog";
 
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
@@ -25,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { useEstimatorAccess } from "@/lib/crm/access";
 import { supabase } from "@/integrations/supabase/client";
 
 import {
@@ -51,7 +49,6 @@ import {
   CARRIERS,
   APPOINTMENT_KINDS,
   LEAD_SOURCES,
-  PAYMENT_KINDS,
   PROPERTY_TYPES,
   ROOF_TYPES,
   TASK_BY_CODE,
@@ -213,7 +210,6 @@ export const Route = createFileRoute("/_authenticated/leads/$leadId")({
 function LeadDetail() {
   const { leadId } = Route.useParams();
   const { canEdit, canViewFinance, canManage, user } = useAuth();
-  const rcvAccess = useEstimatorAccess();
 
   const { data: lead, isLoading } = useLead(leadId);
   const { data: claim } = useClaim(leadId);
@@ -1011,94 +1007,52 @@ function LeadDetail() {
           </TabsContent>
 
 
-          {/* Invoices & Payments ------------------------------------- */}
+          {/* Invoices & Payments (read-only) -------------------------- */}
           {canViewFinance ? (
             <TabsContent value="billing" className="mt-4 space-y-4">
-              <SectionCard title={`Invoices & payments — ${currency(collected)} of ${currency(invoiced)} collected`}>
-                {rcvAccess.allowed ? (
-                  <div className="mb-3">
-                    <RcvInvoiceDialog leadId={leadId} defaultCustomerId={lead.customer_id ?? null} />
-                  </div>
-                ) : null}
+              <SectionCard title="Invoices">
+                {invoices.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No invoices generated yet.</p>
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {invoices.map((i) => (
+                      <li key={i.id} className="grid gap-1 py-2.5 text-sm sm:grid-cols-5 sm:items-center">
+                        <span className="font-medium">{i.invoice_number || "Invoice"}</span>
+                        <span className="font-medium">{currency(i.amount)}</span>
+                        <span className="text-muted-foreground">{titleCase(i.status)}</span>
+                        <span className="text-muted-foreground">
+                          Issued {i.issued_at ? shortDate(i.issued_at) : "—"}
+                        </span>
+                        <span className="text-muted-foreground">Due {i.due_at ? shortDate(i.due_at) : "—"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </SectionCard>
 
-
-                {canEdit ? (
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <RecordForm
-                      table="invoices"
-                      label="Invoice"
-                      extra={{ lead_id: leadId }}
-                      resetAfterSave
-                      submitLabel="Add invoice"
-                      fields={[
-                        { name: "invoice_number", label: "Invoice #" },
-                        { name: "amount", label: "Amount ($)", type: "number", required: true },
-                        { name: "issued_at", label: "Issued", type: "date" },
-                        { name: "due_at", label: "Due", type: "date" },
-                        {
-                          name: "status",
-                          label: "Status",
-                          type: "select",
-                          options: ["draft", "sent", "partial", "paid"].map((v) => ({ value: v, label: titleCase(v) })),
-                        },
-                      ]}
-                    />
-                    <RecordForm
-                      table="payments"
-                      label="Payment"
-                      extra={{ lead_id: leadId }}
-                      resetAfterSave
-                      submitLabel="Record payment"
-                      fields={[
-                        { name: "amount", label: "Amount ($)", type: "number", required: true },
-                        {
-                          name: "kind",
-                          label: "Type",
-                          type: "select",
-                          options: PAYMENT_KINDS.map((k) => ({ value: k.value, label: k.label })),
-                        },
-                        { name: "received_at", label: "Received", type: "date" },
-                        { name: "method", label: "Method" },
-                        { name: "reference", label: "Reference" },
-                      ]}
-                    />
-                  </div>
-                ) : null}
-                <div className="mt-3 grid gap-4 lg:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Invoices</p>
-                    {invoices.length === 0 ? (
-                      <p className="mt-1 text-sm text-muted-foreground">None.</p>
-                    ) : (
-                      <ul className="mt-1 divide-y divide-border">
-                        {invoices.map((i) => (
-                          <li key={i.id} className="flex justify-between gap-2 py-2 text-sm">
-                            <span>
-                              {i.invoice_number || "Invoice"} · {titleCase(i.status)}
-                            </span>
-                            <span className="font-medium">{currency(i.amount)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Payments</p>
-                    {payments.length === 0 ? (
-                      <p className="mt-1 text-sm text-muted-foreground">None.</p>
-                    ) : (
-                      <ul className="mt-1 divide-y divide-border">
-                        {payments.map((p) => (
-                          <li key={p.id} className="flex justify-between gap-2 py-2 text-sm">
-                            <span>
-                              {titleCase(p.kind)} · {shortDate(p.received_at)}
-                            </span>
-                            <span className="font-medium">{currency(p.amount)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+              <SectionCard title="Payments">
+                {payments.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {payments.map((p) => (
+                      <li key={p.id} className="grid gap-1 py-2.5 text-sm sm:grid-cols-5 sm:items-center">
+                        <span className="font-medium">{currency(p.amount)}</span>
+                        <span className="text-muted-foreground">{titleCase(p.kind)}</span>
+                        <span className="text-muted-foreground">
+                          {p.received_at ? shortDate(p.received_at) : "—"}
+                        </span>
+                        <span className="text-muted-foreground">{p.method || "—"}</span>
+                        <span className="text-muted-foreground">{p.reference || "—"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="mt-3 flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm font-medium">
+                  <span>Total collected</span>
+                  <span>
+                    {currency(collected)} of {currency(invoiced)}
+                  </span>
                 </div>
               </SectionCard>
             </TabsContent>

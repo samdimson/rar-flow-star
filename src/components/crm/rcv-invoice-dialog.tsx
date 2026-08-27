@@ -83,12 +83,12 @@ function buildScope(roofType: string | null, adjusterReportDate: string | null) 
 }
 
 export function RcvInvoiceDialog({
-  leadId,
-  defaultCustomerId,
+  leadId = "",
+  defaultCustomerId = null,
 }: {
-  leadId: string;
-  defaultCustomerId: string | null;
-}) {
+  leadId?: string;
+  defaultCustomerId?: string | null;
+} = {}) {
   const [open, setOpen] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(defaultCustomerId);
   const [targetLeadId, setTargetLeadId] = useState(leadId);
@@ -209,6 +209,10 @@ export function RcvInvoiceDialog({
   const set = (key: keyof Form) => (value: string) => setForm((f) => ({ ...f, [key]: value }));
 
   const submit = async () => {
+    if (!targetLeadId) {
+      toast.error("Select a customer with an existing lead first");
+      return;
+    }
     setBusy(true);
     try {
       const res = await generate({
