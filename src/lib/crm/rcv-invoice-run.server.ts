@@ -8,7 +8,7 @@ import {
 } from "./rcv-invoice.server";
 
 const BUCKET = "crm-files";
-const FILE_NAME = "RCV Invoice.pdf";
+const fileName = (invoiceNumber: string) => `RCV Invoice ${invoiceNumber}.pdf`;
 
 export type RcvInvoiceInput = {
   leadId: string;
@@ -67,13 +67,15 @@ export async function runGenerateRcvInvoice(input: RcvInvoiceInput, userId: stri
     .eq("storage_path", storagePath)
     .maybeSingle();
 
+  const invoiceFileName = fileName(input.invoiceNumber);
+
   if (existingDoc) {
     await db
       .from("documents")
       .update({
         customer_id: input.customerId,
         category: "invoice",
-        file_name: FILE_NAME,
+        file_name: invoiceFileName,
         file_size: pdfBytes.length,
         uploaded_at: nowIso,
       })
@@ -83,7 +85,7 @@ export async function runGenerateRcvInvoice(input: RcvInvoiceInput, userId: stri
       lead_id: input.leadId,
       customer_id: input.customerId,
       category: "invoice",
-      file_name: FILE_NAME,
+      file_name: invoiceFileName,
       storage_path: storagePath,
       mime_type: "application/pdf",
       file_size: pdfBytes.length,
@@ -132,6 +134,7 @@ export async function runEmailRcvInvoice(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const db: any = supabaseAdmin;
   const storagePath = `leads/${input.leadId}/rcv-invoice.pdf`;
+  const invoiceFileName = fileName(input.invoiceNumber);
 
   const { data: file, error: downloadError } = await db.storage.from(BUCKET).download(storagePath);
   if (downloadError || !file) throw new Error(downloadError?.message ?? "Invoice PDF not found — generate it first.");
@@ -168,7 +171,7 @@ export async function runEmailRcvInvoice(
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")}</pre>`,
-      attachments: [{ filename: FILE_NAME, content: pdfBase64 }],
+      attachments: [{ filename: invoiceFileName, content: pdfBase64 }],
     }),
   });
   if (!response.ok) {
