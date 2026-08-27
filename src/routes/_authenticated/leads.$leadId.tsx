@@ -54,11 +54,17 @@ import {
   stageName,
 } from "@/lib/crm/workflow";
 
-type EstimateLine = { item: string; quantity: number; unit: string; unit_price: number };
+type EstimateLine = {
+  item: string;
+  quantity: number;
+  unit: string;
+  unit_price: number;
+  source: string;
+};
 
-function MaterialsCostSummary({ leadId }: { leadId: string }) {
+function JobCostPanel({ leadId }: { leadId: string }) {
   const { data, isLoading } = useQuery({
-    queryKey: ["lead-materials-cost-summary", leadId],
+    queryKey: ["lead-job-cost", leadId],
     queryFn: async () => {
       const { data: estimate, error } = await supabase
         .from("estimates")
@@ -71,7 +77,7 @@ function MaterialsCostSummary({ leadId }: { leadId: string }) {
       if (!estimate) return null;
       const { data: lines, error: lineError } = await supabase
         .from("estimate_line_items")
-        .select("item, quantity, unit, unit_price")
+        .select("item, quantity, unit, unit_price, source")
         .eq("estimate_id", estimate.id)
         .gte("quantity", 1)
         .order("sort_order", { ascending: true });
@@ -80,166 +86,121 @@ function MaterialsCostSummary({ leadId }: { leadId: string }) {
     },
   });
 
-  if (isLoading) return <LoadingBlock label="Loading estimate" />;
-  if (!data || data.lines.length === 0) {
-    return (
+  if (isLoading) return <LoadingBlock label="Loading job cost" />;
+
+  const materials = (data?.lines ?? []).filter((l) => l.source === "material");
+  const labor = (data?.lines ?? []).filter((l) => l.source === "labor");
+  const materialsTotal = materials.reduce(
+    (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
+    0,
+  );
+  const laborTotal = labor.reduce(
+    (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
+    0,
+  );
+  const totalCost = materialsTotal + laborTotal;
+
+  return (
+    <div className="space-y-4">
       <SectionCard title="Materials Cost">
-        <EmptyState message="No estimate saved — use the Materials Cost Estimator on /cost-estimator to build and save one." />
-      </SectionCard>
-    );
-  }
-
-  const grandTotal = data.lines.reduce(
-    (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
-    0,
-  );
-
-  return (
-    <SectionCard title="Materials Cost">
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full min-w-[600px] text-sm">
-          <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2.5 font-semibold">Description</th>
-              <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
-              <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
-              <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
-              <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {SECTIONS.map((section) => {
-              const sectionLines = data.lines.filter((line) =>
-                section.items.some((item) => item.desc === line.item),
-              );
-              if (sectionLines.length === 0) return null;
-              return (
-                <Fragment key={section.label}>
-                  <tr className="bg-blue-100">
-                    <td colSpan={5} className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-950">
-                      {section.label}
+        {materials.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No materials estimate saved — use the Materials Cost Estimator to build and save one.
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
+            <table className="w-full min-w-[600px] text-sm">
+              <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2.5 font-semibold">Description</th>
+                  <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
+                  <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
+                  <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
+                  <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {materials.map((line) => (
+                  <tr key={`m-${line.item}`} className="border-t border-border">
+                    <td className="px-3 py-2">{line.item}</td>
+                    <td className="px-3 py-2">{line.quantity}</td>
+                    <td className="px-3 py-2 text-xs">{line.unit}</td>
+                    <td className="px-3 py-2 text-right">{currencyExact(line.unit_price)}</td>
+                    <td className="px-3 py-2 text-right font-medium">
+                      {currencyExact(Number(line.quantity) * Number(line.unit_price))}
                     </td>
                   </tr>
-                  {sectionLines.map((line) => (
-                    <tr key={line.item} className="border-t border-border">
-                      <td className="px-3 py-2">{line.item}</td>
-                      <td className="px-3 py-2">{line.quantity}</td>
-                      <td className="px-3 py-2 text-xs">{line.unit}</td>
-                      <td className="px-3 py-2 text-right">{currencyExact(line.unit_price)}</td>
-                      <td className="px-3 py-2 text-right font-medium">
-                        {currencyExact(Number(line.quantity) * Number(line.unit_price))}
-                      </td>
-                    </tr>
-                  ))}
-                </Fragment>
-              );
-            })}
-          </tbody>
-          <tfoot className="sticky bottom-0">
-            <tr className="border-t-2 border-border bg-yellow-200 font-bold text-yellow-950">
-              <td className="px-3 py-3" colSpan={4}>
-                Grand total
-              </td>
-              <td className="px-3 py-3 text-right text-base">{currencyExact(grandTotal)}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </SectionCard>
-  );
-}
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-border bg-secondary/50 font-semibold text-foreground">
+                  <td className="px-3 py-2.5" colSpan={4}>
+                    Materials subtotal
+                  </td>
+                  <td className="px-3 py-2.5 text-right">{currencyExact(materialsTotal)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </SectionCard>
 
-function LaborCostSummary({ leadId }: { leadId: string }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ["lead-labor-cost-summary", leadId],
-    queryFn: async () => {
-      const { data: estimate, error } = await supabase
-        .from("estimates")
-        .select("id, updated_at")
-        .eq("lead_id", leadId)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
-      if (!estimate) return null;
-      const { data: lines, error: lineError } = await supabase
-        .from("estimate_line_items")
-        .select("item, quantity, unit, unit_price")
-        .eq("estimate_id", estimate.id)
-        .eq("source", "labor")
-        .gte("quantity", 1)
-        .order("sort_order", { ascending: true });
-      if (lineError) throw lineError;
-      return { updatedAt: estimate.updated_at, lines: (lines ?? []) as EstimateLine[] };
-    },
-  });
-
-  if (isLoading) return <LoadingBlock label="Loading labor estimate" />;
-  if (!data || data.lines.length === 0) {
-    return (
       <SectionCard title="Labor Cost">
-        <EmptyState message="No labor estimate saved — use the Labor Cost Estimator to build and save one." />
-      </SectionCard>
-    );
-  }
-
-  const grandTotal = data.lines.reduce(
-    (sum, line) => sum + Number(line.quantity) * Number(line.unit_price),
-    0,
-  );
-
-  return (
-    <SectionCard title="Labor Cost">
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full min-w-[600px] text-sm">
-          <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2.5 font-semibold">Description</th>
-              <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
-              <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
-              <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
-              <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {LABOR_SECTIONS.map((section) => {
-              const sectionLines = data.lines.filter((line) =>
-                section.items.some((item) => item.desc === line.item),
-              );
-              if (sectionLines.length === 0) return null;
-              return (
-                <Fragment key={section.label}>
-                  <tr className="bg-blue-100">
-                    <td colSpan={5} className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-950">
-                      {section.label}
+        {labor.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No labor estimate saved — use the Labor Cost Estimator to build and save one.
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
+            <table className="w-full min-w-[600px] text-sm">
+              <thead className="sticky top-0 z-10 bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2.5 font-semibold">Description</th>
+                  <th className="w-28 px-3 py-2.5 font-semibold">Quantity</th>
+                  <th className="w-20 px-3 py-2.5 font-semibold">Unit</th>
+                  <th className="w-32 px-3 py-2.5 text-right font-semibold">Unit Price</th>
+                  <th className="w-32 px-3 py-2.5 text-right font-semibold">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {labor.map((line) => (
+                  <tr key={`l-${line.item}`} className="border-t border-border">
+                    <td className="px-3 py-2">{line.item}</td>
+                    <td className="px-3 py-2">{line.quantity}</td>
+                    <td className="px-3 py-2 text-xs">{line.unit}</td>
+                    <td className="px-3 py-2 text-right">{currencyExact(line.unit_price)}</td>
+                    <td className="px-3 py-2 text-right font-medium">
+                      {currencyExact(Number(line.quantity) * Number(line.unit_price))}
                     </td>
                   </tr>
-                  {sectionLines.map((line) => (
-                    <tr key={line.item} className="border-t border-border">
-                      <td className="px-3 py-2">{line.item}</td>
-                      <td className="px-3 py-2">{line.quantity}</td>
-                      <td className="px-3 py-2 text-xs">{line.unit}</td>
-                      <td className="px-3 py-2 text-right">{currencyExact(line.unit_price)}</td>
-                      <td className="px-3 py-2 text-right font-medium">
-                        {currencyExact(Number(line.quantity) * Number(line.unit_price))}
-                      </td>
-                    </tr>
-                  ))}
-                </Fragment>
-              );
-            })}
-          </tbody>
-          <tfoot className="sticky bottom-0">
-            <tr className="border-t-2 border-border bg-yellow-200 font-bold text-yellow-950">
-              <td className="px-3 py-3" colSpan={4}>
-                Grand total
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-border bg-secondary/50 font-semibold text-foreground">
+                  <td className="px-3 py-2.5" colSpan={4}>
+                    Labor subtotal
+                  </td>
+                  <td className="px-3 py-2.5 text-right">{currencyExact(laborTotal)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </SectionCard>
+
+      <div className="overflow-x-auto rounded-lg border border-border bg-yellow-200">
+        <table className="w-full min-w-[600px] text-sm">
+          <tbody>
+            <tr className="font-bold text-yellow-950">
+              <td className="px-3 py-3 text-base" colSpan={4}>
+                Total Estimated Job Cost
               </td>
-              <td className="px-3 py-3 text-right text-base">{currencyExact(grandTotal)}</td>
+              <td className="w-32 px-3 py-3 text-right text-base">{currencyExact(totalCost)}</td>
             </tr>
-          </tfoot>
+          </tbody>
         </table>
       </div>
-    </SectionCard>
+    </div>
   );
 }
 
