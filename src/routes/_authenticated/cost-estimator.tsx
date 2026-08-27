@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 
@@ -228,8 +228,8 @@ function CostEstimatorPage() {
           </thead>
           <tbody>
             {SECTIONS.map((section, si) => (
-              <>
-                <tr key={section.label} className="bg-blue-100">
+              <Fragment key={section.label}>
+                <tr className="bg-blue-100">
                   <td colSpan={6} className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-950">
                     {section.label}
                   </td>
@@ -263,7 +263,7 @@ function CostEstimatorPage() {
                     </tr>
                   );
                 })}
-              </>
+              </Fragment>
             ))}
           </tbody>
           <tfoot className="sticky bottom-0">
