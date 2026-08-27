@@ -506,19 +506,18 @@ function LeadDetail() {
         <Tabs defaultValue="overview">
           <TabsList className="flex h-auto w-full flex-wrap justify-start">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="calendar">Appointments</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
+            <TabsTrigger value="supplements">Supplements</TabsTrigger>
+            <TabsTrigger value="calendar">Appointments</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="production">Production</TabsTrigger>
             <TabsTrigger value="cost-estimator">Materials Cost</TabsTrigger>
             <TabsTrigger value="labor-cost">Labor Cost</TabsTrigger>
-            <TabsTrigger value="supplements">Supplements</TabsTrigger>
-
             {canViewFinance ? <TabsTrigger value="money">Estimates &amp; money</TabsTrigger> : null}
             {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
-            <TabsTrigger value="production">Production</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="history">Status history</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
 
           {/* Overview -------------------------------------------------- */}
