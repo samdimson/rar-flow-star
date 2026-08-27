@@ -822,8 +822,14 @@ function LeadDetail() {
                   )}
                 </EditableSection>
               </SectionCard>
+            </TabsContent>
+          ) : null}
 
+          {/* Invoices & Payments ------------------------------------- */}
+          {canViewFinance ? (
+            <TabsContent value="billing" className="mt-4 space-y-4">
               <SectionCard title={`Invoices & payments — ${currency(collected)} of ${currency(invoiced)} collected`}>
+
                 {canEdit ? (
                   <div className="grid gap-4 lg:grid-cols-2">
                     <RecordForm
