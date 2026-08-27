@@ -10,6 +10,7 @@ import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
 import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
+import { IssueCoc } from "@/components/crm/issue-coc";
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
 
@@ -423,7 +424,6 @@ function LeadDetail() {
     { name: "qc_passed_at", label: "QC passed", type: "date" },
     { name: "punch_list", label: "Punch list", type: "textarea" },
     { name: "walkthrough_at", label: "Homeowner walkthrough", type: "date" },
-    { name: "coc_signed_at", label: "Certificate of Completion signed", type: "date" },
     { name: "warranty_registered_at", label: "Warranty registered", type: "date" },
     { name: "notes", label: "Production notes", type: "textarea" },
   ];
@@ -946,6 +946,15 @@ function LeadDetail() {
               </EditableSection>
             </SectionCard>
 
+            <IssueCoc
+              leadId={leadId}
+              canEdit={canEdit}
+              cocSignedAt={production?.coc_signed_at ?? null}
+              cocEmailedAt={
+                (production as { coc_emailed_at?: string | null } | null | undefined)?.coc_emailed_at ?? null
+              }
+            />
+
             <SectionCard title="Change orders">
               {canEdit ? (
                 <RecordForm
@@ -1119,9 +1128,23 @@ function LeadDetail() {
                   ))}
                 </ul>
               )}
+              {(() => {
+                const cocSends = activities.filter((a) => a.type === "coc_emailed");
+                if (cocSends.length === 0) return null;
+                return (
+                  <ul className="mt-3 divide-y divide-border border-t border-border">
+                    {cocSends.map((a) => (
+                      <li key={a.id} className="py-2.5">
+                        <p className="text-sm font-medium">COC sent to {a.body ?? a.subject}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{dateTime(a.occurred_at)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
             </SectionCard>
           </TabsContent>
-        
+
           {/* Timeline -------------------------------------------------- */}
           <div className="hidden">
             <TabsContent value="timeline" className="mt-4">

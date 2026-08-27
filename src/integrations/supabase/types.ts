@@ -1256,6 +1256,7 @@ export type Database = {
       }
       production_jobs: {
         Row: {
+          coc_emailed_at: string | null
           coc_signed_at: string | null
           created_at: string
           crew_name: string | null
@@ -1279,6 +1280,7 @@ export type Database = {
           weather_delay_notes: string | null
         }
         Insert: {
+          coc_emailed_at?: string | null
           coc_signed_at?: string | null
           created_at?: string
           crew_name?: string | null
@@ -1302,6 +1304,7 @@ export type Database = {
           weather_delay_notes?: string | null
         }
         Update: {
+          coc_emailed_at?: string | null
           coc_signed_at?: string | null
           created_at?: string
           crew_name?: string | null
@@ -1645,6 +1648,7 @@ export type Database = {
         | "appointment"
         | "task"
         | "system"
+        | "coc_emailed"
       app_role:
         | "admin"
         | "owner_manager"
@@ -1847,6 +1851,7 @@ export const Constants = {
         "appointment",
         "task",
         "system",
+        "coc_emailed",
       ],
       app_role: [
         "admin",
