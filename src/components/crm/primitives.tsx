@@ -48,7 +48,7 @@ export function SectionCard({
   className,
   contentClassName,
 }: {
-  title: string;
+  title: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
   className?: string;

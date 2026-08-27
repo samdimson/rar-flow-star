@@ -149,7 +149,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 function Brand() {
   return (
     <div className="px-3">
-      <img src="/logo.png" alt="Rise Above Roofing Oklahoma" className="h-10 w-auto" />
+      <img src="/logo.png" alt="Rise Above Roofing Oklahoma" className="h-14 w-auto" />
       <span className="mt-1 block text-[11px] font-normal text-sidebar-foreground/60">Oklahoma CRM</span>
     </div>
   );
