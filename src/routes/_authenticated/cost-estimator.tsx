@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Calculator } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { AccessDenied } from "@/components/crm/access-denied";
@@ -29,7 +30,7 @@ function CostEstimatorPage() {
   const { allowed, loading } = useEstimatorAccess();
 
   return (
-    <AppShell
+    <AppShell icon={Calculator}
       title="Materials Cost Estimator"
       subtitle="Wholesale material and labor rates — enter quantities to build a total"
     >

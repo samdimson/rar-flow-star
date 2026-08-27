@@ -158,11 +158,13 @@ function Brand() {
 
 export function AppShell({
   title,
+  icon: Icon,
   subtitle,
   actions,
   children,
 }: {
   title: ReactNode;
+  icon?: typeof LayoutDashboard;
   subtitle?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
@@ -223,7 +225,8 @@ export function AppShell({
               </SheetContent>
             </Sheet>
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+              <h1 className="flex items-center gap-2.5 truncate text-3xl font-semibold tracking-tight text-orange-500">
+                {Icon ? <Icon className="size-7 shrink-0" aria-hidden="true" /> : null}
                 {title}
               </h1>
               {subtitle ? (

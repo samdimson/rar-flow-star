@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ShieldCheck } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock } from "@/components/crm/primitives";
@@ -36,7 +37,7 @@ function ClaimsPage() {
   const depreciationOutstanding = awaitingDepreciation.reduce((s, c) => s + Number(c.depreciation_amount ?? 0), 0);
 
   return (
-    <AppShell title="Insurance Claims" subtitle={`${claims.length} claim records`}>
+    <AppShell icon={ShieldCheck} title="Insurance Claims" subtitle={`${claims.length} claim records`}>
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard label="Open claims" value={claims.length} />

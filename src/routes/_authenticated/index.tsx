@@ -5,6 +5,7 @@ import {
   CalendarClock,
   FileSignature,
   HardHat,
+  LayoutDashboard,
   ShieldCheck,
   TrendingUp,
   Users,
@@ -46,7 +47,7 @@ function Dashboard() {
 
   if (isLoading) {
     return (
-      <AppShell title="Management Dashboard">
+      <AppShell icon={LayoutDashboard} title="Management Dashboard">
         <LoadingBlock label="Loading pipeline" />
       </AppShell>
     );
@@ -115,7 +116,7 @@ function Dashboard() {
     .sort((a, b) => b.revenue - a.revenue);
 
   return (
-    <AppShell
+    <AppShell icon={LayoutDashboard}
       title="Management Dashboard"
       subtitle={`Welcome back${profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""} — live view of every roofing lead and job.`}
       actions={

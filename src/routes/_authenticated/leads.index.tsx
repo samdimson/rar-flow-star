@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Users } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, LoadingBlock } from "@/components/crm/primitives";
@@ -78,7 +78,7 @@ function LeadsPage() {
   }, [leads, query, stage, source, rep, sort]);
 
   return (
-    <AppShell
+    <AppShell icon={Users}
       title="Leads"
       subtitle={`${rows.length} of ${leads.length} records`}
       actions={<LeadFormDialog />}

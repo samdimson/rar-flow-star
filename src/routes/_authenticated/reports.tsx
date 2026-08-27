@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Gauge } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
@@ -32,7 +33,7 @@ function ReportsPage() {
 
   if (isLoading) {
     return (
-      <AppShell title="Reports">
+      <AppShell icon={Gauge} title="Reports">
         <LoadingBlock label="Building reports" />
       </AppShell>
     );
@@ -40,7 +41,7 @@ function ReportsPage() {
 
   if (leads.length === 0) {
     return (
-      <AppShell title="Reports">
+      <AppShell icon={Gauge} title="Reports">
         <EmptyState message="Reports appear once you have leads in the pipeline." />
       </AppShell>
     );
@@ -112,7 +113,7 @@ function ReportsPage() {
 
 
   return (
-    <AppShell title="Reports" subtitle="Funnel, source performance and aging analysis">
+    <AppShell icon={Gauge} title="Reports" subtitle="Funnel, source performance and aging analysis">
       <div className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard label="Total records" value={total} />

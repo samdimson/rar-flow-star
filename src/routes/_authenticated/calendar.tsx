@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, SectionCard } from "@/components/crm/primitives";
@@ -52,7 +52,7 @@ function CalendarPage() {
   const leadFor = (id: string | null) => leads.find((l) => l.id === id);
 
   return (
-    <AppShell
+    <AppShell icon={CalendarDays}
       title="Calendar"
       subtitle={cursor.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
       actions={
