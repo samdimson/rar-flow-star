@@ -117,8 +117,8 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
         );
         if (!items.length) return null;
         return (
-          <div key={group.heading}>
-            <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <div key={group.heading}>
+            <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-sidebar-muted-foreground">
               {group.heading}
             </p>
             <div className="flex flex-col gap-0.5">
@@ -128,14 +128,14 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                   to={to}
                   onClick={onNavigate}
                   activeOptions={{ exact: to === "/" }}
-                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-accent/20 hover:text-sidebar-foreground"
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/20 hover:text-white"
                   activeProps={{
-                    className: "bg-accent text-white font-semibold hover:bg-accent",
+                    className: "bg-accent text-white font-semibold hover:bg-accent hover:text-white",
                   }}
 
                 >
-                  <Icon className="size-4 shrink-0" aria-hidden="true" />
-                  <span className="truncate">{label}</span>
+                  <Icon className="size-4 shrink-0 text-white" aria-hidden="true" />
+                  <span className="truncate text-white">{label}</span>
                 </Link>
               ))}
             </div>
@@ -150,7 +150,7 @@ function Brand() {
   return (
     <div className="px-3">
       <img src="/logo.png" alt="Rise Above Roofing Oklahoma" className="h-10 w-auto" />
-      <span className="mt-1 block text-[11px] font-normal text-sidebar-foreground/60">Oklahoma CRM</span>
+      <span className="mt-1 block text-[11px] font-normal text-sidebar-muted-foreground">Oklahoma CRM</span>
     </div>
   );
 }
@@ -190,14 +190,14 @@ export function AppShell({
             {initials(profile?.full_name || user?.email)}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-sidebar-foreground">
+            <p className="truncate text-xs font-semibold text-white">
               {profile?.full_name || user?.email}
             </p>
-            <p className="truncate text-[11px] text-muted-foreground">
+            <p className="truncate text-[11px] text-sidebar-muted-foreground">
               {primaryRole ? titleCase(primaryRole) : "No role"}
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
+          <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out" className="text-white hover:bg-white/10 hover:text-white">
             <LogOut className="size-4" />
           </Button>
         </div>
