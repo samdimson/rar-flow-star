@@ -41,7 +41,7 @@ function CommissionsPage() {
   const showAllReps = isManager && selectedRep === "all";
   const repId = showAllReps ? null : isManager ? (selectedRep ?? user?.id ?? null) : (user?.id ?? null);
   const { data: commission } = useRepCommission(repId);
-  const { data: payouts = [], isLoading } = useMilestonePayouts({ repId, leadId: showAllReps ? "__all__" : null });
+  const { data: payouts = [], isLoading } = useMilestonePayouts({ repId, allReps: showAllReps });
   const { data: jobs = [], isLoading: jobsLoading } = useJobsCommissionDetail({ repId, allReps: showAllReps });
 
   const repOptions = useMemo(() => {
@@ -68,7 +68,7 @@ function CommissionsPage() {
   const closed = Number(commission?.lifetime_closed ?? 0);
   const nextMin = commission?.next_tier_min ?? null;
   const progress = nextMin ? Math.min(100, Math.round((closed / nextMin) * 100)) : 100;
-  const repName = profiles.find((p) => p.id === repId)?.full_name ?? "You";
+  const repName = showAllReps ? "All reps" : (profiles.find((p) => p.id === repId)?.full_name ?? "You");
 
   return (
     <AppShell
