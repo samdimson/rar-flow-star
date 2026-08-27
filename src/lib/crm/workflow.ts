@@ -470,3 +470,27 @@ export function addBusinessDays(from: Date, days: number) {
   }
   return d;
 }
+
+/** Insurance carriers commonly seen in the Oklahoma market. */
+export const CARRIERS = [
+  "State Farm",
+  "Allstate",
+  "Farmers",
+  "USAA",
+  "Liberty Mutual",
+  "Travelers",
+  "American Farmers & Ranchers",
+  "Oklahoma Farm Bureau",
+  "Shelter Insurance",
+  "Progressive",
+  "Nationwide",
+  "Auto-Owners",
+  "The Hartford",
+  "Chubb",
+  "Cincinnati Insurance",
+  "ICW Group",
+  "Employers Holdings",
+  "Sentry Insurance",
+  "CSAA",
+  "Other",
+] as const;
