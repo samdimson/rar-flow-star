@@ -265,7 +265,7 @@ export function CostEstimator({
   }, [fixedLeadId, customerId, leads]);
 
   const { data: estimateData } = useQuery({
-    queryKey: ["cost-estimator-estimate", leadIds.join(",")],
+    queryKey: ["cost-estimator-estimate", source, leadIds.join(",")],
     enabled: leadIds.length > 0,
     queryFn: async () => {
       const { data: estimates, error } = await supabase
@@ -281,7 +281,8 @@ export function CostEstimator({
       const { data: lines, error: lineError } = await supabase
         .from("estimate_line_items")
         .select("item, quantity, unit_price")
-        .eq("estimate_id", estimate.id);
+        .eq("estimate_id", estimate.id)
+        .eq("source", source);
       if (lineError) throw lineError;
       return { estimate, lines: lines ?? [] };
     },
@@ -358,12 +359,12 @@ export function CostEstimator({
       const total = Number(lines.reduce((s, l) => s + l.quantity * l.unit_price, 0).toFixed(2));
       let estimateId = estimateData?.estimate?.id;
       if (estimateId) {
-        const { error } = await supabase
-          .from("estimates")
-          .update({ total_amount: total, notes: "Cost estimator" })
-          .eq("id", estimateId);
-        if (error) throw error;
-        const { error: delError } = await supabase.from("estimate_line_items").delete().eq("estimate_id", estimateId);
+        // replace only this estimator's rows so the other source is preserved
+        const { error: delError } = await supabase
+          .from("estimate_line_items")
+          .delete()
+          .eq("estimate_id", estimateId)
+          .eq("source", source);
         if (delError) throw delError;
       } else {
         const { data, error } = await supabase
@@ -393,9 +394,39 @@ export function CostEstimator({
         })),
       );
       if (insError) throw insError;
+
+      // recompute estimate total + lead net amount across materials and labor
+      const { data: allLines, error: allError } = await supabase
+        .from("estimate_line_items")
+        .select("quantity, unit_price, source")
+        .eq("estimate_id", estimateId);
+      if (allError) throw allError;
+      const sumFor = (predicate: (s: string) => boolean) =>
+        (allLines ?? [])
+          .filter((l) => predicate(l.source ?? "material"))
+          .reduce((s, l) => s + Number(l.quantity) * Number(l.unit_price), 0);
+      const laborTotal = sumFor((s) => s === "labor");
+      const materialsTotal = sumFor((s) => s !== "labor");
+      const estimateTotal = Number((materialsTotal + laborTotal).toFixed(2));
+
+      const { error: estError } = await supabase
+        .from("estimates")
+        .update({ total_amount: estimateTotal, notes: "Cost estimator" })
+        .eq("id", estimateId);
+      if (estError) throw estError;
+
+      const contractAmount = Number(leads.find((l) => l.id === targetLeadId)?.contract_amount ?? 0);
+      const netAmount = contractAmount > 0 ? Number((contractAmount - estimateTotal).toFixed(2)) : 0;
+      const { error: netError } = await supabase
+        .from("leads")
+        .update({ net_amount: netAmount })
+        .eq("id", targetLeadId);
+      if (netError) throw netError;
+
       await queryClient.invalidateQueries({ queryKey: ["cost-estimator-estimate"] });
       await queryClient.invalidateQueries({ queryKey: ["estimates"] });
       await queryClient.invalidateQueries({ queryKey: ["estimate_line_items"] });
+      await queryClient.invalidateQueries({ queryKey: ["leads"] });
       setSummaryMode(true);
       toast.success("Estimate saved");
     } catch (e) {

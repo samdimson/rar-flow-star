@@ -25,9 +25,9 @@ export type RepCommission = {
 };
 
 export const MILESTONE_LABELS: Record<number, string> = {
-  1: "Milestone 1 — $500 advance (task 5.2)",
-  2: "Milestone 2 — 50% of commission (task 3.4)",
-  3: "Milestone 3 — remaining 50% less $500 (task 6.5)",
+  1: "Milestone 1 — $500 advance (task 5.2 — rescission clears)",
+  2: "Milestone 2 — 50% of commission (task 5.1 — contract signed)",
+  3: "Milestone 3 — remaining 50% less $500 (task 6.5 — job complete)",
 };
 
 export const PAYOUT_STATUS_CLASSES: Record<string, string> = {

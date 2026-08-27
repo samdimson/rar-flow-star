@@ -334,6 +334,7 @@ export function missingRequirements(
   };
   return task.required.filter((f) => {
     const v = present[f];
+    if (f === "rcv_amount") return !(Number(v) > 0);
     return v === null || v === undefined || v === "" || v === 0;
   });
 }
