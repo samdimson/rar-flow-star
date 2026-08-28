@@ -97,17 +97,27 @@ export async function runGenerateRcvInvoice(input: RcvInvoiceInput, userId: stri
   }
 
   const invoiceTotal = Number(input.payment1) + Number(input.payment2);
-  const { data: existingInvoice } = await db
-    .from("invoices")
-    .select("id")
-    .eq("lead_id", input.leadId)
-    .eq("invoice_number", input.invoiceNumber)
-    .maybeSingle();
+  let existingInvoice: { id: string } | null = null;
+  if (input.invoiceId) {
+    existingInvoice = { id: input.invoiceId };
+  } else {
+    const { data } = await db
+      .from("invoices")
+      .select("id")
+      .eq("lead_id", input.leadId)
+      .eq("invoice_number", input.invoiceNumber)
+      .maybeSingle();
+    existingInvoice = data ?? null;
+  }
 
   if (existingInvoice) {
     await db
       .from("invoices")
-      .update({ amount: invoiceTotal, status: "sent", issued_at: input.invoiceDate })
+      .update({
+        amount: invoiceTotal,
+        invoice_number: input.invoiceNumber,
+        issued_at: input.invoiceDate,
+      })
       .eq("id", existingInvoice.id);
   } else {
     await db.from("invoices").insert({
