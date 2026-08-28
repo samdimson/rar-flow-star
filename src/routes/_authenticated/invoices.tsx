@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Banknote, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import { Banknote, ChevronDown, ChevronUp, FileText, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -14,6 +14,7 @@ import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { useAuth } from "@/hooks/use-auth";
 import { useEstimatorAccess } from "@/lib/crm/access";
 import { RcvInvoiceDialog } from "@/components/crm/rcv-invoice-dialog";
+import { ApplyPaymentDialog } from "@/components/crm/apply-payment-dialog";
 
 const title = "Invoices & Payments — Rise Above Roofing Oklahoma CRM";
 const description =
