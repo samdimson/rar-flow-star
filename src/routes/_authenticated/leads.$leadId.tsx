@@ -1018,9 +1018,8 @@ function LeadDetail() {
             <JobCostPanel leadId={leadId} />
           </TabsContent>
 
-
           {/* Invoices & Payments (read-only) -------------------------- */}
-          {canViewFinance ? (
+          {(
             <TabsContent value="billing" className="mt-4 space-y-4">
               <SectionCard title="Invoices">
                 {invoices.length === 0 ? (
