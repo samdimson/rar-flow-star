@@ -197,7 +197,7 @@ export function RcvInvoiceDialog({
         .eq("id", targetLeadId!)
         .maybeSingle();
       if (error) throw error;
-      if (!lead) return { lead: null, claim: null, job: null, rep: null, paid: 0, nextNumber: null };
+      if (!lead) return { lead: null, claim: null, job: null, rep: null, paid: 0, paymentsList: [], nextNumber: null };
 
       const [{ data: claim }, { data: job }, { data: rep }, { data: payments }, { data: invoices }] = await Promise.all([
         supabase
