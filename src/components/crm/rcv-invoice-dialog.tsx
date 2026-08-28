@@ -235,6 +235,7 @@ export function RcvInvoiceDialog({
         job,
         rep,
         paid: (payments ?? []).reduce((s, p) => s + Number(p.amount), 0),
+        paymentsList: (payments ?? []) as LeadPayment[],
         nextNumber,
       };
     },
