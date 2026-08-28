@@ -144,6 +144,7 @@ export function LeadFormDialog() {
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
+    if (duplicate && !(canManage && override)) return;
     create.mutate(
       { ...form, assigned_rep_id: form.assigned_rep_id || user?.id || "" },
       {
