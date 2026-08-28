@@ -245,7 +245,6 @@ export function RcvInvoiceDialog({
     if (!loaded) return;
     if (!loaded.lead) {
       setPropertyAddress("");
-      setResult(null);
       setForm(EMPTY);
       return;
     }
@@ -256,7 +255,6 @@ export function RcvInvoiceDialog({
     const address = addressOf(property);
     setTargetLeadId(lead.id);
     setPropertyAddress(address);
-    setResult(null);
     setForm({
       invoiceNumber: loaded.nextNumber ?? "",
       invoiceDate: todayIso(),
