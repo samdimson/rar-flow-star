@@ -276,6 +276,7 @@ export function RcvInvoiceDialog({
       payment1: String(Number(claim?.["acv_amount"] ?? 0)),
       payment2: String(Number(claim?.["depreciation_amount"] ?? 0)),
       paymentsReceived: String(loaded.paid ?? 0),
+      paymentDate: todayIso(),
     });
   }, [loaded]);
 
