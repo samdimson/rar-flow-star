@@ -142,7 +142,9 @@ export async function runEmailRcvInvoice(
 
   const lovableKey = process.env["LOVABLE_API_KEY"];
   const resendKey = process.env["RESEND_API_KEY"];
-  if (!lovableKey || !resendKey) throw new Error("Email provider is not connected yet (Resend connection missing).");
+  if (!lovableKey || !resendKey) {
+    return { sent: false as const, reason: "email_not_configured" as const };
+  }
 
   const text = [
     `Please find attached invoice ${input.invoiceNumber} for the roof replacement at ${input.propertyAddress}.`,
@@ -176,7 +178,8 @@ export async function runEmailRcvInvoice(
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`Provider request failed [${response.status}]: ${errorBody}`);
+    console.error(`Resend request failed [${response.status}]: ${errorBody}`);
+    return { sent: false as const, reason: "email_send_failed" as const };
   }
 
   await db.from("activities").insert({
