@@ -528,8 +528,7 @@ function LeadDetail() {
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="production">Production</TabsTrigger>
             <TabsTrigger value="job-cost">Job Cost</TabsTrigger>
-            
-            {canViewFinance ? <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger> : null}
+            <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger>
             <TabsTrigger value="commissions">Commissions</TabsTrigger>
             <TabsTrigger value="history">Status history</TabsTrigger>
             <div className="hidden">
@@ -1019,10 +1018,8 @@ function LeadDetail() {
             <JobCostPanel leadId={leadId} />
           </TabsContent>
 
-
           {/* Invoices & Payments (read-only) -------------------------- */}
-          {canViewFinance ? (
-            <TabsContent value="billing" className="mt-4 space-y-4">
+          <TabsContent value="billing" className="mt-4 space-y-4">
               <SectionCard title="Invoices">
                 {invoices.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No invoices generated yet.</p>
@@ -1096,9 +1093,8 @@ function LeadDetail() {
                     {currency(collected)} of {currency(invoiced)}
                   </span>
                 </div>
-              </SectionCard>
-            </TabsContent>
-          ) : null}
+            </SectionCard>
+          </TabsContent>
 
           {/* Commissions -------------------------------------------- */}
           <TabsContent value="commissions" className="mt-4">
