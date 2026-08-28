@@ -346,25 +346,29 @@ export function RcvInvoiceDialog({
     }
 
     let emailError: unknown = null;
+    let emailReason: string | null = null;
     try {
-      await sendEmail({
+      const res = (await sendEmail({
         data: {
           leadId: targetLeadId,
           invoiceNumber: form.invoiceNumber,
           customerEmail: form.billToEmail,
           propertyAddress: propertyAddress || form.billToAddress,
         },
-      });
+      })) as { sent: boolean; reason?: string };
+      if (!res?.sent) emailReason = res?.reason ?? "email_send_failed";
     } catch (error) {
       emailError = error;
     }
     await queryClient.invalidateQueries();
 
-    if (emailError) {
+    if (emailError || emailReason) {
       setOverlay({
         kind: "error",
         message:
-          "Invoice PDF was created but email delivery failed. Download the PDF from Documents and send manually.",
+          emailReason === "email_not_configured"
+            ? "Invoice PDF was created, but no email provider is connected yet, so it was not sent. Download the PDF from Documents and send manually."
+            : "Invoice PDF was created but email delivery failed. Download the PDF from Documents and send manually.",
       });
       return;
     }
