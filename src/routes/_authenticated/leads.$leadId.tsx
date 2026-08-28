@@ -1095,10 +1095,8 @@ function LeadDetail() {
                               </span>
                             ) : null}
                           </div>
-                          <span className="text-muted-foreground">
-                            {titleCase(p.kind)}
-                            {matched?.invoice_number ? ` — Applied to ${matched.invoice_number}` : ""}
-                          </span>
+                          <span className="text-muted-foreground">{titleCase(p.kind)}</span>
+
                           <span className="text-muted-foreground">
                             {p.received_at ? shortDate(p.received_at) : "—"}
                           </span>
