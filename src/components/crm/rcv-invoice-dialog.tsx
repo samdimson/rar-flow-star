@@ -131,31 +131,50 @@ export function RcvInvoiceDialog({
   const sendEmail = useServerFn(emailRcvInvoice);
   const queryClient = useQueryClient();
 
-  const { data: customers = [] } = useQuery({
-    queryKey: ["rcv-customers"],
+  const { data: allLeads = [] } = useQuery({
+    queryKey: ["rcv-invoice-leads"],
     enabled: open,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("customers")
-        .select("id, first_name, last_name, phone, email, property:properties(*)")
-        .order("last_name", { ascending: true });
+        .from("leads")
+        .select(
+          "id, lead_number, status, stage_id, task_code, contract_amount, rescission_ends_at, customer_id, customer:customers(id, first_name, last_name, phone, email), property:properties(address_line1, city, state, postal_code), claims:insurance_claims(claim_number, rcv_amount, updated_at)",
+        )
+        .not("customer_id", "is", null)
+        .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as unknown as EligibleLead[];
     },
   });
 
+  const { eligible, ineligible } = useMemo(() => {
+    const seen = new Set<string>();
+    const eligible: EligibleLead[] = [];
+    const ineligible: { lead: EligibleLead; reason: string }[] = [];
+    for (const lead of allLeads) {
+      if (!lead.customer_id || seen.has(lead.customer_id)) continue;
+      const reason = exclusionReason(lead);
+      if (reason) {
+        ineligible.push({ lead, reason });
+      } else {
+        eligible.push(lead);
+        seen.add(lead.customer_id);
+      }
+    }
+    eligible.sort((a, b) => `${a.customer?.last_name}`.localeCompare(`${b.customer?.last_name}`));
+    return { eligible, ineligible };
+  }, [allLeads]);
+
   const { data: loaded } = useQuery({
-    queryKey: ["rcv-customer-context", customerId],
-    enabled: open && !!customerId,
+    queryKey: ["rcv-customer-context", targetLeadId],
+    enabled: open && !!targetLeadId,
     queryFn: async () => {
-      const { data: leads, error } = await supabase
+      const { data: lead, error } = await supabase
         .from("leads")
         .select("id, lead_number, customer_id, property:properties(*), customer:customers(*)")
-        .eq("customer_id", customerId!)
-        .order("created_at", { ascending: false })
-        .limit(1);
+        .eq("id", targetLeadId!)
+        .maybeSingle();
       if (error) throw error;
-      const lead = leads?.[0] ?? null;
       if (!lead) return { lead: null, claim: null, job: null, paid: 0, nextNumber: null };
 
       const [{ data: claim }, { data: job }, { data: payments }, { data: invoices }] = await Promise.all([
