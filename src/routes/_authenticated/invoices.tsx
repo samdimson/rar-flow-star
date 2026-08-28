@@ -196,15 +196,6 @@ function InvoicesPage() {
     );
   };
 
-  const paymentGroups = Object.entries(
-    payments.reduce<Record<string, typeof payments>>((acc, p) => {
-      const arr = acc[p.lead_id] ?? [];
-      arr.push(p);
-      acc[p.lead_id] = arr;
-      return acc;
-    }, {}),
-  );
-
   return (
     <AppShell
       icon={Banknote}
@@ -270,54 +261,6 @@ function InvoicesPage() {
             <p className="text-sm text-muted-foreground">
               {archivedInvoices.length} paid invoice{archivedInvoices.length === 1 ? "" : "s"} hidden.
             </p>
-          )}
-        </SectionCard>
-
-        <SectionCard title="Payments received">
-          {payments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No payments recorded.</p>
-          ) : (
-            <div className="space-y-5">
-              {paymentGroups.map(([leadId, group]) => {
-                const lead = leadFor(leadId);
-                const customer = lead?.customer;
-                const property = lead?.property;
-                return (
-                  <div key={leadId}>
-                    <h4 className="mb-2 text-sm font-semibold">
-                      <span className="text-orange-500">
-                        {customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
-                      </span>
-                      {" — "}
-                      <span className="text-sky-400">
-                        {property
-                          ? `${property.address_line1}${property.city ? `, ${property.city}` : ""}${property.state ? ` ${property.state}` : ""}${property.postal_code ? ` ${property.postal_code}` : ""}`
-                          : "—"}
-                      </span>
-                      {" — "}
-                      <span className="text-muted-foreground">{lead?.lead_number}</span>
-                    </h4>
-                    <ul className="divide-y divide-border rounded-md border">
-                      {group.map((p) => (
-                        <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
-                          <div>
-                            <p className="font-medium">{titleCase(p.kind)}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {p.received_at ? shortDate(p.received_at) : ""}
-                              {p.method ? ` · ${p.method}` : ""}
-                            </p>
-                          </div>
-                          <span className="font-medium">{currency(p.amount)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="mt-1 text-right text-xs text-muted-foreground">
-                      Total: {currency(group.reduce((s, p) => s + Number(p.amount), 0))}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
           )}
         </SectionCard>
       </div>
