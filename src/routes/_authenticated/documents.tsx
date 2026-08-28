@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useDocuments, useLeads, type DocumentRow } from "@/lib/crm/api";
+import { useDocumentCustomers, useDocuments, useLeads, type DocumentRow } from "@/lib/crm/api";
 import { dateTime } from "@/lib/crm/format";
 import { DOCUMENT_CATEGORIES } from "@/lib/crm/workflow";
 
@@ -32,11 +32,18 @@ export const Route = createFileRoute("/_authenticated/documents")({
 function DocumentsPage() {
   const { data: docs = [], isLoading } = useDocuments();
   const { data: leads = [] } = useLeads();
+  const { data: customers = [] } = useDocumentCustomers();
+  const [customer, setCustomer] = useState("all");
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
 
+  const customerLeadIds = new Set(
+    customer === "all" ? [] : leads.filter((l) => l.customer_id === customer).map((l) => l.id),
+  );
+
   const q = query.trim().toLowerCase();
   const rows = docs.filter((d) => {
+    if (customer !== "all" && d.lead_id && !customerLeadIds.has(d.lead_id)) return false;
     if (category !== "all" && d.category !== category) return false;
     if (!q) return true;
     const lead = leads.find((l) => l.id === d.lead_id);
@@ -63,7 +70,18 @@ function DocumentsPage() {
       subtitle={`${docs.length} files stored privately`}
     >
       <div className="space-y-4">
-        <div className="grid gap-2 sm:grid-cols-[1fr_240px]">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[240px_1fr_240px]">
+          <Select value={customer} onValueChange={setCustomer}>
+            <SelectTrigger aria-label="Filter by customer"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All customers</SelectItem>
+              {customers.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.first_name} {c.last_name} ({c.lead_number})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}

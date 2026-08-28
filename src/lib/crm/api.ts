@@ -98,6 +98,48 @@ export const useInvoices = listHook("invoices", "created_at");
 export const usePayments = listHook("payments", "created_at");
 export const useCustomers = listHook("customers", "created_at");
 export const useProperties = listHook("properties", "created_at");
+
+export type DocumentCustomer = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  lead_number: string;
+};
+
+export function useDocumentCustomers() {
+  return useQuery({
+    queryKey: ["document-customers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("lead_id, leads!inner(customer_id, lead_number, customers!inner(id, first_name, last_name))")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+
+      const map = new Map<string, DocumentCustomer>();
+      (data ?? []).forEach((row: unknown) => {
+        const r = row as {
+          leads?: {
+            customer_id?: string;
+            lead_number?: string;
+            customers?: { id?: string; first_name?: string; last_name?: string } | null;
+          } | null;
+        };
+        const lead = r.leads;
+        const customer = lead?.customers;
+        if (customer?.id && lead?.lead_number) {
+          map.set(customer.id, {
+            id: customer.id,
+            first_name: customer.first_name ?? "",
+            last_name: customer.last_name ?? "",
+            lead_number: lead.lead_number,
+          });
+        }
+      });
+      return Array.from(map.values()).sort((a, b) => a.last_name.localeCompare(b.last_name));
+    },
+  });
+}
 export const useProductionJobs = listHook("production_jobs", "install_date", true);
 export const useChangeOrders = listHook("change_orders", "created_at");
 export const useCommissions = listHook("commissions", "created_at");
