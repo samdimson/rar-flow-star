@@ -1074,17 +1074,38 @@ function LeadDetail() {
                   <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
                 ) : (
                   <ul className="divide-y divide-border">
-                    {payments.map((p) => (
-                      <li key={p.id} className="grid gap-1 py-2.5 text-sm sm:grid-cols-5 sm:items-center">
-                        <span className="font-medium">{currency(p.amount)}</span>
-                        <span className="text-muted-foreground">{titleCase(p.kind)}</span>
-                        <span className="text-muted-foreground">
-                          {p.received_at ? shortDate(p.received_at) : "—"}
-                        </span>
-                        <span className="text-muted-foreground">{p.method || "—"}</span>
-                        <span className="text-muted-foreground">{p.reference || "—"}</span>
-                      </li>
-                    ))}
+                    {payments.map((p) => {
+                      const matched =
+                        (p as { invoice_id?: string | null }).invoice_id
+                          ? invoices.find((i) => i.id === (p as { invoice_id?: string | null }).invoice_id)
+                          : invoices.length === 1
+                            ? invoices[0]
+                            : [...invoices].sort(
+                                (a, b) =>
+                                  new Date(b.issued_at ?? b.created_at ?? 0).getTime() -
+                                  new Date(a.issued_at ?? a.created_at ?? 0).getTime(),
+                              )[0];
+                      return (
+                        <li key={p.id} className="grid gap-1 py-2.5 text-sm sm:grid-cols-5 sm:items-center">
+                          <div>
+                            <span className="font-medium">{currency(p.amount)}</span>
+                            {matched?.invoice_number ? (
+                              <span className="block text-xs text-muted-foreground">
+                                Applied to {matched.invoice_number}
+                              </span>
+                            ) : null}
+                          </div>
+                          <span className="text-muted-foreground">{titleCase(p.kind)}</span>
+
+                          <span className="text-muted-foreground">
+                            {p.received_at ? shortDate(p.received_at) : "—"}
+                          </span>
+                          <span className="text-muted-foreground">{p.method || "—"}</span>
+                          <span className="text-muted-foreground">{p.reference || "—"}</span>
+                        </li>
+                      );
+                    })}
+
                   </ul>
                 )}
                 <div className="mt-3 flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm font-medium">
