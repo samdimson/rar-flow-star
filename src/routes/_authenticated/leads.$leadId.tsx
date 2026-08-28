@@ -1028,17 +1028,46 @@ function LeadDetail() {
                   <p className="text-sm text-muted-foreground">No invoices generated yet.</p>
                 ) : (
                   <ul className="divide-y divide-border">
-                    {invoices.map((i) => (
-                      <li key={i.id} className="grid gap-1 py-2.5 text-sm sm:grid-cols-5 sm:items-center">
-                        <span className="font-medium">{i.invoice_number || "Invoice"}</span>
-                        <span className="font-medium">{currency(i.amount)}</span>
-                        <span className="text-muted-foreground">{titleCase(i.status)}</span>
-                        <span className="text-muted-foreground">
-                          Issued {i.issued_at ? shortDate(i.issued_at) : "—"}
-                        </span>
-                        <span className="text-muted-foreground">Due {i.due_at ? shortDate(i.due_at) : "—"}</span>
-                      </li>
-                    ))}
+                    {invoices.map((i) => {
+                      const doc = invoiceDocs.find(
+                        (d) =>
+                          d.file_name?.toLowerCase().includes(String(i.invoice_number ?? "").toLowerCase()) ||
+                          d.storage_path?.toLowerCase().includes(String(i.invoice_number ?? "").toLowerCase()),
+                      );
+                      return (
+                        <li key={i.id} className="grid gap-1 py-2.5 text-sm sm:grid-cols-6 sm:items-center">
+                          <span className="font-medium">{i.invoice_number || "Invoice"}</span>
+                          <span className="font-medium">{currency(i.amount)}</span>
+                          <span className="text-muted-foreground">{titleCase(i.status)}</span>
+                          <span className="text-muted-foreground">
+                            Issued {i.issued_at ? shortDate(i.issued_at) : "—"}
+                          </span>
+                          <span className="text-muted-foreground">Due {i.due_at ? shortDate(i.due_at) : "—"}</span>
+                          <div className="flex justify-start sm:justify-end">
+                            {doc ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2 text-orange-500 hover:text-orange-600"
+                                onClick={async () => {
+                                  const { data, error } = await supabase.storage
+                                    .from("crm-files")
+                                    .createSignedUrl(doc.storage_path, 300);
+                                  if (error || !data) {
+                                    toast.error("Could not open PDF");
+                                    return;
+                                  }
+                                  window.open(data.signedUrl, "_blank");
+                                }}
+                                aria-label={`Open PDF for invoice ${i.invoice_number || ""}`}
+                              >
+                                <FileText className="size-4" />
+                              </Button>
+                            ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </SectionCard>
