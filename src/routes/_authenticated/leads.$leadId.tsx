@@ -1019,8 +1019,7 @@ function LeadDetail() {
           </TabsContent>
 
           {/* Invoices & Payments (read-only) -------------------------- */}
-          {(
-            <TabsContent value="billing" className="mt-4 space-y-4">
+          <TabsContent value="billing" className="mt-4 space-y-4">
               <SectionCard title="Invoices">
                 {invoices.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No invoices generated yet.</p>
@@ -1094,9 +1093,8 @@ function LeadDetail() {
                     {currency(collected)} of {currency(invoiced)}
                   </span>
                 </div>
-              </SectionCard>
-            </TabsContent>
-          )}
+            </SectionCard>
+          </TabsContent>
 
           {/* Commissions -------------------------------------------- */}
           <TabsContent value="commissions" className="mt-4">
