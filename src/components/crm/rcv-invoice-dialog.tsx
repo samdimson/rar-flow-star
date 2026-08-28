@@ -71,6 +71,35 @@ const num = (value: string) => {
 const addressOf = (property: { address_line1: string; city: string; state: string; postal_code: string } | null) =>
   property ? `${property.address_line1}, ${property.city}, ${property.state} ${property.postal_code}` : "";
 
+type EligibleLead = {
+  id: string;
+  lead_number: string;
+  status: string;
+  stage_id: number;
+  task_code: string;
+  contract_amount: number | null;
+  rescission_ends_at: string | null;
+  customer_id: string | null;
+  customer: { id: string; first_name: string; last_name: string; phone: string | null; email: string | null } | null;
+  property: { address_line1: string; city: string; state: string; postal_code: string } | null;
+  claims: { claim_number: string | null; rcv_amount: number | null; updated_at: string }[];
+};
+
+function exclusionReason(lead: EligibleLead): string | null {
+  const claim = [...(lead.claims ?? [])].sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0] ?? null;
+  if (lead.status === "lost") return "Lead is closed/lost";
+  if (lead.stage_id < 5) return "No contract signed yet";
+  if (lead.task_code === "2.2") return "Claim did not qualify — no insurance scope";
+  if (lead.task_code === "3.5") return "Claim denied or under appeal";
+  if (!claim) return "No insurance claim opened";
+  if (!claim.claim_number) return "Claim number not confirmed";
+  if (!Number(claim.rcv_amount)) return "No approved RCV amount from carrier";
+  if (!Number(lead.contract_amount)) return "No signed contract amount";
+  if (lead.rescission_ends_at && new Date(lead.rescission_ends_at).getTime() > Date.now())
+    return "Rescission window not yet cleared";
+  return null;
+}
+
 function buildScope(roofType: string | null, adjusterReportDate: string | null) {
   const shingles = roofType ? roofTypeLabel(roofType) : "architectural";
   const dated = adjusterReportDate ? shortDate(adjusterReportDate) : "on file";
