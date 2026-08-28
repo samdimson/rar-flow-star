@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, FileText, Loader2, Mail } from "lucide-react";
+import { CheckCircle2, FileText, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ type Form = {
   payment1: string;
   payment2: string;
   paymentsReceived: string;
+  paymentDate: string;
 };
 
 const EMPTY: Form = {
@@ -61,7 +62,30 @@ const EMPTY: Form = {
   payment1: "0",
   payment2: "0",
   paymentsReceived: "0",
+  paymentDate: todayIso(),
 };
+
+type LeadPayment = { amount: number; received_at: string | null; method: string | null };
+
+type OverlayState =
+  | { kind: "generating" }
+  | { kind: "success"; invoiceNumber: string; customerEmail: string | null }
+  | { kind: "error"; message: string }
+  | null;
+
+function classifyError(error: unknown): string {
+  const raw = error instanceof Error ? error.message : "";
+  const msg = raw.toLowerCase();
+  if (/missing|required information/.test(msg))
+    return `Customer is missing required information: ${raw.replace(/^missing[:\s]*/i, "") || "check Bill To name, address and email"}.`;
+  if (/email|resend|provider|delivery/.test(msg))
+    return "Invoice PDF was created but email delivery failed. Download the PDF from Documents and send manually.";
+  if (/storage|upload|bucket/.test(msg))
+    return "PDF could not be saved to storage. Contact your administrator.";
+  if (/pdf|generate|document/.test(msg))
+    return "The PDF could not be created. Check that all required fields (RCV, Deductible, ACV) are filled in.";
+  return "An unexpected error occurred. Please try again or contact support.";
+}
 
 const num = (value: string) => {
   const n = Number(String(value).replace(/[^0-9.-]/g, ""));
@@ -122,9 +146,7 @@ export function RcvInvoiceDialog({
   const [customerId, setCustomerId] = useState<string | null>(defaultCustomerId);
   const [targetLeadId, setTargetLeadId] = useState(leadId);
   const [form, setForm] = useState<Form>(EMPTY);
-  const [busy, setBusy] = useState(false);
-  const [emailing, setEmailing] = useState(false);
-  const [result, setResult] = useState<{ downloadUrl: string | null } | null>(null);
+  const [overlay, setOverlay] = useState<OverlayState>(null);
   const [propertyAddress, setPropertyAddress] = useState("");
 
   const generate = useServerFn(generateRcvInvoice);
@@ -175,7 +197,7 @@ export function RcvInvoiceDialog({
         .eq("id", targetLeadId!)
         .maybeSingle();
       if (error) throw error;
-      if (!lead) return { lead: null, claim: null, job: null, rep: null, paid: 0, nextNumber: null };
+      if (!lead) return { lead: null, claim: null, job: null, rep: null, paid: 0, paymentsList: [], nextNumber: null };
 
       const [{ data: claim }, { data: job }, { data: rep }, { data: payments }, { data: invoices }] = await Promise.all([
         supabase
@@ -194,7 +216,7 @@ export function RcvInvoiceDialog({
         lead.assigned_rep_id
           ? supabase.from("profiles").select("full_name").eq("id", lead.assigned_rep_id).maybeSingle()
           : Promise.resolve({ data: null }),
-        supabase.from("payments").select("amount").eq("lead_id", lead.id),
+        supabase.from("payments").select("amount, received_at, method").eq("lead_id", lead.id),
         supabase
           .from("invoices")
           .select("invoice_number")
@@ -213,6 +235,7 @@ export function RcvInvoiceDialog({
         job,
         rep,
         paid: (payments ?? []).reduce((s, p) => s + Number(p.amount), 0),
+        paymentsList: (payments ?? []) as LeadPayment[],
         nextNumber,
       };
     },
@@ -222,7 +245,6 @@ export function RcvInvoiceDialog({
     if (!loaded) return;
     if (!loaded.lead) {
       setPropertyAddress("");
-      setResult(null);
       setForm(EMPTY);
       return;
     }
@@ -233,7 +255,6 @@ export function RcvInvoiceDialog({
     const address = addressOf(property);
     setTargetLeadId(lead.id);
     setPropertyAddress(address);
-    setResult(null);
     setForm({
       invoiceNumber: loaded.nextNumber ?? "",
       invoiceDate: todayIso(),
@@ -255,6 +276,7 @@ export function RcvInvoiceDialog({
       payment1: String(Number(claim?.["acv_amount"] ?? 0)),
       payment2: String(Number(claim?.["depreciation_amount"] ?? 0)),
       paymentsReceived: String(loaded.paid ?? 0),
+      paymentDate: todayIso(),
     });
   }, [loaded]);
 
@@ -271,9 +293,29 @@ export function RcvInvoiceDialog({
       toast.error("Select a customer with an existing lead first");
       return;
     }
-    setBusy(true);
+
+    const missing: string[] = [];
+    if (!form.billToName.trim()) missing.push("Bill To name");
+    if (!form.billToAddress.trim()) missing.push("Bill To address");
+    if (!form.billToEmail.trim()) missing.push("Bill To email");
+    if (missing.length > 0) {
+      setOverlay({
+        kind: "error",
+        message: `Customer is missing required information: ${missing.join(", ")}.`,
+      });
+      return;
+    }
+    if (!num(form.rcv) || !num(form.payment1)) {
+      setOverlay({
+        kind: "error",
+        message: "The PDF could not be created. Check that all required fields (RCV, Deductible, ACV) are filled in.",
+      });
+      return;
+    }
+
+    setOverlay({ kind: "generating" });
     try {
-      const res = await generate({
+      await generate({
         data: {
           leadId: targetLeadId,
           customerId,
@@ -298,22 +340,12 @@ export function RcvInvoiceDialog({
           origin: window.location.origin,
         },
       });
-      setResult({ downloadUrl: res.downloadUrl });
-      await queryClient.invalidateQueries();
-      toast.success("RCV invoice generated");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not generate the invoice");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const email = async () => {
-    if (!form.billToEmail) {
-      toast.error("This customer has no email address");
+      setOverlay({ kind: "error", message: classifyError(error) });
       return;
     }
-    setEmailing(true);
+
+    let emailError: unknown = null;
     try {
       await sendEmail({
         data: {
@@ -323,13 +355,20 @@ export function RcvInvoiceDialog({
           propertyAddress: propertyAddress || form.billToAddress,
         },
       });
-      await queryClient.invalidateQueries();
-      toast.success(`Invoice emailed to ${form.billToEmail}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not send the invoice");
-    } finally {
-      setEmailing(false);
+      emailError = error;
     }
+    await queryClient.invalidateQueries();
+
+    if (emailError) {
+      setOverlay({
+        kind: "error",
+        message:
+          "Invoice PDF was created but email delivery failed. Download the PDF from Documents and send manually.",
+      });
+      return;
+    }
+    setOverlay({ kind: "success", invoiceNumber: form.invoiceNumber, customerEmail: form.billToEmail });
   };
 
   const money = (n: number) => currencyExact(n);
@@ -359,7 +398,6 @@ export function RcvInvoiceDialog({
                 setForm(EMPTY);
                 setTargetLeadId(leadIdValue);
                 setCustomerId(lead?.customer_id ?? null);
-                setResult(null);
               }}
             >
               <SelectTrigger aria-label="Customer">
@@ -437,7 +475,6 @@ export function RcvInvoiceDialog({
                 ["deductible", "Deductible ($, shown as negative)"],
                 ["payment1", "Payment 1 — Initial ACV ($)"],
                 ["payment2", "Payment 2 — Recoverable depreciation ($)"],
-                ["paymentsReceived", "Payments received ($)"],
               ] as [keyof Form, string][]
             ).map(([key, label]) => (
               <div key={key} className="space-y-1.5">
@@ -451,6 +488,44 @@ export function RcvInvoiceDialog({
                 />
               </div>
             ))}
+          </div>
+
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <Label>Payments received</Label>
+            {(loaded?.paymentsList ?? []).length > 0 ? (
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                {(loaded?.paymentsList ?? []).map((p, i) => (
+                  <li key={i}>
+                    Amount: {money(Number(p.amount))} — Received:{" "}
+                    {p.received_at ? shortDate(p.received_at) : "—"} — Method: {p.method || "—"}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">No payments recorded yet — enter 0.</p>
+            )}
+            <p className="text-sm font-medium">Total received: {money(loaded?.paid ?? 0)}</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="rcv-paymentsReceived">Payments received ($)</Label>
+                <Input
+                  id="rcv-paymentsReceived"
+                  type="number"
+                  step="0.01"
+                  value={form.paymentsReceived}
+                  onChange={(e) => set("paymentsReceived")(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rcv-paymentDate">Payment date</Label>
+                <Input
+                  id="rcv-paymentDate"
+                  type="date"
+                  value={form.paymentDate}
+                  onChange={(e) => set("paymentDate")(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           <dl className="rounded-lg border border-border p-3 text-sm">
@@ -468,37 +543,58 @@ export function RcvInvoiceDialog({
             </div>
           </dl>
 
-          {result ? (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/40 p-3">
-              {result.downloadUrl ? (
-                <Button asChild variant="outline" size="sm">
-                  <a href={result.downloadUrl} target="_blank" rel="noopener noreferrer">
-                    <Download className="size-4" aria-hidden="true" /> Download PDF
-                  </a>
-                </Button>
-              ) : null}
-              <Button size="sm" onClick={() => void email()} disabled={emailing}>
-                {emailing ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <Mail className="size-4" aria-hidden="true" />
-                )}
-                Email to customer
-              </Button>
-            </div>
-          ) : null}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
             Close
           </Button>
-          <Button onClick={() => void submit()} disabled={busy || !customerId}>
-            {busy ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
-            {busy ? "Generating…" : "Generate PDF"}
+          <Button onClick={() => void submit()} disabled={overlay !== null || !customerId}>
+            Generate PDF
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {overlay ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
+          {overlay.kind === "generating" ? (
+            <div className="flex flex-col items-center gap-3 rounded-xl bg-card p-10 text-center shadow-xl">
+              <Loader2 className="size-10 animate-spin text-orange-500" aria-hidden="true" />
+              <p className="text-lg font-semibold">Generating invoice...</p>
+            </div>
+          ) : overlay.kind === "success" ? (
+            <div className="flex w-full max-w-md flex-col items-center gap-3 rounded-xl bg-card p-8 text-center shadow-xl">
+              <CheckCircle2 className="size-12 text-green-500" aria-hidden="true" />
+              <p className="text-lg font-semibold">Invoice Generated Successfully</p>
+              <p className="text-sm text-muted-foreground">
+                Invoice {overlay.invoiceNumber} has been created
+                {overlay.customerEmail ? ` and emailed to ${overlay.customerEmail}` : ""}.
+              </p>
+              <Button
+                className="mt-2"
+                onClick={() => {
+                  setOverlay(null);
+                  setOpen(false);
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          ) : (
+            <div className="flex w-full max-w-md flex-col items-center gap-3 rounded-xl bg-card p-8 text-center shadow-xl">
+              <XCircle className="size-12 text-red-500" aria-hidden="true" />
+              <p className="text-lg font-semibold">Invoice Generation Failed</p>
+              <p className="text-sm text-muted-foreground">{overlay.message}</p>
+              <div className="mt-2 flex gap-2">
+                <Button onClick={() => setOverlay(null)}>Try Again</Button>
+                <Button variant="outline" onClick={() => setOverlay(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
     </Dialog>
   );
 }
