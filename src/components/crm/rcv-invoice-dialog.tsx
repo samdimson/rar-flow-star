@@ -293,9 +293,29 @@ export function RcvInvoiceDialog({
       toast.error("Select a customer with an existing lead first");
       return;
     }
-    setBusy(true);
+
+    const missing: string[] = [];
+    if (!form.billToName.trim()) missing.push("Bill To name");
+    if (!form.billToAddress.trim()) missing.push("Bill To address");
+    if (!form.billToEmail.trim()) missing.push("Bill To email");
+    if (missing.length > 0) {
+      setOverlay({
+        kind: "error",
+        message: `Customer is missing required information: ${missing.join(", ")}.`,
+      });
+      return;
+    }
+    if (!num(form.rcv) || !num(form.payment1)) {
+      setOverlay({
+        kind: "error",
+        message: "The PDF could not be created. Check that all required fields (RCV, Deductible, ACV) are filled in.",
+      });
+      return;
+    }
+
+    setOverlay({ kind: "generating" });
     try {
-      const res = await generate({
+      await generate({
         data: {
           leadId: targetLeadId,
           customerId,
@@ -320,22 +340,12 @@ export function RcvInvoiceDialog({
           origin: window.location.origin,
         },
       });
-      setResult({ downloadUrl: res.downloadUrl });
-      await queryClient.invalidateQueries();
-      toast.success("RCV invoice generated");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not generate the invoice");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const email = async () => {
-    if (!form.billToEmail) {
-      toast.error("This customer has no email address");
+      setOverlay({ kind: "error", message: classifyError(error) });
       return;
     }
-    setEmailing(true);
+
+    let emailError: unknown = null;
     try {
       await sendEmail({
         data: {
@@ -345,13 +355,20 @@ export function RcvInvoiceDialog({
           propertyAddress: propertyAddress || form.billToAddress,
         },
       });
-      await queryClient.invalidateQueries();
-      toast.success(`Invoice emailed to ${form.billToEmail}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not send the invoice");
-    } finally {
-      setEmailing(false);
+      emailError = error;
     }
+    await queryClient.invalidateQueries();
+
+    if (emailError) {
+      setOverlay({
+        kind: "error",
+        message:
+          "Invoice PDF was created but email delivery failed. Download the PDF from Documents and send manually.",
+      });
+      return;
+    }
+    setOverlay({ kind: "success", invoiceNumber: form.invoiceNumber, customerEmail: form.billToEmail });
   };
 
   const money = (n: number) => currencyExact(n);
