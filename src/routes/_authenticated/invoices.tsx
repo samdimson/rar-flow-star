@@ -1,9 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Banknote } from "lucide-react";
+import { Banknote, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
-import { useInvoices, useLeads, usePayments } from "@/lib/crm/api";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useInvoices, useLeads, usePayments, useDocuments, type DocumentRow } from "@/lib/crm/api";
 import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { useAuth } from "@/hooks/use-auth";
 import { useEstimatorAccess } from "@/lib/crm/access";
@@ -31,6 +37,8 @@ function InvoicesPage() {
   const { data: invoices = [], isLoading } = useInvoices();
   const { data: payments = [] } = usePayments();
   const { data: leads = [] } = useLeads();
+  const { data: docs = [] } = useDocuments();
+  const [archivedOpen, setArchivedOpen] = useState(false);
 
   if (loading) {
     return (
@@ -53,6 +61,108 @@ function InvoicesPage() {
   const outstanding = Math.max(invoiced - collected, 0);
   const leadFor = (id: string) => leads.find((l) => l.id === id);
 
+  const leadPayments = (leadId: string) => payments.filter((p) => p.lead_id === leadId);
+
+  const invoiceDoc = (invoice: { lead_id: string; invoice_number?: string | null }) =>
+    docs.find(
+      (d) =>
+        d.lead_id === invoice.lead_id &&
+        d.category === "invoice" &&
+        (invoice.invoice_number ? d.file_name?.includes(invoice.invoice_number) : true),
+    );
+
+  const openPdf = async (doc: DocumentRow) => {
+    const { data, error } = await supabase.storage.from("crm-files").createSignedUrl(doc.storage_path, 300);
+    if (error || !data) {
+      toast.error("Could not open PDF");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener");
+  };
+
+  const outstandingInvoices = invoices.filter((i) => i.status !== "paid");
+  const archivedInvoices = invoices.filter((i) => i.status === "paid");
+
+  const InvoiceCard = ({
+    invoice,
+    archived,
+  }: {
+    invoice: (typeof invoices)[number];
+    archived?: boolean;
+  }) => {
+    const lead = leadFor(invoice.lead_id);
+    const customer = lead?.customer;
+    const property = lead?.property;
+    const paid = leadPayments(invoice.lead_id).reduce((s, p) => s + Number(p.amount), 0);
+    const balance = Math.max(Number(invoice.amount) - paid, 0);
+    const doc = invoiceDoc(invoice);
+    const paidDate = leadPayments(invoice.lead_id)
+      .map((p) => p.received_at)
+      .filter(Boolean)
+      .sort()
+      .at(-1);
+
+    return (
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-orange-500">
+                  {customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
+                </span>
+                {lead ? (
+                  <Link
+                    to="/leads/$leadId"
+                    params={{ leadId: lead.id }}
+                    className="text-xs text-muted-foreground hover:underline"
+                  >
+                    {lead.lead_number}
+                  </Link>
+                ) : null}
+              </div>
+              <p className="text-sm text-sky-400">
+                {property
+                  ? `${property.address_line1}${property.city ? `, ${property.city}` : ""}${property.state ? ` ${property.state}` : ""}${property.postal_code ? ` ${property.postal_code}` : ""}`
+                  : "—"}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-sm">
+                <span className="font-medium">{invoice.invoice_number || "Invoice"}</span>
+                <Badge variant={archived ? "default" : "secondary"} className={archived ? "bg-green-600 text-white hover:bg-green-600" : ""}>
+                  {titleCase(invoice.status)}
+                </Badge>
+                {invoice.issued_at ? <span className="text-xs text-muted-foreground">Issued {shortDate(invoice.issued_at)}</span> : null}
+                {invoice.due_at ? <span className="text-xs text-muted-foreground">Due {shortDate(invoice.due_at)}</span> : null}
+                {archived && paidDate ? <span className="text-xs text-muted-foreground">Paid {shortDate(paidDate)}</span> : null}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right text-sm">
+                <p className="font-medium">{currency(invoice.amount)}</p>
+                <p className="text-xs text-muted-foreground">{currency(paid)} collected</p>
+                <p className="font-semibold text-orange-500">{currency(balance)} due</p>
+              </div>
+              {doc ? (
+                <Button variant="ghost" size="icon" onClick={() => void openPdf(doc)} title="Open PDF">
+                  <FileText className="size-5 text-orange-500" />
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const paymentGroups = Object.entries(
+    payments.reduce<Record<string, typeof payments>>((acc, p) => {
+      const arr = acc[p.lead_id] ?? [];
+      arr.push(p);
+      acc[p.lead_id] = arr;
+      return acc;
+    }, {}),
+  );
+
   return (
     <AppShell
       icon={Banknote}
@@ -67,41 +177,57 @@ function InvoicesPage() {
           <KpiCard label="Outstanding" value={currency(outstanding)} tone="danger" />
         </div>
 
-        <SectionCard title="Invoices">
+        <SectionCard
+          title="Outstanding Invoices"
+          actions={
+            outstandingInvoices.length > 0 ? (
+              <span className="text-xs text-muted-foreground">{outstandingInvoices.length} open</span>
+            ) : null
+          }
+        >
           {isLoading ? (
             <LoadingBlock label="Loading invoices" />
-          ) : invoices.length === 0 ? (
-            <EmptyState message="No invoices yet — one is created at 7.1 Awaiting Depreciation Release." />
+          ) : outstandingInvoices.length === 0 ? (
+            <EmptyState message="No outstanding invoices." />
           ) : (
-            <ul className="divide-y divide-border">
-              {invoices.map((i) => {
-                const lead = leadFor(i.lead_id);
-                const paid = payments
-                  .filter((p) => p.invoice_id === i.id || p.lead_id === i.lead_id)
-                  .reduce((s, p) => s + Number(p.amount), 0);
-                return (
-                  <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-                    <div>
-                      <p className="font-medium">
-                        {i.invoice_number || "Invoice"} · {titleCase(i.status)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {lead ? (
-                          <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="text-primary hover:underline">
-                            {lead.lead_number} · <span className="text-sky-400">{lead.property?.address_line1}</span>
-                          </Link>
-                        ) : null}
-                        {i.due_at ? ` · due ${shortDate(i.due_at)}` : ""}
-                      </p>
-                    </div>
-                    <span className="text-right">
-                      <span className="block font-medium">{currency(i.amount)}</span>
-                      <span className="text-xs text-muted-foreground">{currency(paid)} collected</span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="space-y-3">
+              {outstandingInvoices.map((i) => (
+                <InvoiceCard key={i.id} invoice={i} />
+              ))}
+            </div>
+          )}
+        </SectionCard>
+
+        <SectionCard
+          title={`Archived (${archivedInvoices.length} paid)`}
+          actions={
+            <Button variant="ghost" size="sm" onClick={() => setArchivedOpen((v) => !v)}>
+              {archivedOpen ? (
+                <>
+                  <ChevronUp className="mr-1 size-4" /> Collapse
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="mr-1 size-4" /> Expand
+                </>
+              )}
+            </Button>
+          }
+        >
+          {archivedOpen ? (
+            archivedInvoices.length === 0 ? (
+              <EmptyState message="No paid invoices yet." />
+            ) : (
+              <div className="space-y-3">
+                {archivedInvoices.map((i) => (
+                  <InvoiceCard key={i.id} invoice={i} archived />
+                ))}
+              </div>
+            )
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {archivedInvoices.length} paid invoice{archivedInvoices.length === 1 ? "" : "s"} hidden.
+            </p>
           )}
         </SectionCard>
 
@@ -109,28 +235,47 @@ function InvoicesPage() {
           {payments.length === 0 ? (
             <p className="text-sm text-muted-foreground">No payments recorded.</p>
           ) : (
-            <ul className="divide-y divide-border">
-              {payments.map((p) => {
-                const lead = leadFor(p.lead_id);
+            <div className="space-y-5">
+              {paymentGroups.map(([leadId, group]) => {
+                const lead = leadFor(leadId);
+                const customer = lead?.customer;
+                const property = lead?.property;
                 return (
-                  <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-                    <div>
-                      <p className="font-medium">{titleCase(p.kind)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {lead ? (
-                          <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="text-primary hover:underline">
-                            {lead.lead_number}
-                          </Link>
-                        ) : null}
-                        {p.received_at ? ` · ${shortDate(p.received_at)}` : ""}
-                        {p.method ? ` · ${p.method}` : ""}
-                      </p>
-                    </div>
-                    <span className="font-medium">{currency(p.amount)}</span>
-                  </li>
+                  <div key={leadId}>
+                    <h4 className="mb-2 text-sm font-semibold">
+                      <span className="text-orange-500">
+                        {customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
+                      </span>
+                      {" — "}
+                      <span className="text-sky-400">
+                        {property
+                          ? `${property.address_line1}${property.city ? `, ${property.city}` : ""}${property.state ? ` ${property.state}` : ""}${property.postal_code ? ` ${property.postal_code}` : ""}`
+                          : "—"}
+                      </span>
+                      {" — "}
+                      <span className="text-muted-foreground">{lead?.lead_number}</span>
+                    </h4>
+                    <ul className="divide-y divide-border rounded-md border">
+                      {group.map((p) => (
+                        <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
+                          <div>
+                            <p className="font-medium">{titleCase(p.kind)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {p.received_at ? shortDate(p.received_at) : ""}
+                              {p.method ? ` · ${p.method}` : ""}
+                            </p>
+                          </div>
+                          <span className="font-medium">{currency(p.amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-1 text-right text-xs text-muted-foreground">
+                      Total: {currency(group.reduce((s, p) => s + Number(p.amount), 0))}
+                    </p>
+                  </div>
                 );
               })}
-            </ul>
+            </div>
           )}
         </SectionCard>
       </div>
