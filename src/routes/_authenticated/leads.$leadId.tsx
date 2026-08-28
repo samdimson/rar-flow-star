@@ -224,6 +224,19 @@ function LeadDetail() {
   const { data: history = [] } = useStageHistory({ column: "lead_id", value: leadId });
   const { data: profiles = [] } = useProfiles();
 
+  const { data: invoiceDocs = [] } = useQuery({
+    queryKey: ["lead-invoice-docs", leadId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("id, file_name, storage_path")
+        .eq("lead_id", leadId)
+        .eq("category", "invoice");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const saveTask = useUpsert("tasks", "Task");
   const saveNote = useUpsert("notes", "Note");
   const [noteBody, setNoteBody] = useState("");
