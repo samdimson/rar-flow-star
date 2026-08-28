@@ -283,7 +283,13 @@ export function LeadFormDialog() {
                 <Label htmlFor="l-zip">
                   ZIP<span className="ml-0.5 text-destructive">*</span>
                 </Label>
-                <Input id="l-zip" aria-invalid={Boolean(errors["postal_code"])} value={form.postal_code} onChange={(e) => set("postal_code", e.target.value)} />
+                <Input
+                  id="l-zip"
+                  aria-invalid={Boolean(errors["postal_code"])}
+                  value={form.postal_code}
+                  onChange={(e) => set("postal_code", e.target.value)}
+                  onBlur={() => void checkDuplicateProperty()}
+                />
                 {errors["postal_code"] ? <p className="text-xs font-medium text-destructive">{errors["postal_code"]}</p> : null}
               </div>
             </div>
