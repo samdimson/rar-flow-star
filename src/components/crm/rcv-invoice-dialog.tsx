@@ -41,6 +41,7 @@ type Form = {
   payment1: string;
   payment2: string;
   paymentsReceived: string;
+  paymentDate: string;
 };
 
 const EMPTY: Form = {
