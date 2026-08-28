@@ -150,6 +150,8 @@ export function LeadFormDialog() {
       {
         onSuccess: () => {
           setForm(EMPTY);
+          setDuplicate(null);
+          setOverride(false);
           setErrors({});
           setOpen(false);
         },
