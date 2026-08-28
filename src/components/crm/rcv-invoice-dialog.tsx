@@ -171,13 +171,13 @@ export function RcvInvoiceDialog({
     queryFn: async () => {
       const { data: lead, error } = await supabase
         .from("leads")
-        .select("id, lead_number, customer_id, property:properties(*), customer:customers(*)")
+        .select("id, lead_number, customer_id, assigned_rep_id, property:properties(*), customer:customers(*)")
         .eq("id", targetLeadId!)
         .maybeSingle();
       if (error) throw error;
-      if (!lead) return { lead: null, claim: null, job: null, paid: 0, nextNumber: null };
+      if (!lead) return { lead: null, claim: null, job: null, rep: null, paid: 0, nextNumber: null };
 
-      const [{ data: claim }, { data: job }, { data: payments }, { data: invoices }] = await Promise.all([
+      const [{ data: claim }, { data: job }, { data: rep }, { data: payments }, { data: invoices }] = await Promise.all([
         supabase
           .from("insurance_claims")
           .select("*")
