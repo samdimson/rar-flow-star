@@ -140,15 +140,56 @@ function InvoicesPage() {
               <div className="text-right text-sm">
                 <p className="font-medium">{currency(invoice.amount)}</p>
                 <p className="text-xs text-muted-foreground">{currency(paid)} collected</p>
-                <p className="font-semibold text-orange-500">{currency(balance)} due</p>
+                {balance > 0 ? (
+                  <p className="font-semibold text-orange-500">{currency(balance)} due</p>
+                ) : (
+                  <p className="font-semibold text-green-600">Paid</p>
+                )}
               </div>
               {doc ? (
                 <Button variant="ghost" size="icon" onClick={() => void openPdf(doc)} title="Open PDF">
                   <FileText className="size-5 text-orange-500" />
                 </Button>
               ) : null}
+              {!archived && rcvAccess.allowed ? (
+                <RcvInvoiceDialog
+                  invoice={{
+                    id: invoice.id,
+                    lead_id: invoice.lead_id,
+                    invoice_number: invoice.invoice_number,
+                    amount: Number(invoice.amount),
+                    issued_at: invoice.issued_at,
+                  }}
+                  trigger={
+                    <Button variant="ghost" size="icon" title="Edit invoice">
+                      <Pencil className="size-4 text-orange-500" />
+                    </Button>
+                  }
+                />
+              ) : null}
             </div>
           </div>
+
+          {leadPayments(invoice.lead_id).length > 0 ? (
+            <ul className="mt-3 space-y-1 border-t border-border pt-2 text-xs text-muted-foreground">
+              {leadPayments(invoice.lead_id).map((p) => (
+                <li key={p.id}>
+                  {titleCase(p.kind)} — {currency(p.amount)} received {p.received_at ? shortDate(p.received_at) : "—"}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {!archived ? (
+            <div className="mt-3 flex justify-end">
+              <ApplyPaymentDialog
+                leadId={invoice.lead_id}
+                invoiceId={invoice.id}
+                invoiceAmount={Number(invoice.amount)}
+                alreadyCollected={paid}
+              />
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     );
