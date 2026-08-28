@@ -191,6 +191,9 @@ export function RcvInvoiceDialog({
           .eq("lead_id", lead.id)
           .limit(1)
           .maybeSingle(),
+        lead.assigned_rep_id
+          ? supabase.from("profiles").select("full_name").eq("id", lead.assigned_rep_id).maybeSingle()
+          : Promise.resolve({ data: null }),
         supabase.from("payments").select("amount").eq("lead_id", lead.id),
         supabase
           .from("invoices")
