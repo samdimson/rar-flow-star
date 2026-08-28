@@ -398,7 +398,6 @@ export function RcvInvoiceDialog({
                 setForm(EMPTY);
                 setTargetLeadId(leadIdValue);
                 setCustomerId(lead?.customer_id ?? null);
-                setResult(null);
               }}
             >
               <SelectTrigger aria-label="Customer">
