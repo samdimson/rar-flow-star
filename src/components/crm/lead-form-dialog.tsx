@@ -406,7 +406,10 @@ export function LeadFormDialog() {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={create.isPending}>
+            <Button
+              type="submit"
+              disabled={create.isPending || checkingDuplicate || (!!duplicate && !(canManage && override))}
+            >
               {create.isPending ? "Creating…" : "Create lead"}
             </Button>
           </DialogFooter>
