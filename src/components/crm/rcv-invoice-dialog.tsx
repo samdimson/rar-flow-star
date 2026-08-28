@@ -171,13 +171,13 @@ export function RcvInvoiceDialog({
     queryFn: async () => {
       const { data: lead, error } = await supabase
         .from("leads")
-        .select("id, lead_number, customer_id, property:properties(*), customer:customers(*)")
+        .select("id, lead_number, customer_id, assigned_rep_id, property:properties(*), customer:customers(*)")
         .eq("id", targetLeadId!)
         .maybeSingle();
       if (error) throw error;
-      if (!lead) return { lead: null, claim: null, job: null, paid: 0, nextNumber: null };
+      if (!lead) return { lead: null, claim: null, job: null, rep: null, paid: 0, nextNumber: null };
 
-      const [{ data: claim }, { data: job }, { data: payments }, { data: invoices }] = await Promise.all([
+      const [{ data: claim }, { data: job }, { data: rep }, { data: payments }, { data: invoices }] = await Promise.all([
         supabase
           .from("insurance_claims")
           .select("*")
@@ -191,6 +191,9 @@ export function RcvInvoiceDialog({
           .eq("lead_id", lead.id)
           .limit(1)
           .maybeSingle(),
+        lead.assigned_rep_id
+          ? supabase.from("profiles").select("full_name").eq("id", lead.assigned_rep_id).maybeSingle()
+          : Promise.resolve({ data: null }),
         supabase.from("payments").select("amount").eq("lead_id", lead.id),
         supabase
           .from("invoices")
@@ -208,6 +211,7 @@ export function RcvInvoiceDialog({
         lead,
         claim,
         job,
+        rep,
         paid: (payments ?? []).reduce((s, p) => s + Number(p.amount), 0),
         nextNumber,
       };
@@ -215,7 +219,13 @@ export function RcvInvoiceDialog({
   });
 
   useEffect(() => {
-    if (!loaded?.lead) return;
+    if (!loaded) return;
+    if (!loaded.lead) {
+      setPropertyAddress("");
+      setResult(null);
+      setForm(EMPTY);
+      return;
+    }
     const lead = loaded.lead;
     const claim = loaded.claim as Record<string, unknown> | null;
     const job = loaded.job as Record<string, string | null> | null;
@@ -230,8 +240,8 @@ export function RcvInvoiceDialog({
       claimNumber: String(claim?.["claim_number"] ?? ""),
       policyNumber: String(claim?.["policy_number"] ?? ""),
       carrier: String(claim?.["carrier"] ?? ""),
-      typeOfLoss: "Windstorm and Hail",
-      workCompleted: (job?.["qc_passed_at"] ?? job?.["coc_signed_at"] ?? "").slice(0, 10),
+      typeOfLoss: String(claim?.["type_of_loss"] ?? "") || "Windstorm and Hail",
+      workCompleted: (job?.["coc_signed_at"] ?? job?.["qc_passed_at"] ?? "").slice(0, 10),
       billToName: `${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim(),
       billToAddress: address,
       billToPhone: lead.customer?.phone ?? "",
@@ -346,6 +356,7 @@ export function RcvInvoiceDialog({
               value={targetLeadId || ""}
               onValueChange={(leadIdValue) => {
                 const lead = eligible.find((l) => l.id === leadIdValue);
+                setForm(EMPTY);
                 setTargetLeadId(leadIdValue);
                 setCustomerId(lead?.customer_id ?? null);
                 setResult(null);

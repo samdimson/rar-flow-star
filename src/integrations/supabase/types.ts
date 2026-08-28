@@ -731,6 +731,7 @@ export type Database = {
           policy_summary: Json | null
           rcv_amount: number | null
           reinspection_at: string | null
+          type_of_loss: string | null
           updated_at: string
         }
         Insert: {
@@ -756,6 +757,7 @@ export type Database = {
           policy_summary?: Json | null
           rcv_amount?: number | null
           reinspection_at?: string | null
+          type_of_loss?: string | null
           updated_at?: string
         }
         Update: {
@@ -781,6 +783,7 @@ export type Database = {
           policy_summary?: Json | null
           rcv_amount?: number | null
           reinspection_at?: string | null
+          type_of_loss?: string | null
           updated_at?: string
         }
         Relationships: [
