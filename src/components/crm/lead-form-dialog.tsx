@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { AlertTriangle, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -40,17 +42,66 @@ const EMPTY: NewLeadInput = {
   notes: "",
 };
 
+type DuplicateInfo = { lead_number: string; rep_name: string };
+
 export function LeadFormDialog() {
-  const { canEdit, user } = useAuth();
+  const { canEdit, canManage, user } = useAuth();
   const { data: profiles = [] } = useProfiles();
   const create = useCreateLead();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<NewLeadInput>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [duplicate, setDuplicate] = useState<DuplicateInfo | null>(null);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
+  const [override, setOverride] = useState(false);
 
   if (!canEdit) return null;
 
+  const checkDuplicateProperty = async () => {
+    const address = form.address_line1.trim();
+    const zip = form.postal_code.trim();
+    setDuplicate(null);
+    setOverride(false);
+    if (!address || !zip) return;
+
+    setCheckingDuplicate(true);
+    try {
+      const { data: props, error: propError } = await supabase
+        .from("properties")
+        .select("id")
+        .ilike("address_line1", address)
+        .eq("postal_code", zip);
+      if (propError) throw propError;
+      const ids = (props ?? []).map((p) => p.id);
+      if (ids.length === 0) return;
+
+      const { data: leads, error: leadError } = await supabase
+        .from("leads")
+        .select("lead_number, assigned_rep_id, status")
+        .in("property_id", ids)
+        .not("status", "in", "(lost,won)")
+        .limit(1);
+      if (leadError) throw leadError;
+      const match = leads?.[0];
+      if (!match) return;
+
+      const rep = profiles.find((p) => p.id === match.assigned_rep_id);
+      setDuplicate({
+        lead_number: match.lead_number,
+        rep_name: rep?.full_name || rep?.email || "an unassigned rep",
+      });
+    } catch {
+      // network/permission issues shouldn't block lead entry
+    } finally {
+      setCheckingDuplicate(false);
+    }
+  };
+
   const set = <K extends keyof NewLeadInput>(key: K, value: NewLeadInput[K]) => {
+    if (key === "address_line1" || key === "postal_code") {
+      setDuplicate(null);
+      setOverride(false);
+    }
     setForm((f) => ({ ...f, [key]: value }));
     setErrors((e) => {
       if (!e[key as string]) return e;
@@ -93,11 +144,14 @@ export function LeadFormDialog() {
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
+    if (duplicate && !(canManage && override)) return;
     create.mutate(
       { ...form, assigned_rep_id: form.assigned_rep_id || user?.id || "" },
       {
         onSuccess: () => {
           setForm(EMPTY);
+          setDuplicate(null);
+          setOverride(false);
           setErrors({});
           setOpen(false);
         },
@@ -188,6 +242,30 @@ export function LeadFormDialog() {
               {errors["address_line1"] ? (
                 <p className="text-xs font-medium text-destructive">{errors["address_line1"]}</p>
               ) : null}
+              {checkingDuplicate ? (
+                <p className="text-xs text-muted-foreground">Checking for an existing active lead…</p>
+              ) : null}
+              {duplicate ? (
+                <div className="space-y-2 rounded-md border border-destructive/40 bg-destructive/10 p-3">
+                  <p className="flex items-start gap-2 text-xs font-medium text-destructive">
+                    <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                    <span>
+                      This property already has an active lead assigned to {duplicate.rep_name} (
+                      {duplicate.lead_number}). Creating a duplicate will be blocked.
+                    </span>
+                  </p>
+                  {canManage ? (
+                    <label className="flex items-start gap-2 text-xs text-foreground">
+                      <Checkbox
+                        checked={override}
+                        onCheckedChange={(v) => setOverride(v === true)}
+                        className="mt-0.5"
+                      />
+                      <span>I confirm this is a separate property or I am reassigning this lead</span>
+                    </label>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
@@ -208,7 +286,13 @@ export function LeadFormDialog() {
                 <Label htmlFor="l-zip">
                   ZIP<span className="ml-0.5 text-destructive">*</span>
                 </Label>
-                <Input id="l-zip" aria-invalid={Boolean(errors["postal_code"])} value={form.postal_code} onChange={(e) => set("postal_code", e.target.value)} />
+                <Input
+                  id="l-zip"
+                  aria-invalid={Boolean(errors["postal_code"])}
+                  value={form.postal_code}
+                  onChange={(e) => set("postal_code", e.target.value)}
+                  onBlur={() => void checkDuplicateProperty()}
+                />
                 {errors["postal_code"] ? <p className="text-xs font-medium text-destructive">{errors["postal_code"]}</p> : null}
               </div>
             </div>
@@ -325,7 +409,10 @@ export function LeadFormDialog() {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={create.isPending}>
+            <Button
+              type="submit"
+              disabled={create.isPending || checkingDuplicate || (!!duplicate && !(canManage && override))}
+            >
               {create.isPending ? "Creating…" : "Create lead"}
             </Button>
           </DialogFooter>
