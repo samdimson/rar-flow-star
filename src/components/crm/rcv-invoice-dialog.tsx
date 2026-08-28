@@ -135,16 +135,29 @@ function buildScope(roofType: string | null, adjusterReportDate: string | null) 
   );
 }
 
+export type EditableInvoice = {
+  id: string;
+  lead_id: string;
+  invoice_number: string | null;
+  amount: number;
+  issued_at: string | null;
+};
+
 export function RcvInvoiceDialog({
   leadId = "",
   defaultCustomerId = null,
+  invoice = null,
+  trigger = null,
 }: {
   leadId?: string;
   defaultCustomerId?: string | null;
+  invoice?: EditableInvoice | null;
+  trigger?: React.ReactNode;
 } = {}) {
+  const isEdit = !!invoice;
   const [open, setOpen] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(defaultCustomerId);
-  const [targetLeadId, setTargetLeadId] = useState(leadId);
+  const [targetLeadId, setTargetLeadId] = useState(invoice?.lead_id ?? leadId);
   const [form, setForm] = useState<Form>(EMPTY);
   const [overlay, setOverlay] = useState<OverlayState>(null);
   const [propertyAddress, setPropertyAddress] = useState("");
@@ -254,10 +267,11 @@ export function RcvInvoiceDialog({
     const property = (lead.property ?? null) as never;
     const address = addressOf(property);
     setTargetLeadId(lead.id);
+    if (isEdit) setCustomerId(lead.customer_id ?? null);
     setPropertyAddress(address);
     setForm({
-      invoiceNumber: loaded.nextNumber ?? "",
-      invoiceDate: todayIso(),
+      invoiceNumber: invoice?.invoice_number ?? loaded.nextNumber ?? "",
+      invoiceDate: invoice?.issued_at ?? todayIso(),
       claimNumber: String(claim?.["claim_number"] ?? ""),
       policyNumber: String(claim?.["policy_number"] ?? ""),
       carrier: String(claim?.["carrier"] ?? ""),
@@ -278,6 +292,7 @@ export function RcvInvoiceDialog({
       paymentsReceived: String(loaded.paid ?? 0),
       paymentDate: todayIso(),
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded]);
 
   const totals = useMemo(() => {
@@ -319,6 +334,7 @@ export function RcvInvoiceDialog({
         data: {
           leadId: targetLeadId,
           customerId,
+          invoiceId: invoice?.id ?? null,
           invoiceNumber: form.invoiceNumber,
           invoiceDate: form.invoiceDate || todayIso(),
           claimNumber: form.claimNumber || null,
@@ -342,6 +358,12 @@ export function RcvInvoiceDialog({
       });
     } catch (error) {
       setOverlay({ kind: "error", message: classifyError(error) });
+      return;
+    }
+
+    if (isEdit) {
+      await queryClient.invalidateQueries();
+      setOverlay({ kind: "success", invoiceNumber: form.invoiceNumber, customerEmail: null });
       return;
     }
 
@@ -380,20 +402,24 @@ export function RcvInvoiceDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <FileText className="size-4" aria-hidden="true" /> Generate RCV Invoice
-        </Button>
+        {trigger ?? (
+          <Button size="sm">
+            <FileText className="size-4" aria-hidden="true" /> Generate RCV Invoice
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Generate RCV Invoice</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit RCV Invoice" : "Generate RCV Invoice"}</DialogTitle>
           <DialogDescription>
-            Select the customer, review the insurance figures, then generate the PDF invoice.
+            {isEdit
+              ? "Update any field, then save to update the invoice and regenerate the PDF."
+              : "Select the customer, review the insurance figures, then generate the PDF invoice."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="space-y-1.5">
+          <div className={`space-y-1.5 ${isEdit ? "hidden" : ""}`}>
             <Label>Customer</Label>
             <Select
               value={targetLeadId || ""}
@@ -554,7 +580,7 @@ export function RcvInvoiceDialog({
             Close
           </Button>
           <Button onClick={() => void submit()} disabled={overlay !== null || !customerId}>
-            Generate PDF
+            {isEdit ? "Save & Regenerate PDF" : "Generate PDF"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -569,7 +595,7 @@ export function RcvInvoiceDialog({
           ) : overlay.kind === "success" ? (
             <div className="flex w-full max-w-md flex-col items-center gap-3 rounded-xl bg-card p-8 text-center shadow-xl">
               <CheckCircle2 className="size-12 text-green-500" aria-hidden="true" />
-              <p className="text-lg font-semibold">Invoice Generated Successfully</p>
+              <p className="text-lg font-semibold">{isEdit ? "Invoice Updated" : "Invoice Generated Successfully"}</p>
               <p className="text-sm text-muted-foreground">
                 Invoice {overlay.invoiceNumber} has been created
                 {overlay.customerEmail ? ` and emailed to ${overlay.customerEmail}` : ""}.
