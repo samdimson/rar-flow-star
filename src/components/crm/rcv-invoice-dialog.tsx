@@ -356,6 +356,7 @@ export function RcvInvoiceDialog({
               value={targetLeadId || ""}
               onValueChange={(leadIdValue) => {
                 const lead = eligible.find((l) => l.id === leadIdValue);
+                setForm(EMPTY);
                 setTargetLeadId(leadIdValue);
                 setCustomerId(lead?.customer_id ?? null);
                 setResult(null);
