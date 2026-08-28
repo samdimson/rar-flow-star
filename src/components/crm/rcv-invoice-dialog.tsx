@@ -62,7 +62,30 @@ const EMPTY: Form = {
   payment1: "0",
   payment2: "0",
   paymentsReceived: "0",
+  paymentDate: todayIso(),
 };
+
+type LeadPayment = { amount: number; received_at: string | null; method: string | null };
+
+type OverlayState =
+  | { kind: "generating" }
+  | { kind: "success"; invoiceNumber: string; customerEmail: string | null }
+  | { kind: "error"; message: string }
+  | null;
+
+function classifyError(error: unknown): string {
+  const raw = error instanceof Error ? error.message : "";
+  const msg = raw.toLowerCase();
+  if (/missing|required information/.test(msg))
+    return `Customer is missing required information: ${raw.replace(/^missing[:\s]*/i, "") || "check Bill To name, address and email"}.`;
+  if (/email|resend|provider|delivery/.test(msg))
+    return "Invoice PDF was created but email delivery failed. Download the PDF from Documents and send manually.";
+  if (/storage|upload|bucket/.test(msg))
+    return "PDF could not be saved to storage. Contact your administrator.";
+  if (/pdf|generate|document/.test(msg))
+    return "The PDF could not be created. Check that all required fields (RCV, Deductible, ACV) are filled in.";
+  return "An unexpected error occurred. Please try again or contact support.";
+}
 
 const num = (value: string) => {
   const n = Number(String(value).replace(/[^0-9.-]/g, ""));
