@@ -211,6 +211,7 @@ export function RcvInvoiceDialog({
         lead,
         claim,
         job,
+        rep,
         paid: (payments ?? []).reduce((s, p) => s + Number(p.amount), 0),
         nextNumber,
       };
@@ -218,7 +219,13 @@ export function RcvInvoiceDialog({
   });
 
   useEffect(() => {
-    if (!loaded?.lead) return;
+    if (!loaded) return;
+    if (!loaded.lead) {
+      setPropertyAddress("");
+      setResult(null);
+      setForm(EMPTY);
+      return;
+    }
     const lead = loaded.lead;
     const claim = loaded.claim as Record<string, unknown> | null;
     const job = loaded.job as Record<string, string | null> | null;
@@ -233,8 +240,8 @@ export function RcvInvoiceDialog({
       claimNumber: String(claim?.["claim_number"] ?? ""),
       policyNumber: String(claim?.["policy_number"] ?? ""),
       carrier: String(claim?.["carrier"] ?? ""),
-      typeOfLoss: "Windstorm and Hail",
-      workCompleted: (job?.["qc_passed_at"] ?? job?.["coc_signed_at"] ?? "").slice(0, 10),
+      typeOfLoss: String(claim?.["type_of_loss"] ?? "") || "Windstorm and Hail",
+      workCompleted: (job?.["coc_signed_at"] ?? job?.["qc_passed_at"] ?? "").slice(0, 10),
       billToName: `${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim(),
       billToAddress: address,
       billToPhone: lead.customer?.phone ?? "",
