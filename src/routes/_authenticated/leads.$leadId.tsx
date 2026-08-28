@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowLeft, CheckCircle2, Clock, Plus } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, FileText, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
@@ -223,6 +223,19 @@ function LeadDetail() {
   const { data: changeOrders = [] } = useChangeOrders({ column: "lead_id", value: leadId });
   const { data: history = [] } = useStageHistory({ column: "lead_id", value: leadId });
   const { data: profiles = [] } = useProfiles();
+
+  const { data: invoiceDocs = [] } = useQuery({
+    queryKey: ["lead-invoice-docs", leadId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("id, file_name, storage_path")
+        .eq("lead_id", leadId)
+        .eq("category", "invoice");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const saveTask = useUpsert("tasks", "Task");
   const saveNote = useUpsert("notes", "Note");
@@ -1015,17 +1028,46 @@ function LeadDetail() {
                   <p className="text-sm text-muted-foreground">No invoices generated yet.</p>
                 ) : (
                   <ul className="divide-y divide-border">
-                    {invoices.map((i) => (
-                      <li key={i.id} className="grid gap-1 py-2.5 text-sm sm:grid-cols-5 sm:items-center">
-                        <span className="font-medium">{i.invoice_number || "Invoice"}</span>
-                        <span className="font-medium">{currency(i.amount)}</span>
-                        <span className="text-muted-foreground">{titleCase(i.status)}</span>
-                        <span className="text-muted-foreground">
-                          Issued {i.issued_at ? shortDate(i.issued_at) : "—"}
-                        </span>
-                        <span className="text-muted-foreground">Due {i.due_at ? shortDate(i.due_at) : "—"}</span>
-                      </li>
-                    ))}
+                    {invoices.map((i) => {
+                      const doc = invoiceDocs.find(
+                        (d) =>
+                          d.file_name?.toLowerCase().includes(String(i.invoice_number ?? "").toLowerCase()) ||
+                          d.storage_path?.toLowerCase().includes(String(i.invoice_number ?? "").toLowerCase()),
+                      );
+                      return (
+                        <li key={i.id} className="grid gap-1 py-2.5 text-sm sm:grid-cols-6 sm:items-center">
+                          <span className="font-medium">{i.invoice_number || "Invoice"}</span>
+                          <span className="font-medium">{currency(i.amount)}</span>
+                          <span className="text-muted-foreground">{titleCase(i.status)}</span>
+                          <span className="text-muted-foreground">
+                            Issued {i.issued_at ? shortDate(i.issued_at) : "—"}
+                          </span>
+                          <span className="text-muted-foreground">Due {i.due_at ? shortDate(i.due_at) : "—"}</span>
+                          <div className="flex justify-start sm:justify-end">
+                            {doc ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2 text-orange-500 hover:text-orange-600"
+                                onClick={async () => {
+                                  const { data, error } = await supabase.storage
+                                    .from("crm-files")
+                                    .createSignedUrl(doc.storage_path, 300);
+                                  if (error || !data) {
+                                    toast.error("Could not open PDF");
+                                    return;
+                                  }
+                                  window.open(data.signedUrl, "_blank");
+                                }}
+                                aria-label={`Open PDF for invoice ${i.invoice_number || ""}`}
+                              >
+                                <FileText className="size-4" />
+                              </Button>
+                            ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </SectionCard>
