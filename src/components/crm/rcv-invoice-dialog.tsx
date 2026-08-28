@@ -342,19 +342,44 @@ export function RcvInvoiceDialog({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label>Customer</Label>
-            <Select value={customerId ?? ""} onValueChange={setCustomerId}>
+            <Select
+              value={targetLeadId || ""}
+              onValueChange={(leadIdValue) => {
+                const lead = eligible.find((l) => l.id === leadIdValue);
+                setTargetLeadId(leadIdValue);
+                setCustomerId(lead?.customer_id ?? null);
+                setResult(null);
+              }}
+            >
               <SelectTrigger aria-label="Customer">
-                <SelectValue placeholder="Select a customer" />
+                <SelectValue placeholder="Select an eligible customer" />
               </SelectTrigger>
               <SelectContent>
-                {customers.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.first_name} {c.last_name}
-                    {addressOf(c.property as never) ? ` — ${addressOf(c.property as never)}` : ""}
+                {eligible.length === 0 ? (
+                  <SelectItem value="__none" disabled>
+                    No leads are currently eligible for invoicing
+                  </SelectItem>
+                ) : null}
+                {eligible.map((lead) => (
+                  <SelectItem key={lead.id} value={lead.id}>
+                    {lead.customer?.first_name} {lead.customer?.last_name} — {addressOf(lead.property)} (
+                    {lead.lead_number})
+                  </SelectItem>
+                ))}
+                {ineligible.map(({ lead, reason }) => (
+                  <SelectItem key={lead.id} value={`ineligible-${lead.id}`} disabled>
+                    {lead.customer?.first_name} {lead.customer?.last_name} — {addressOf(lead.property)} (
+                    {lead.lead_number}) — {reason}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {ineligible.length > 0 ? (
+              <p className="text-xs text-muted-foreground">
+                {ineligible.length} customer{ineligible.length === 1 ? "" : "s"} not eligible — reasons shown in the
+                list above (e.g. {ineligible[0]!.reason}).
+              </p>
+            ) : null}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
