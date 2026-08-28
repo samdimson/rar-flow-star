@@ -13,6 +13,7 @@ const fileName = (invoiceNumber: string) => `RCV Invoice ${invoiceNumber}.pdf`;
 export type RcvInvoiceInput = {
   leadId: string;
   customerId: string | null;
+  invoiceId?: string | null;
   invoiceNumber: string;
   invoiceDate: string;
   claimNumber: string | null;
