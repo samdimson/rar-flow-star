@@ -93,7 +93,9 @@ export function ApplyPaymentDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Apply Payment</Button>
+        <Button size="sm" className="!bg-green-600 hover:!bg-green-700 !text-white">
+          Apply Payment
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
