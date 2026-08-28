@@ -156,8 +156,9 @@ function InvoicesPage() {
 
   const paymentGroups = Object.entries(
     payments.reduce<Record<string, typeof payments>>((acc, p) => {
-      acc[p.lead_id] = acc[p.lead_id] ?? [];
-      acc[p.lead_id].push(p);
+      const arr = acc[p.lead_id] ?? [];
+      arr.push(p);
+      acc[p.lead_id] = arr;
       return acc;
     }, {}),
   );
