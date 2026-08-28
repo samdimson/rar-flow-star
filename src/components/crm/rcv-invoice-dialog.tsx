@@ -543,37 +543,58 @@ export function RcvInvoiceDialog({
             </div>
           </dl>
 
-          {result ? (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/40 p-3">
-              {result.downloadUrl ? (
-                <Button asChild variant="outline" size="sm">
-                  <a href={result.downloadUrl} target="_blank" rel="noopener noreferrer">
-                    <Download className="size-4" aria-hidden="true" /> Download PDF
-                  </a>
-                </Button>
-              ) : null}
-              <Button size="sm" onClick={() => void email()} disabled={emailing}>
-                {emailing ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <Mail className="size-4" aria-hidden="true" />
-                )}
-                Email to customer
-              </Button>
-            </div>
-          ) : null}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
             Close
           </Button>
-          <Button onClick={() => void submit()} disabled={busy || !customerId}>
-            {busy ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
-            {busy ? "Generating…" : "Generate PDF"}
+          <Button onClick={() => void submit()} disabled={overlay !== null || !customerId}>
+            Generate PDF
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {overlay ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
+          {overlay.kind === "generating" ? (
+            <div className="flex flex-col items-center gap-3 rounded-xl bg-card p-10 text-center shadow-xl">
+              <Loader2 className="size-10 animate-spin text-orange-500" aria-hidden="true" />
+              <p className="text-lg font-semibold">Generating invoice...</p>
+            </div>
+          ) : overlay.kind === "success" ? (
+            <div className="flex w-full max-w-md flex-col items-center gap-3 rounded-xl bg-card p-8 text-center shadow-xl">
+              <CheckCircle2 className="size-12 text-green-500" aria-hidden="true" />
+              <p className="text-lg font-semibold">Invoice Generated Successfully</p>
+              <p className="text-sm text-muted-foreground">
+                Invoice {overlay.invoiceNumber} has been created
+                {overlay.customerEmail ? ` and emailed to ${overlay.customerEmail}` : ""}.
+              </p>
+              <Button
+                className="mt-2"
+                onClick={() => {
+                  setOverlay(null);
+                  setOpen(false);
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          ) : (
+            <div className="flex w-full max-w-md flex-col items-center gap-3 rounded-xl bg-card p-8 text-center shadow-xl">
+              <XCircle className="size-12 text-red-500" aria-hidden="true" />
+              <p className="text-lg font-semibold">Invoice Generation Failed</p>
+              <p className="text-sm text-muted-foreground">{overlay.message}</p>
+              <div className="mt-2 flex gap-2">
+                <Button onClick={() => setOverlay(null)}>Try Again</Button>
+                <Button variant="outline" onClick={() => setOverlay(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
     </Dialog>
   );
 }
