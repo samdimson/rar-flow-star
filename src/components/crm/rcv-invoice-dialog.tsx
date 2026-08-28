@@ -475,7 +475,6 @@ export function RcvInvoiceDialog({
                 ["deductible", "Deductible ($, shown as negative)"],
                 ["payment1", "Payment 1 — Initial ACV ($)"],
                 ["payment2", "Payment 2 — Recoverable depreciation ($)"],
-                ["paymentsReceived", "Payments received ($)"],
               ] as [keyof Form, string][]
             ).map(([key, label]) => (
               <div key={key} className="space-y-1.5">
@@ -489,6 +488,44 @@ export function RcvInvoiceDialog({
                 />
               </div>
             ))}
+          </div>
+
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <Label>Payments received</Label>
+            {(loaded?.paymentsList ?? []).length > 0 ? (
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                {(loaded?.paymentsList ?? []).map((p, i) => (
+                  <li key={i}>
+                    Amount: {money(Number(p.amount))} — Received:{" "}
+                    {p.received_at ? shortDate(p.received_at) : "—"} — Method: {p.method || "—"}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">No payments recorded yet — enter 0.</p>
+            )}
+            <p className="text-sm font-medium">Total received: {money(loaded?.paid ?? 0)}</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="rcv-paymentsReceived">Payments received ($)</Label>
+                <Input
+                  id="rcv-paymentsReceived"
+                  type="number"
+                  step="0.01"
+                  value={form.paymentsReceived}
+                  onChange={(e) => set("paymentsReceived")(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rcv-paymentDate">Payment date</Label>
+                <Input
+                  id="rcv-paymentDate"
+                  type="date"
+                  value={form.paymentDate}
+                  onChange={(e) => set("paymentDate")(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           <dl className="rounded-lg border border-border p-3 text-sm">
