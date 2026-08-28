@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.enforce_unique_active_property_lead() FROM PUBLIC, anon, authenticated;
