@@ -146,9 +146,7 @@ export function RcvInvoiceDialog({
   const [customerId, setCustomerId] = useState<string | null>(defaultCustomerId);
   const [targetLeadId, setTargetLeadId] = useState(leadId);
   const [form, setForm] = useState<Form>(EMPTY);
-  const [busy, setBusy] = useState(false);
-  const [emailing, setEmailing] = useState(false);
-  const [result, setResult] = useState<{ downloadUrl: string | null } | null>(null);
+  const [overlay, setOverlay] = useState<OverlayState>(null);
   const [propertyAddress, setPropertyAddress] = useState("");
 
   const generate = useServerFn(generateRcvInvoice);
