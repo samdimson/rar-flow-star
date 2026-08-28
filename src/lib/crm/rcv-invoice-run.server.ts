@@ -178,7 +178,8 @@ export async function runEmailRcvInvoice(
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`Provider request failed [${response.status}]: ${errorBody}`);
+    console.error(`Resend request failed [${response.status}]: ${errorBody}`);
+    return { sent: false as const, reason: "email_send_failed" as const };
   }
 
   await db.from("activities").insert({
