@@ -1096,7 +1096,7 @@ function LeadDetail() {
                 </div>
               </SectionCard>
             </TabsContent>
-          ) : null}
+          )}
 
           {/* Commissions -------------------------------------------- */}
           <TabsContent value="commissions" className="mt-4">
