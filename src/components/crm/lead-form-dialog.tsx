@@ -239,6 +239,30 @@ export function LeadFormDialog() {
               {errors["address_line1"] ? (
                 <p className="text-xs font-medium text-destructive">{errors["address_line1"]}</p>
               ) : null}
+              {checkingDuplicate ? (
+                <p className="text-xs text-muted-foreground">Checking for an existing active lead…</p>
+              ) : null}
+              {duplicate ? (
+                <div className="space-y-2 rounded-md border border-destructive/40 bg-destructive/10 p-3">
+                  <p className="flex items-start gap-2 text-xs font-medium text-destructive">
+                    <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                    <span>
+                      This property already has an active lead assigned to {duplicate.rep_name} (
+                      {duplicate.lead_number}). Creating a duplicate will be blocked.
+                    </span>
+                  </p>
+                  {canManage ? (
+                    <label className="flex items-start gap-2 text-xs text-foreground">
+                      <Checkbox
+                        checked={override}
+                        onCheckedChange={(v) => setOverride(v === true)}
+                        className="mt-0.5"
+                      />
+                      <span>I confirm this is a separate property or I am reassigning this lead</span>
+                    </label>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
