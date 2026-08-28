@@ -1,9 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Banknote } from "lucide-react";
+import { Banknote, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
-import { useInvoices, useLeads, usePayments } from "@/lib/crm/api";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useInvoices, useLeads, usePayments, useDocuments, type DocumentRow } from "@/lib/crm/api";
 import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { useAuth } from "@/hooks/use-auth";
 import { useEstimatorAccess } from "@/lib/crm/access";
@@ -31,6 +37,8 @@ function InvoicesPage() {
   const { data: invoices = [], isLoading } = useInvoices();
   const { data: payments = [] } = usePayments();
   const { data: leads = [] } = useLeads();
+  const { data: docs = [] } = useDocuments();
+  const [archivedOpen, setArchivedOpen] = useState(false);
 
   if (loading) {
     return (
@@ -53,87 +61,72 @@ function InvoicesPage() {
   const outstanding = Math.max(invoiced - collected, 0);
   const leadFor = (id: string) => leads.find((l) => l.id === id);
 
-  return (
-    <AppShell
-      icon={Banknote}
-      title="Invoices & Payments"
-      subtitle="Job costing and carrier collections"
-      actions={rcvAccess.allowed ? <RcvInvoiceDialog /> : null}
-    >
-      <div className="space-y-5">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <KpiCard label="Invoiced" value={currency(invoiced)} />
-          <KpiCard label="Collected" value={currency(collected)} tone="positive" />
-          <KpiCard label="Outstanding" value={currency(outstanding)} tone="danger" />
-        </div>
+  const leadPayments = (leadId: string) =>
+    payments.filter((p) => p.lead_id === leadId);
 
-        <SectionCard title="Invoices">
-          {isLoading ? (
-            <LoadingBlock label="Loading invoices" />
-          ) : invoices.length === 0 ? (
-            <EmptyState message="No invoices yet — one is created at 7.1 Awaiting Depreciation Release." />
-          ) : (
-            <ul className="divide-y divide-border">
-              {invoices.map((i) => {
-                const lead = leadFor(i.lead_id);
-                const paid = payments
-                  .filter((p) => p.invoice_id === i.id || p.lead_id === i.lead_id)
-                  .reduce((s, p) => s + Number(p.amount), 0);
-                return (
-                  <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-                    <div>
-                      <p className="font-medium">
-                        {i.invoice_number || "Invoice"} · {titleCase(i.status)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {lead ? (
-                          <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="text-primary hover:underline">
-                            {lead.lead_number} · <span className="text-sky-400">{lead.property?.address_line1}</span>
-                          </Link>
-                        ) : null}
-                        {i.due_at ? ` · due ${shortDate(i.due_at)}` : ""}
-                      </p>
-                    </div>
-                    <span className="text-right">
-                      <span className="block font-medium">{currency(i.amount)}</span>
-                      <span className="text-xs text-muted-foreground">{currency(paid)} collected</span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </SectionCard>
+  const invoiceDoc = (invoice: { lead_id: string; invoice_number?: string | null }) =>
+    docs.find(
+      (d) =>
+        d.lead_id === invoice.lead_id &&
+        d.category === "invoice" &&
+        (invoice.invoice_number ? d.file_name?.includes(invoice.invoice_number) : true),
+    );
 
-        <SectionCard title="Payments received">
-          {payments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No payments recorded.</p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {payments.map((p) => {
-                const lead = leadFor(p.lead_id);
-                return (
-                  <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-                    <div>
-                      <p className="font-medium">{titleCase(p.kind)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {lead ? (
-                          <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="text-primary hover:underline">
-                            {lead.lead_number}
-                          </Link>
-                        ) : null}
-                        {p.received_at ? ` · ${shortDate(p.received_at)}` : ""}
-                        {p.method ? ` · ${p.method}` : ""}
-                      </p>
-                    </div>
-                    <span className="font-medium">{currency(p.amount)}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </SectionCard>
-      </div>
-    </AppShell>
-  );
-}
+  const openPdf = async (doc: DocumentRow) => {
+    const { data, error } = await supabase.storage.from("crm-files").createSignedUrl(doc.storage_path, 300);
+    if (error || !data) {
+      toast.error("Could not open PDF");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener");
+  };
+
+  const outstandingInvoices = invoices.filter((i) => i.status !== "paid");
+  const archivedInvoices = invoices.filter((i) => i.status === "paid");
+
+  const InvoiceCard = ({
+    invoice,
+    archived,
+  }: {
+    invoice: (typeof invoices)[number];
+    archived?: boolean;
+  }) => {
+    const lead = leadFor(invoice.lead_id);
+    const customer = lead?.customer;
+    const property = lead?.property;
+    const paid = leadPayments(invoice.lead_id).reduce((s, p) => s + Number(p.amount), 0);
+    const balance = Math.max(Number(invoice.amount) - paid, 0);
+    const doc = invoiceDoc(invoice);
+    const paidDate = leadPayments(invoice.lead_id)
+      .map((p) => p.received_at)
+      .filter(Boolean)
+      .sort()
+      .at(-1);
+
+    return (
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-orange-500">
+                  {customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
+                </span>
+                {lead ? (
+                  <Link
+                    to="/leads/$leadId"
+                    params={{ leadId: lead.id }}
+                    className="text-xs text-muted-foreground hover:underline"
+                  >
+                    {lead.lead_number}
+                  </Link>
+                ) : null}
+              </div>
+              <p className="text-sm text-sky-400">
+                {property
+                  ? `${property.address_line1}${property.city ? `, ${property.city}` : ""}${property.state ? ` ${property.state}` : ""}${property.postal_code ? ` ${property.postal_code}` : ""}`
+                  : "—"}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-sm">
+                <span className="font-medium">{invoice.invoice_number || "Invoice"}</span>
+                <Badge variant={archived ? "default" : "secondary
