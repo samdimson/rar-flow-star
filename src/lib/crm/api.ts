@@ -106,18 +106,18 @@ export type InvoiceWithLead = InvoiceRow & {
   } | null;
 };
 
-export const useInvoices = () =>
+export const useInvoices = (filter?: { column: string; value: string | null }) =>
   useQuery({
-    queryKey: ["invoices"],
+    queryKey: ["invoices", filter?.column ?? "all", filter?.value ?? "all"],
+    enabled: filter ? !!filter.value : true,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("invoices")
-        .select(
-          `*, lead:leads(id, lead_number, contract_amount, assigned_rep_id,
-            customer:customers(first_name, last_name, phone, email),
-            property:properties(address_line1, city, state, postal_code))`,
-        )
-        .order("created_at", { ascending: false });
+      let q = supabase.from("invoices").select(
+        `*, lead:leads(id, lead_number, contract_amount, assigned_rep_id,
+          customer:customers(first_name, last_name, phone, email),
+          property:properties(address_line1, city, state, postal_code))`,
+      );
+      if (filter?.value) q = q.eq(filter.column, filter.value);
+      const { data, error } = await q.order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as InvoiceWithLead[];
     },
