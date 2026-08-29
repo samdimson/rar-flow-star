@@ -749,7 +749,7 @@ export const LEAD_SPECS: LeadSpec[] = [
     appointments: [
       { kind: "inspection", title: "Roof inspection", days: -8 },
       { kind: "adjuster_meeting", title: "Adjuster meeting — USAA", days: -3 },
-      { kind: "adjuster_meeting", title: "Reinspection — 2nd adjuster", days: 6 },
+      { kind: "other", title: "Reinspection — 2nd adjuster", days: 6 },
     ],
   },
   {
