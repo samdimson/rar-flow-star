@@ -26,6 +26,7 @@ import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProductionRouteImport } from './routes/_authenticated/production'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRepsRouteImport } from './routes/_authenticated/reps'
+import { Route as AuthenticatedServiceAgreementRouteImport } from './routes/_authenticated/service-agreement'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedDevTestRunnerRouteImport } from './routes/_authenticated/dev.test-runner'
@@ -119,6 +120,12 @@ const AuthenticatedRepsRoute = AuthenticatedRepsRouteImport.update({
   path: '/reps',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedServiceAgreementRoute =
+  AuthenticatedServiceAgreementRouteImport.update({
+    id: '/service-agreement',
+    path: '/service-agreement',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -164,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/production': typeof AuthenticatedProductionRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/reps': typeof AuthenticatedRepsRoute
+  '/service-agreement': typeof AuthenticatedServiceAgreementRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/dev/test-runner': typeof AuthenticatedDevTestRunnerRoute
@@ -186,6 +194,7 @@ export interface FileRoutesByTo {
   '/production': typeof AuthenticatedProductionRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/reps': typeof AuthenticatedRepsRoute
+  '/service-agreement': typeof AuthenticatedServiceAgreementRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/': typeof AuthenticatedIndexRoute
@@ -211,6 +220,7 @@ export interface FileRoutesById {
   '/_authenticated/production': typeof AuthenticatedProductionRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/reps': typeof AuthenticatedRepsRoute
+  '/_authenticated/service-agreement': typeof AuthenticatedServiceAgreementRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/production'
     | '/reports'
     | '/reps'
+    | '/service-agreement'
     | '/settings'
     | '/tasks'
     | '/dev/test-runner'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/production'
     | '/reports'
     | '/reps'
+    | '/service-agreement'
     | '/settings'
     | '/tasks'
     | '/'
@@ -283,6 +295,7 @@ export interface FileRouteTypes {
     | '/_authenticated/production'
     | '/_authenticated/reports'
     | '/_authenticated/reps'
+    | '/_authenticated/service-agreement'
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
     | '/_authenticated/'
@@ -417,6 +430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRepsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/service-agreement': {
+      id: '/_authenticated/service-agreement'
+      path: '/service-agreement'
+      fullPath: '/service-agreement'
+      preLoaderRoute: typeof AuthenticatedServiceAgreementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -470,6 +490,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProductionRoute: typeof AuthenticatedProductionRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedRepsRoute: typeof AuthenticatedRepsRoute
+  AuthenticatedServiceAgreementRoute: typeof AuthenticatedServiceAgreementRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -493,6 +514,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProductionRoute: AuthenticatedProductionRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedRepsRoute: AuthenticatedRepsRoute,
+  AuthenticatedServiceAgreementRoute: AuthenticatedServiceAgreementRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,

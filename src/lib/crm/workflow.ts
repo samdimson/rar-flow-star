@@ -434,6 +434,7 @@ export const DOCUMENT_CATEGORIES: { value: DocumentCategory; label: string }[] =
   { value: "xactimate_estimate", label: "Xactimate estimate" },
   { value: "supplement", label: "Supplement" },
   { value: "contract", label: "Contract" },
+  { value: "service_agreement", label: "Service Agreement" },
   { value: "direction_to_pay", label: "Direction to Pay" },
   { value: "permit", label: "Permit" },
   { value: "invoice", label: "Invoice" },
