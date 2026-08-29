@@ -94,7 +94,35 @@ export const useDocuments = listHook("documents", "created_at");
 export const useNotes = listHook("notes", "created_at");
 export const useEstimates = listHook("estimates", "created_at");
 export const useContracts = listHook("contracts", "created_at");
-export const useInvoices = listHook("invoices", "created_at");
+
+export type InvoiceWithLead = InvoiceRow & {
+  lead: {
+    id: string;
+    lead_number: string;
+    contract_amount: number | null;
+    assigned_rep_id: string | null;
+    customer: { first_name: string; last_name: string; phone: string | null; email: string | null } | null;
+    property: { address_line1: string; city: string | null; state: string | null; postal_code: string | null } | null;
+  } | null;
+};
+
+export const useInvoices = (filter?: { column: string; value: string | null }) =>
+  useQuery({
+    queryKey: ["invoices", filter?.column ?? "all", filter?.value ?? "all"],
+    enabled: filter ? !!filter.value : true,
+    queryFn: async () => {
+      let q = supabase.from("invoices").select(
+        `*, lead:leads(id, lead_number, contract_amount, assigned_rep_id,
+          customer:customers(first_name, last_name, phone, email),
+          property:properties(address_line1, city, state, postal_code))`,
+      );
+      if (filter?.value) q = q.eq(filter.column, filter.value);
+      const { data, error } = await q.order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as InvoiceWithLead[];
+    },
+  });
+
 export const usePayments = listHook("payments", "created_at");
 export const useCustomers = listHook("customers", "created_at");
 export const useProperties = listHook("properties", "created_at");

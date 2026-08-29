@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useInvoices, useLeads, usePayments, useDocuments, type DocumentRow } from "@/lib/crm/api";
+import { useInvoices, usePayments, useDocuments, type DocumentRow } from "@/lib/crm/api";
 import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { useAuth } from "@/hooks/use-auth";
 import { useEstimatorAccess } from "@/lib/crm/access";
@@ -37,7 +37,6 @@ function InvoicesPage() {
   const rcvAccess = useEstimatorAccess();
   const { data: invoices = [], isLoading } = useInvoices();
   const { data: payments = [] } = usePayments();
-  const { data: leads = [] } = useLeads();
   const { data: docs = [] } = useDocuments();
   const [archivedOpen, setArchivedOpen] = useState(false);
 
@@ -65,7 +64,6 @@ function InvoicesPage() {
     return s + Math.min(paid, Number(i.amount));
   }, 0);
   const outstanding = Math.max(invoiced - collected, 0);
-  const leadFor = (id: string) => leads.find((l) => l.id === id);
 
   const leadPayments = (leadId: string) => payments.filter((p) => p.lead_id === leadId);
 
@@ -96,9 +94,8 @@ function InvoicesPage() {
     invoice: (typeof invoices)[number];
     archived?: boolean;
   }) => {
-    const lead = leadFor(invoice.lead_id);
-    const customer = lead?.customer;
-    const property = lead?.property;
+    const customer = invoice.lead?.customer;
+    const property = invoice.lead?.property;
     const paid = leadPayments(invoice.lead_id).reduce((s, p) => s + Number(p.amount), 0);
     const balance = Math.max(Number(invoice.amount) - paid, 0);
     const doc = invoiceDoc(invoice);
@@ -117,13 +114,13 @@ function InvoicesPage() {
                 <span className="font-semibold text-orange-500">
                   {customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
                 </span>
-                {lead ? (
+                {invoice.lead ? (
                   <Link
                     to="/leads/$leadId"
-                    params={{ leadId: lead.id }}
+                    params={{ leadId: invoice.lead.id }}
                     className="text-xs text-muted-foreground hover:underline"
                   >
-                    {lead.lead_number}
+                    {invoice.lead.lead_number}
                   </Link>
                 ) : null}
               </div>
