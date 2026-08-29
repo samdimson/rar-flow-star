@@ -744,6 +744,8 @@ export type Database = {
           policy_summary: Json | null
           rcv_amount: number | null
           reinspection_at: string | null
+          scope_document_id: string | null
+          scope_summary: Json | null
           type_of_loss: string | null
           updated_at: string
         }
@@ -770,6 +772,8 @@ export type Database = {
           policy_summary?: Json | null
           rcv_amount?: number | null
           reinspection_at?: string | null
+          scope_document_id?: string | null
+          scope_summary?: Json | null
           type_of_loss?: string | null
           updated_at?: string
         }
@@ -796,6 +800,8 @@ export type Database = {
           policy_summary?: Json | null
           rcv_amount?: number | null
           reinspection_at?: string | null
+          scope_document_id?: string | null
+          scope_summary?: Json | null
           type_of_loss?: string | null
           updated_at?: string
         }
@@ -805,6 +811,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_claims_scope_document_id_fkey"
+            columns: ["scope_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
         ]

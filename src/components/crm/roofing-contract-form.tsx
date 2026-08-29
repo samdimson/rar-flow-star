@@ -18,6 +18,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useClaim, useLead } from "@/lib/crm/api";
 import { currencyExact, shortDate } from "@/lib/crm/format";
 import { signRoofingContract } from "@/lib/crm/roofing-contract.functions";
+
+type ScopeSummaryLike = {
+  carrier?: string | null;
+  excluded_items?: string | null;
+  category_breakdown?: { category?: string | null; rcv?: string | null; acv?: string | null }[] | null;
+};
 import {
   RC_ADDRESS,
   RC_CIB,
@@ -110,8 +116,22 @@ export function RoofingContractForm({ leadId, onDone }: { leadId: string; onDone
     const customer = lead.customer;
     const property = lead.property;
     const anyLead = lead as unknown as { labor_squares?: number | null };
+    const scope = (claim as { scope_summary?: ScopeSummaryLike | null } | null)?.scope_summary ?? null;
+    const scopeFromSummary = (() => {
+      if (!scope || typeof scope !== "object") return "";
+      const rows = Array.isArray(scope.category_breakdown) ? scope.category_breakdown : [];
+      const parts = rows
+        .filter((r) => r?.category)
+        .map((r) => `${r.category} ${r.rcv ? (String(r.rcv).startsWith("$") ? r.rcv : `$${r.rcv}`) : ""}`.trim());
+      const carrier = scope.carrier || claim?.carrier || "carrier";
+      const lines: string[] = [];
+      if (parts.length) lines.push(`Per ${carrier} estimate: ${parts.join(", ")}.`);
+      if (scope.excluded_items) lines.push(`Excluded by carrier: ${scope.excluded_items}`);
+      return lines.join(" ");
+    })();
     setFields((prev) => ({
       ...prev,
+      scopeNotes: prev.scopeNotes || scopeFromSummary,
       homeownerName: [customer?.first_name, customer?.last_name].filter(Boolean).join(" "),
       propertyAddress: property?.address_line1 ?? "",
       cityStateZip: property

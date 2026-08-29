@@ -124,6 +124,25 @@ function exclusionReason(lead: EligibleLead): string | null {
   return null;
 }
 
+type ScopeSummaryLike = {
+  category_breakdown?: { category?: string | null; rcv?: string | null }[] | null;
+};
+
+function buildScopeFromSummary(summary: unknown, adjusterReportDate: string | null): string | null {
+  if (!summary || typeof summary !== "object") return null;
+  const rows = (summary as ScopeSummaryLike).category_breakdown;
+  if (!Array.isArray(rows)) return null;
+  const parts = rows
+    .filter((r) => r?.category)
+    .map((r) => {
+      const rcv = r.rcv ? (String(r.rcv).startsWith("$") ? String(r.rcv) : `$${r.rcv}`) : "";
+      return `${r.category}${rcv ? ` ${rcv}` : ""}`;
+    });
+  if (!parts.length) return null;
+  const dated = adjusterReportDate ? shortDate(adjusterReportDate) : "on file";
+  return `Approved scope per adjuster estimate dated ${dated}: ${parts.join("; ")}.`;
+}
+
 function buildScope(roofType: string | null, adjusterReportDate: string | null) {
   const shingles = roofType ? roofTypeLabel(roofType) : "architectural";
   const dated = adjusterReportDate ? shortDate(adjusterReportDate) : "on file";
@@ -281,10 +300,15 @@ export function RcvInvoiceDialog({
       billToAddress: address,
       billToPhone: lead.customer?.phone ?? "",
       billToEmail: lead.customer?.email ?? "",
-      scope: buildScope(
-        (property as { roof_type?: string | null } | null)?.roof_type ?? null,
-        (claim?.["adjuster_report_received_at"] as string | null) ?? null,
-      ),
+      scope:
+        buildScopeFromSummary(
+          claim?.["scope_summary"],
+          (claim?.["adjuster_report_received_at"] as string | null) ?? null,
+        ) ??
+        buildScope(
+          (property as { roof_type?: string | null } | null)?.roof_type ?? null,
+          (claim?.["adjuster_report_received_at"] as string | null) ?? null,
+        ),
       rcv: String(Number(claim?.["rcv_amount"] ?? 0)),
       deductible: String(Number(claim?.["deductible"] ?? 0)),
       payment1: String(Number(claim?.["acv_amount"] ?? 0)),

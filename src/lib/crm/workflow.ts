@@ -28,6 +28,7 @@ export type RequiredField =
   | "claim_number"
   | "adjuster_meeting_at"
   | "rcv_amount"
+  | "scope_document"
   | "contract_signed_at"
   | "contract_amount"
   | "production_manager_id"
@@ -39,6 +40,7 @@ export const REQUIRED_FIELD_LABELS: Record<RequiredField, string> = {
   claim_number: "Claim number",
   adjuster_meeting_at: "Adjuster meeting date/time",
   rcv_amount: "Adjuster RCV amount",
+  scope_document: "Adjuster scope document",
   contract_signed_at: "Contract signed date",
   contract_amount: "Contract amount",
   production_manager_id: "Production manager",
@@ -169,7 +171,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
     name: "Adjuster Report Received",
     description: "Carrier issued scope and estimate",
     next: ["4.1", "3.5"],
-    required: ["rcv_amount"],
+    required: ["rcv_amount", "scope_document"],
     followUps: [{ title: "Build Xactimate estimate from scope", dueInDays: 2, kind: "estimate" }],
   },
   {
