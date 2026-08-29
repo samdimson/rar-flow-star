@@ -15,6 +15,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedClaimsRouteImport } from './routes/_authenticated/claims'
 import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
+import { Route as AuthenticatedContractRouteImport } from './routes/_authenticated/contract'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedCostEstimatorRouteImport } from './routes/_authenticated/cost-estimator'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
@@ -63,6 +64,11 @@ const AuthenticatedCommissionsRoute =
     path: '/commissions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedContractRoute = AuthenticatedContractRouteImport.update({
+  id: '/contract',
+  path: '/contract',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
   id: '/contracts',
   path: '/contracts',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/claims': typeof AuthenticatedClaimsRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
+  '/contract': typeof AuthenticatedContractRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/cost-estimator': typeof AuthenticatedCostEstimatorRoute
   '/customers': typeof AuthenticatedCustomersRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/claims': typeof AuthenticatedClaimsRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
+  '/contract': typeof AuthenticatedContractRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/cost-estimator': typeof AuthenticatedCostEstimatorRoute
   '/customers': typeof AuthenticatedCustomersRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/claims': typeof AuthenticatedClaimsRoute
   '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
+  '/_authenticated/contract': typeof AuthenticatedContractRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/cost-estimator': typeof AuthenticatedCostEstimatorRoute
   '/_authenticated/customers': typeof AuthenticatedCustomersRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/claims'
     | '/commissions'
+    | '/contract'
     | '/contracts'
     | '/cost-estimator'
     | '/customers'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/claims'
     | '/commissions'
+    | '/contract'
     | '/contracts'
     | '/cost-estimator'
     | '/customers'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calendar'
     | '/_authenticated/claims'
     | '/_authenticated/commissions'
+    | '/_authenticated/contract'
     | '/_authenticated/contracts'
     | '/_authenticated/cost-estimator'
     | '/_authenticated/customers'
@@ -351,6 +363,13 @@ declare module '@tanstack/react-router' {
       path: '/commissions'
       fullPath: '/commissions'
       preLoaderRoute: typeof AuthenticatedCommissionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/contract': {
+      id: '/_authenticated/contract'
+      path: '/contract'
+      fullPath: '/contract'
+      preLoaderRoute: typeof AuthenticatedContractRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/contracts': {
@@ -479,6 +498,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedClaimsRoute: typeof AuthenticatedClaimsRoute
   AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
+  AuthenticatedContractRoute: typeof AuthenticatedContractRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedCostEstimatorRoute: typeof AuthenticatedCostEstimatorRoute
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
@@ -503,6 +523,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedClaimsRoute: AuthenticatedClaimsRoute,
   AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
+  AuthenticatedContractRoute: AuthenticatedContractRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedCostEstimatorRoute: AuthenticatedCostEstimatorRoute,
   AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,

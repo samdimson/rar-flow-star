@@ -514,6 +514,13 @@ function LeadDetail() {
               Service Agreement signed {shortDate(lead.service_agreement_signed_at)}
             </span>
           ) : null}
+          {lead.contract_signed_at ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-600">
+              <CheckCircle2 className="size-3.5" aria-hidden="true" />
+              Contract Signed {shortDate(lead.contract_signed_at)}
+            </span>
+          ) : null}
+
           {lead.rescission_ends_at ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-chart-4/15 px-2.5 py-0.5 text-xs font-medium text-chart-4">
               <Clock className="size-3.5" aria-hidden="true" />
