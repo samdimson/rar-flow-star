@@ -176,8 +176,9 @@ export const analyzeScopeDocument = createServerFn({ method: "POST" })
       patch["depreciation_amount"] = recoverable;
     }
 
-    if (row?.id) {
-      const { error } = await context.supabase.from("insurance_claims").update(patch as never).eq("id", row.id);
+    const rowId = typeof row?.["id"] === "string" ? (row["id"] as string) : null;
+    if (rowId) {
+      const { error } = await context.supabase.from("insurance_claims").update(patch as never).eq("id", rowId);
       if (error) throw new Error(error.message);
     } else {
       const { error } = await context.supabase
