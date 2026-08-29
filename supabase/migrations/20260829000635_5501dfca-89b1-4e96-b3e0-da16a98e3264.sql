@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.handle_milestone_payouts() FROM PUBLIC;
