@@ -40,9 +40,25 @@ const GROUPS: { heading: string; prefix: string }[] = [
 
 function TestRunnerPage() {
   const run = useServerFn(runCrmTests);
+  const seed = useServerFn(seedTestData);
   const mutation = useMutation({
     mutationFn: () => run(),
     onError: (error: Error) => toast.error(error.message),
+  });
+
+  const seedMutation = useMutation({
+    mutationFn: () => seed(),
+    onError: (error: Error) => toast.error(error.message),
+    onSuccess: (result) => {
+      // eslint-disable-next-line no-console
+      console.log("[CRM seed]", result);
+      if (result.errors.length) {
+        toast.error(`Seed finished with ${result.errors.length} error(s) — see the report below`);
+      } else {
+        toast.success(`Seeded ${result.leads_created} lead(s)`);
+      }
+      mutation.mutate();
+    },
   });
 
   useEffect(() => {
@@ -51,6 +67,7 @@ function TestRunnerPage() {
   }, []);
 
   const report = mutation.data;
+  const seedReport = seedMutation.data;
 
   useEffect(() => {
     if (!report) return;
@@ -68,9 +85,18 @@ function TestRunnerPage() {
       title="CRM test runner"
       subtitle="Development-only automated checks against the live database."
       actions={
-        <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
-          {mutation.isPending ? "Running…" : "Re-run all"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => seedMutation.mutate()}
+            disabled={seedMutation.isPending}
+          >
+            {seedMutation.isPending ? "Seeding…" : "Seed all test data"}
+          </Button>
+          <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+            {mutation.isPending ? "Running…" : "Re-run all"}
+          </Button>
+        </div>
       }
     >
       <div className="space-y-4">
@@ -91,6 +117,41 @@ function TestRunnerPage() {
           </span>
         </div>
       </SectionCard>
+
+      {seedReport ? (
+        <SectionCard title="Seed report">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {(
+              [
+                ["Leads", seedReport.leads_created],
+                ["Customers", seedReport.customers_created],
+                ["Properties", seedReport.properties_created],
+                ["Invoices", seedReport.invoices_created],
+                ["Payments", seedReport.payments_created],
+                ["Documents", seedReport.documents_created],
+                ["Tasks", seedReport.tasks_created],
+                ["Appointments", seedReport.appointments_created],
+                ["Activities", seedReport.activities_created],
+                ["Milestone payouts", seedReport.milestone_payouts_created],
+                ["Skipped (already seeded)", seedReport.skipped.length],
+              ] as [string, number][]
+            ).map(([label, value]) => (
+              <div key={label} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                <span className="text-muted-foreground">{label}</span>
+                <span className="font-semibold">{value}</span>
+              </div>
+            ))}
+          </div>
+          {seedReport.errors.length ? (
+            <ul className="mt-3 space-y-1 text-xs text-destructive">
+              {seedReport.errors.map((err) => (
+                <li key={err}>{err}</li>
+              ))}
+            </ul>
+          ) : null}
+        </SectionCard>
+      ) : null}
+
 
       {GROUPS.map((group) => {
         const rows = (report?.results ?? []).filter((r) => r.id.startsWith(group.prefix));
