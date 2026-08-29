@@ -8,21 +8,25 @@ import { SectionCard } from "@/components/crm/primitives";
 import { Button } from "@/components/ui/button";
 import { issueCoc } from "@/lib/crm/coc.functions";
 import { dateTime } from "@/lib/crm/format";
+import { canIssueCoc } from "@/lib/crm/workflow";
 
 export function IssueCoc({
   leadId,
   cocSignedAt,
   cocEmailedAt,
   canEdit,
+  taskCode,
 }: {
   leadId: string;
   cocSignedAt: string | null;
   cocEmailedAt: string | null;
   canEdit: boolean;
+  taskCode: string | null;
 }) {
   const run = useServerFn(issueCoc);
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const stageReady = canIssueCoc(taskCode);
 
   const issue = async () => {
     setBusy(true);
@@ -56,10 +60,15 @@ export function IssueCoc({
         </div>
       ) : (
         <div className="space-y-2">
-          <Button onClick={() => void issue()} disabled={busy || !canEdit}>
+          <Button onClick={() => void issue()} disabled={busy || !canEdit || !stageReady}>
             {busy ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
             {busy ? "Generating…" : "Issue COC"}
           </Button>
+          {!stageReady ? (
+            <p className="text-xs text-amber-600">
+              Available once production is complete (task 6.4 QC Complete or later).
+            </p>
+          ) : null}
           <p className="text-xs text-muted-foreground">
             Generates the Notice of Completion PDF, files it under Documents, and emails it to the homeowner,
             adjuster, carrier and office.
