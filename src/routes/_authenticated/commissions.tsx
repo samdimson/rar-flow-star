@@ -312,75 +312,79 @@ function CommissionsPage() {
           </SectionCard>
         ) : null}
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard label="Lifetime closed won" value={String(closed)} />
-          <KpiCard
-            label="Current tier"
-            value={commission?.tier_label ?? "—"}
-            hint={
-              commission?.tier_rate != null
-                ? `${(Number(commission.tier_rate) * 100).toFixed(0)}% rate`
-                : undefined
-            }
-          />
-          <KpiCard label="Net base (closed jobs)" value={currencyExact(commission?.total_net)} />
-          <KpiCard label="YTD earned" value={currencyExact(totals.ytd)} tone="positive" />
-        </div>
+        {showRepView ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <KpiCard label="Lifetime closed won" value={String(closed)} />
+              <KpiCard
+                label="Current tier"
+                value={commission?.tier_label ?? "—"}
+                hint={
+                  commission?.tier_rate != null
+                    ? `${(Number(commission.tier_rate) * 100).toFixed(0)}% rate`
+                    : undefined
+                }
+              />
+              <KpiCard label="Net base (closed jobs)" value={currencyExact(commission?.total_net)} />
+              <KpiCard label="YTD earned" value={currencyExact(totals.ytd)} tone="positive" />
+            </div>
 
-        <SectionCard title="Tier progress" contentClassName="space-y-3">
-          <Progress value={progress} />
-          <p className="text-sm text-muted-foreground">
-            {nextMin
-              ? `${Math.max(0, nextMin - closed)} more closed job(s) to reach ${commission?.next_tier_label}.`
-              : "Top tier reached — highest commission rate applied."}
-          </p>
-          <ul className="grid gap-1.5 text-xs text-muted-foreground sm:grid-cols-2">
-            {tiers.map((t) => (
-              <li key={t.id} className={t.label === commission?.tier_label ? "font-semibold text-foreground" : ""}>
-                {t.label} · {t.min_closed}–{t.max_closed ?? "∞"} closed
-              </li>
-            ))}
-          </ul>
-        </SectionCard>
+            <SectionCard title="Tier progress" contentClassName="space-y-3">
+              <Progress value={progress} />
+              <p className="text-sm text-muted-foreground">
+                {nextMin
+                  ? `${Math.max(0, nextMin - closed)} more closed job(s) to reach ${commission?.next_tier_label}.`
+                  : "Top tier reached — highest commission rate applied."}
+              </p>
+              <ul className="grid gap-1.5 text-xs text-muted-foreground sm:grid-cols-2">
+                {tiers.map((t) => (
+                  <li key={t.id} className={t.label === commission?.tier_label ? "font-semibold text-foreground" : ""}>
+                    {t.label} · {t.min_closed}–{t.max_closed ?? "∞"} closed
+                  </li>
+                ))}
+              </ul>
+            </SectionCard>
 
-        <SectionCard title="Commission base breakdown">
-          <dl className="max-w-md space-y-1 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Contract Amount</dt>
-              <dd className="font-medium">{currencyExact(breakdown.contract)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Less Materials</dt>
-              <dd>−{currencyExact(breakdown.materials)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Less Labor</dt>
-              <dd>−{currencyExact(breakdown.labor)}</dd>
-            </div>
-            <div className="flex justify-between border-t border-border pt-1">
-              <dt className="text-muted-foreground">Gross after costs</dt>
-              <dd>{currencyExact(breakdown.gross)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Less Overhead (15%)</dt>
-              <dd>−{currencyExact(breakdown.overhead)}</dd>
-            </div>
-            <div className="flex justify-between border-t border-border pt-1 font-semibold">
-              <dt>Net (commission base)</dt>
-              <dd>{currencyExact(breakdown.net)}</dd>
-            </div>
-          </dl>
-        </SectionCard>
+            <SectionCard title="Commission base breakdown">
+              <dl className="max-w-md space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Contract Amount</dt>
+                  <dd className="font-medium">{currencyExact(breakdown.contract)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Less Materials</dt>
+                  <dd>−{currencyExact(breakdown.materials)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Less Labor</dt>
+                  <dd>−{currencyExact(breakdown.labor)}</dd>
+                </div>
+                <div className="flex justify-between border-t border-border pt-1">
+                  <dt className="text-muted-foreground">Gross after costs</dt>
+                  <dd>{currencyExact(breakdown.gross)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Less Overhead (15%)</dt>
+                  <dd>−{currencyExact(breakdown.overhead)}</dd>
+                </div>
+                <div className="flex justify-between border-t border-border pt-1 font-semibold">
+                  <dt>Net (commission base)</dt>
+                  <dd>{currencyExact(breakdown.net)}</dd>
+                </div>
+              </dl>
+            </SectionCard>
 
-        <SectionCard title={`Jobs & Commission Detail — ${repName}`}>
-          {jobsLoading ? (
-            <LoadingBlock label="Loading jobs" />
-          ) : jobs.length === 0 ? (
-            <EmptyState message="No jobs with milestone payouts yet." />
-          ) : (
-            <JobsCommissionTable jobs={jobs} />
-          )}
-        </SectionCard>
+            <SectionCard title={`Jobs & Commission Detail — ${repName}`}>
+              {jobsLoading ? (
+                <LoadingBlock label="Loading jobs" />
+              ) : jobs.length === 0 ? (
+                <EmptyState message="No jobs with milestone payouts yet." />
+              ) : (
+                <JobsCommissionTable jobs={jobs} />
+              )}
+            </SectionCard>
+          </>
+        ) : null}
       </div>
     </AppShell>
   );
