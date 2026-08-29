@@ -166,12 +166,12 @@ export const analyzeScopeDocument = createServerFn({ method: "POST" })
     }
 
     if (row?.id) {
-      const { error } = await context.supabase.from("insurance_claims").update(patch).eq("id", row.id);
+      const { error } = await context.supabase.from("insurance_claims").update(patch as never).eq("id", row.id);
       if (error) throw new Error(error.message);
     } else {
       const { error } = await context.supabase
         .from("insurance_claims")
-        .insert({ lead_id: data.leadId, ...patch });
+        .insert({ lead_id: data.leadId, ...patch } as never);
       if (error) throw new Error(error.message);
     }
 
