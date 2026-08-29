@@ -45,6 +45,8 @@ import {
 } from "@/lib/crm/api";
 import { currency, currencyExact, dateTime, shortDate, titleCase } from "@/lib/crm/format";
 import { canSignServiceAgreement } from "@/lib/crm/service-agreement";
+import { canSignRoofingContract } from "@/lib/crm/roofing-contract";
+
 import { laborLabel, laborRate } from "@/lib/crm/labor";
 import {
   CARRIERS,
@@ -514,6 +516,13 @@ function LeadDetail() {
               Service Agreement signed {shortDate(lead.service_agreement_signed_at)}
             </span>
           ) : null}
+          {lead.contract_signed_at ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-600">
+              <CheckCircle2 className="size-3.5" aria-hidden="true" />
+              Contract Signed {shortDate(lead.contract_signed_at)}
+            </span>
+          ) : null}
+
           {lead.rescission_ends_at ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-chart-4/15 px-2.5 py-0.5 text-xs font-medium text-chart-4">
               <Clock className="size-3.5" aria-hidden="true" />
@@ -536,6 +545,14 @@ function LeadDetail() {
                 </Link>
               </Button>
             ) : null}
+            {!lead.contract_signed_at && canSignRoofingContract(lead.task_code) && canEdit ? (
+              <Button asChild size="sm" className="mx-1 h-8">
+                <Link to="/contract" search={{ leadId: lead.id }}>
+                  <PenLine className="size-4" aria-hidden="true" /> Sign Contract
+                </Link>
+              </Button>
+            ) : null}
+
             <TabsTrigger value="supplements">Supplements</TabsTrigger>
             <TabsTrigger value="calendar">Appointments</TabsTrigger>
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
