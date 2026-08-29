@@ -146,7 +146,8 @@ export async function buildRoofingContractPdf(data: RoofingContractPdfData): Pro
   const row = (label: string, value: string) => {
     const lines = wrap(value || "—", body, 9, W - 150);
     ensure(lines.length * 12 + 10);
-    page.drawText(label, { x: M, y, size: 9, font: bold, color: GREY_TEXT });
+    const labelSize = bold.widthOfTextAtSize(label, 9) > 140 ? 7.4 : 9;
+    page.drawText(label, { x: M, y, size: labelSize, font: bold, color: GREY_TEXT });
     lines.forEach((line, i) => {
       page.drawText(line, { x: M + 150, y: y - i * 11, size: 9, font: body, color: INK });
     });
