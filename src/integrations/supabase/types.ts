@@ -905,6 +905,7 @@ export type Database = {
           production_manager_id: string | null
           property_id: string | null
           rescission_ends_at: string | null
+          service_agreement_signed_at: string | null
           source: Database["public"]["Enums"]["lead_source"]
           source_detail: string | null
           stage_id: number
@@ -933,6 +934,7 @@ export type Database = {
           production_manager_id?: string | null
           property_id?: string | null
           rescission_ends_at?: string | null
+          service_agreement_signed_at?: string | null
           source?: Database["public"]["Enums"]["lead_source"]
           source_detail?: string | null
           stage_id?: number
@@ -961,6 +963,7 @@ export type Database = {
           production_manager_id?: string | null
           property_id?: string | null
           rescission_ends_at?: string | null
+          service_agreement_signed_at?: string | null
           source?: Database["public"]["Enums"]["lead_source"]
           source_detail?: string | null
           stage_id?: number
@@ -1693,6 +1696,7 @@ export type Database = {
         | "warranty"
         | "other"
         | "coc"
+        | "service_agreement"
       lead_source:
         | "door_to_door"
         | "website"
@@ -1900,6 +1904,7 @@ export const Constants = {
         "warranty",
         "other",
         "coc",
+        "service_agreement",
       ],
       lead_source: [
         "door_to_door",
