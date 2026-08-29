@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowLeft, CheckCircle2, Clock, FileText, Plus } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, FileText, PenLine, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
@@ -44,6 +44,7 @@ import {
   syncTitledAppointment,
 } from "@/lib/crm/api";
 import { currency, currencyExact, dateTime, shortDate, titleCase } from "@/lib/crm/format";
+import { canSignServiceAgreement } from "@/lib/crm/service-agreement";
 import { laborLabel, laborRate } from "@/lib/crm/labor";
 import {
   CARRIERS,
@@ -507,6 +508,12 @@ function LeadDetail() {
             })()}
           </div>
           <StatusBadge status={lead.status} />
+          {lead.service_agreement_signed_at ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-600">
+              <CheckCircle2 className="size-3.5" aria-hidden="true" />
+              Service Agreement signed {shortDate(lead.service_agreement_signed_at)}
+            </span>
+          ) : null}
           {lead.rescission_ends_at ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-chart-4/15 px-2.5 py-0.5 text-xs font-medium text-chart-4">
               <Clock className="size-3.5" aria-hidden="true" />
@@ -522,6 +529,13 @@ function LeadDetail() {
           <TabsList className="flex h-auto w-full flex-wrap justify-start">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
+            {!lead.service_agreement_signed_at && canSignServiceAgreement(lead.task_code) && canEdit ? (
+              <Button asChild size="sm" className="mx-1 h-8">
+                <Link to="/service-agreement" search={{ leadId: lead.id }}>
+                  <PenLine className="size-4" aria-hidden="true" /> Sign Service Agreement
+                </Link>
+              </Button>
+            ) : null}
             <TabsTrigger value="supplements">Supplements</TabsTrigger>
             <TabsTrigger value="calendar">Appointments</TabsTrigger>
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
