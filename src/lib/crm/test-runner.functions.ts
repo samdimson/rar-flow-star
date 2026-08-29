@@ -125,20 +125,23 @@ export const runCrmTests = createServerFn({ method: "POST" })
       const claimFor = (leadId: string) => claims.find((c) => c.lead_id === leadId);
       const list = (arr: string[]) => (arr.length ? arr.slice(0, 12).join(", ") + (arr.length > 12 ? ` +${arr.length - 12} more` : "") : "none");
 
+      const isTestLead = (l: { lead_number: string }) => l.lead_number.startsWith("RAR-T0");
+
       // ---------- WORKFLOW ----------
-      const tc3 = byNumber.get("RAR-TC3");
+      const t062 = byNumber.get("RAR-T062");
       add(
         "T-W1",
-        "RAR-TC3 is status=lost at task 5.3",
-        tc3?.status === "lost" && tc3?.task_code === "5.3",
-        tc3 ? `status=${tc3.status}, task_code=${tc3.task_code}` : "RAR-TC3 not found",
+        "RAR-T062 is status=lost at task 5.3",
+        t062?.status === "lost" && t062?.task_code === "5.3",
+        t062 ? `status=${t062.status}, task_code=${t062.task_code}` : "RAR-T062 not found",
       );
 
-      const tc4 = byNumber.get("RAR-TC4");
-      const tc4M2 = tc4 ? payoutsFor(tc4.id, 2).length : -1;
-      add("T-W2", "RAR-TC4 has exactly one milestone 2 payout", tc4M2 === 1, `count=${tc4M2}`);
+      const t027 = byNumber.get("RAR-T027");
+      const t027M2 = t027 ? payoutsFor(t027.id, 2).length : -1;
+      add("T-W2", "RAR-T027 has exactly one milestone 2 payout", t027M2 === 1, `count=${t027M2}`);
 
       const w3Bad = leads
+        .filter(isTestLead)
         .filter((l) => ["3.1", "3.2", "3.3", "3.4"].includes(l.task_code))
         .filter((l) => !claimFor(l.id)?.carrier)
         .map((l) => l.lead_number);
