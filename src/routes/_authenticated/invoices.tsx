@@ -94,9 +94,8 @@ function InvoicesPage() {
     invoice: (typeof invoices)[number];
     archived?: boolean;
   }) => {
-    const lead = leadFor(invoice.lead_id);
-    const customer = lead?.customer;
-    const property = lead?.property;
+    const customer = invoice.lead?.customer;
+    const property = invoice.lead?.property;
     const paid = leadPayments(invoice.lead_id).reduce((s, p) => s + Number(p.amount), 0);
     const balance = Math.max(Number(invoice.amount) - paid, 0);
     const doc = invoiceDoc(invoice);
@@ -115,13 +114,13 @@ function InvoicesPage() {
                 <span className="font-semibold text-orange-500">
                   {customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
                 </span>
-                {lead ? (
+                {invoice.lead ? (
                   <Link
                     to="/leads/$leadId"
-                    params={{ leadId: lead.id }}
+                    params={{ leadId: invoice.lead.id }}
                     className="text-xs text-muted-foreground hover:underline"
                   >
-                    {lead.lead_number}
+                    {invoice.lead.lead_number}
                   </Link>
                 ) : null}
               </div>
