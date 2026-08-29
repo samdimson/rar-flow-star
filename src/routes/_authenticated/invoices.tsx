@@ -37,7 +37,6 @@ function InvoicesPage() {
   const rcvAccess = useEstimatorAccess();
   const { data: invoices = [], isLoading } = useInvoices();
   const { data: payments = [] } = usePayments();
-  const { data: leads = [] } = useLeads();
   const { data: docs = [] } = useDocuments();
   const [archivedOpen, setArchivedOpen] = useState(false);
 
