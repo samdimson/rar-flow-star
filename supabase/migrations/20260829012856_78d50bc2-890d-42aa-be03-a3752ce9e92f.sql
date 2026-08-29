@@ -1,0 +1,1 @@
+UPDATE public.leads SET task_code = '5.3', stage_id = (SELECT stage_id FROM public.pipeline_tasks WHERE code = '5.3') WHERE lead_number = 'RAR-T062';
