@@ -58,7 +58,12 @@ function InvoicesPage() {
   }
 
   const invoiced = invoices.reduce((s, i) => s + Number(i.amount), 0);
-  const collected = payments.reduce((s, p) => s + Number(p.amount), 0);
+  const collected = invoices.reduce((s, i) => {
+    const paid = payments
+      .filter((p) => p.invoice_id === i.id || p.lead_id === i.lead_id)
+      .reduce((ps, p) => ps + Number(p.amount), 0);
+    return s + Math.min(paid, Number(i.amount));
+  }, 0);
   const outstanding = Math.max(invoiced - collected, 0);
   const leadFor = (id: string) => leads.find((l) => l.id === id);
 
