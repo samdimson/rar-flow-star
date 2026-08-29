@@ -413,7 +413,12 @@ export type AdvanceInput = {
 
 export function missingRequirements(
   lead: Pick<LeadRow, "inspection_date" | "contract_signed_at" | "contract_amount" | "production_manager_id" | "install_date">,
-  claim: Pick<ClaimRow, "carrier" | "claim_number" | "adjuster_meeting_at" | "rcv_amount"> | null | undefined,
+  claim:
+    | (Pick<ClaimRow, "carrier" | "claim_number" | "adjuster_meeting_at" | "rcv_amount"> & {
+        scope_document_id?: string | null;
+      })
+    | null
+    | undefined,
   toTaskCode: string,
   fromTaskCode?: string | null,
 ): RequiredField[] {
