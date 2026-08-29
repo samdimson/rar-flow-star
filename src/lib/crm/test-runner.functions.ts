@@ -215,6 +215,7 @@ export const runCrmTests = createServerFn({ method: "POST" })
       );
 
       const c5Bad = payouts
+        .filter((p) => testLeadIds.has(p.lead_id))
         .filter((p) => Number(p.amount) < 0)
         .map((p) => `${leadName.get(p.lead_id) ?? p.lead_id} M${p.milestone} ${money(Number(p.amount))}`);
       add(
@@ -281,6 +282,7 @@ export const runCrmTests = createServerFn({ method: "POST" })
       // ---------- FINANCIAL ----------
       const moneyRange = range("5.1", "8.3");
       const f1 = leads
+        .filter(isTestLead)
         .filter((l) => moneyRange.has(l.task_code) && !(Number(l.net_amount) > 0))
         .map((l) => `${l.lead_number} (${l.net_amount ?? "null"})`);
       add(
