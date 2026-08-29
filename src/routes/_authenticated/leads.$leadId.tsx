@@ -543,6 +543,14 @@ function LeadDetail() {
                 </Link>
               </Button>
             ) : null}
+            {!lead.contract_signed_at && canSignRoofingContract(lead.task_code) && canEdit ? (
+              <Button asChild size="sm" className="mx-1 h-8">
+                <Link to="/contract" search={{ leadId: lead.id }}>
+                  <PenLine className="size-4" aria-hidden="true" /> Sign Contract
+                </Link>
+              </Button>
+            ) : null}
+
             <TabsTrigger value="supplements">Supplements</TabsTrigger>
             <TabsTrigger value="calendar">Appointments</TabsTrigger>
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
