@@ -45,6 +45,8 @@ import {
 } from "@/lib/crm/api";
 import { currency, currencyExact, dateTime, shortDate, titleCase } from "@/lib/crm/format";
 import { canSignServiceAgreement } from "@/lib/crm/service-agreement";
+import { canSignRoofingContract } from "@/lib/crm/roofing-contract";
+
 import { laborLabel, laborRate } from "@/lib/crm/labor";
 import {
   CARRIERS,
