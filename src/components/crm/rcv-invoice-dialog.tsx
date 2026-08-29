@@ -300,10 +300,15 @@ export function RcvInvoiceDialog({
       billToAddress: address,
       billToPhone: lead.customer?.phone ?? "",
       billToEmail: lead.customer?.email ?? "",
-      scope: buildScope(
-        (property as { roof_type?: string | null } | null)?.roof_type ?? null,
-        (claim?.["adjuster_report_received_at"] as string | null) ?? null,
-      ),
+      scope:
+        buildScopeFromSummary(
+          claim?.["scope_summary"],
+          (claim?.["adjuster_report_received_at"] as string | null) ?? null,
+        ) ??
+        buildScope(
+          (property as { roof_type?: string | null } | null)?.roof_type ?? null,
+          (claim?.["adjuster_report_received_at"] as string | null) ?? null,
+        ),
       rcv: String(Number(claim?.["rcv_amount"] ?? 0)),
       deductible: String(Number(claim?.["deductible"] ?? 0)),
       payment1: String(Number(claim?.["acv_amount"] ?? 0)),
