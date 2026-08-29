@@ -254,3 +254,126 @@ export function useLeadCostBreakdown(leadIds: string[]) {
     },
   });
 }
+
+/* ---------------------------------------------------------------------------
+ * Company-wide dashboard aggregates + rep leaderboard (managers only)
+ * ------------------------------------------------------------------------- */
+
+export type CompanyCommissionOverview = {
+  activePipeline: number;
+  pending: number;
+  paidYtd: number;
+  clawback: number;
+  companyNetRetained: number;
+};
+
+export type LeaderboardRow = {
+  repId: string;
+  name: string;
+  isOwner: boolean;
+  tierLabel: string | null;
+  tierRate: number | null;
+  lifetimeClosed: number;
+  commissionEarned: number;
+  pending: number;
+  paid: number;
+  clawback: number;
+  nextTierLabel: string | null;
+  nextTierMin: number | null;
+  progress: number;
+};
+
+export type CompanyCommissionSummary = {
+  overview: CompanyCommissionOverview;
+  leaderboard: LeaderboardRow[];
+};
+
+export function startOfYearIso() {
+  return new Date(new Date().getUTCFullYear(), 0, 1).toISOString();
+}
+
+export function useCompanyCommissionSummary(
+  reps: Array<{ id: string; name: string; isOwner: boolean }>,
+  enabled: boolean,
+) {
+  const key = reps.map((r) => `${r.id}:${r.isOwner ? 1 : 0}`).sort().join(",");
+  return useQuery({
+    queryKey: ["company-commission-summary", key],
+    enabled: enabled && reps.length > 0,
+    queryFn: async (): Promise<CompanyCommissionSummary> => {
+      const yearStart = startOfYearIso();
+
+      const [{ data: leads, error: leadsError }, { data: payouts, error: payoutsError }] = await Promise.all([
+        supabase.from("leads").select("status, contract_amount, net_amount, assigned_rep_id"),
+        supabase.from("milestone_payouts").select("rep_id, amount, status, paid_at"),
+      ]);
+      if (leadsError) throw leadsError;
+      if (payoutsError) throw payoutsError;
+
+      const leadRows = leads ?? [];
+      const payoutRows = payouts ?? [];
+
+      const activePipeline = leadRows
+        .filter((l) => l.status !== "won" && l.status !== "lost")
+        .reduce((s, l) => s + Number(l.contract_amount ?? 0), 0);
+
+      const sumPayouts = (filter: (p: (typeof payoutRows)[number]) => boolean) =>
+        payoutRows.filter(filter).reduce((s, p) => s + Number(p.amount ?? 0), 0);
+
+      const overviewBase = {
+        activePipeline,
+        pending: sumPayouts((p) => p.status === "pending"),
+        paidYtd: sumPayouts((p) => p.status === "paid" && !!p.paid_at && p.paid_at >= yearStart),
+        clawback: sumPayouts((p) => p.status === "clawback"),
+      };
+
+      const commissions = await Promise.all(
+        reps.map(async (rep) => {
+          const { data, error } = await supabase.rpc("get_rep_commission", { rep_id: rep.id });
+          if (error) throw error;
+          const row = (Array.isArray(data) ? data[0] : data) as RepCommission | undefined;
+          return { rep, row: row ?? null };
+        }),
+      );
+
+      const rateByRep = new Map<string, number>();
+      for (const { rep, row } of commissions) rateByRep.set(rep.id, Number(row?.tier_rate ?? 0));
+      const ownerIds = new Set(reps.filter((r) => r.isOwner).map((r) => r.id));
+
+      const companyNetRetained = leadRows
+        .filter((l) => l.status === "won" && !(l.assigned_rep_id && ownerIds.has(l.assigned_rep_id)))
+        .reduce((s, l) => {
+          const rate = l.assigned_rep_id ? (rateByRep.get(l.assigned_rep_id) ?? 0) : 0;
+          return s + Number(l.net_amount ?? 0) * (1 - rate);
+        }, 0);
+
+      const leaderboard: LeaderboardRow[] = commissions
+        .map(({ rep, row }) => {
+          const mine = (status: string) =>
+            payoutRows
+              .filter((p) => p.rep_id === rep.id && p.status === status)
+              .reduce((s, p) => s + Number(p.amount ?? 0), 0);
+          const lifetimeClosed = Number(row?.lifetime_closed ?? 0);
+          const nextTierMin = row?.next_tier_min ?? null;
+          return {
+            repId: rep.id,
+            name: rep.name,
+            isOwner: rep.isOwner,
+            tierLabel: row?.tier_label ?? null,
+            tierRate: row?.tier_rate != null ? Number(row.tier_rate) : null,
+            lifetimeClosed,
+            commissionEarned: Number(row?.commission_amount ?? 0),
+            pending: mine("pending"),
+            paid: mine("paid"),
+            clawback: mine("clawback"),
+            nextTierLabel: row?.next_tier_label ?? null,
+            nextTierMin,
+            progress: nextTierMin ? Math.min(100, Math.round((lifetimeClosed / nextTierMin) * 100)) : 100,
+          };
+        })
+        .sort((a, b) => b.commissionEarned - a.commissionEarned);
+
+      return { overview: { ...overviewBase, companyNetRetained }, leaderboard };
+    },
+  });
+}
