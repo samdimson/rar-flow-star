@@ -213,7 +213,7 @@ function CommissionsPage() {
       }
     >
       <div className="space-y-4">
-        {isManager ? (
+        {showManagerView ? (
           <SectionCard title="Company Overview" contentClassName="space-y-4">
             {summaryLoading || !summary ? (
               <LoadingBlock label="Loading company totals" />
@@ -229,7 +229,7 @@ function CommissionsPage() {
           </SectionCard>
         ) : null}
 
-        {isManager ? (
+        {showManagerView ? (
           <SectionCard title="Rep leaderboard">
             {summaryLoading || !summary ? (
               <LoadingBlock label="Loading leaderboard" />
@@ -296,7 +296,7 @@ function CommissionsPage() {
           </SectionCard>
         ) : null}
 
-        {isManager && chartData.length > 0 ? (
+        {showManagerView && chartData.length > 0 ? (
           <SectionCard title="Commission earned by rep">
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
