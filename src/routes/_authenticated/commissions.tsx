@@ -57,7 +57,7 @@ function CommissionsPage() {
   const showAllReps = isManager && selectedRep === "all";
   const repId = showAllReps ? null : isManager ? (selectedRep ?? user?.id ?? null) : (user?.id ?? null);
   const { data: commission } = useRepCommission(repId);
-  const { data: payouts = [], isLoading } = useMilestonePayouts({ repId, allReps: showAllReps });
+  const { data: payouts = [] } = useMilestonePayouts({ repId, allReps: showAllReps });
   const { data: jobs = [], isLoading: jobsLoading } = useJobsCommissionDetail({ repId, allReps: showAllReps });
 
   const repOptions = useMemo(() => {
@@ -85,13 +85,11 @@ function CommissionsPage() {
   const { data: summary, isLoading: summaryLoading } = useCompanyCommissionSummary(repsForSummary, isManager);
 
   const totals = useMemo(() => {
-    const sum = (status: string) =>
-      payouts.filter((p) => p.status === status).reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
     const yearStart = startOfYearIso();
     const ytd = payouts
       .filter((p) => p.status === "paid" && !!p.paid_at && p.paid_at >= yearStart)
       .reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
-    return { pending: sum("pending"), paid: sum("paid"), clawback: sum("clawback"), ytd };
+    return { ytd };
   }, [payouts]);
 
   const jobLeadIds = useMemo(() => jobs.map((j) => j.leadId), [jobs]);
