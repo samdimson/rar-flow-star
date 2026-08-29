@@ -19,7 +19,6 @@ import {
   SERVICE_AGREEMENT_TERMS,
   type ServiceAgreementFields,
 } from "@/lib/crm/service-agreement";
-import logoAsset from "@/assets/logo.png.asset.json";
 
 const EMPTY: ServiceAgreementFields = {
   homeownerName: "",
@@ -153,7 +152,7 @@ export function ServiceAgreementForm({
       {/* Letterhead */}
       <header className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <img src={logoAsset.url} alt={`${SA_COMPANY} logo`} className="h-14 w-auto" />
+          <img src="/logo.png" alt={`${SA_COMPANY} logo`} className="h-14 w-auto" />
           <div className="text-right text-xs text-muted-foreground">
             <p className="text-sm font-semibold text-primary">{SA_COMPANY}</p>
             <p>{SA_PHONE}</p>
