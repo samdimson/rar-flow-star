@@ -9,6 +9,7 @@ import { SectionCard } from "@/components/crm/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { seedTestData } from "@/lib/crm/seed-test-data.functions";
 import { runCrmTests } from "@/lib/crm/test-runner.functions";
 
 const title = "CRM Test Runner — Rise Above Roofing Oklahoma CRM";
