@@ -42,7 +42,6 @@ const leadNumber = (n: number) => `RAR-T${String(n).padStart(3, "0")}`;
 /** Milestone-triggering task codes, in workflow order. */
 const MILESTONE_CODES = ["4.1", "5.2", "6.5"] as const;
 const ORDER = new Map<string, number>();
-for (const spec of LEAD_SPECS) void spec;
 [
   "1.1", "1.2", "1.3", "1.4",
   "2.1", "2.2", "2.3",
@@ -109,6 +108,10 @@ export async function runSeed(): Promise<SeedReport> {
 
   // ---- already-seeded leads ----
   const numbers = LEAD_SPECS.map((s) => leadNumber(s.n));
+  const { count: payoutsBefore } = await db
+    .from("milestone_payouts")
+    .select("id", { count: "exact", head: true });
+
   const { data: existing } = await db.from("leads").select("lead_number").in("lead_number", numbers);
   const done = new Set(((existing ?? []) as { lead_number: string }[]).map((l) => l.lead_number));
 
@@ -125,10 +128,10 @@ export async function runSeed(): Promise<SeedReport> {
     }
   }
 
-  const { count } = await db
+  const { count: payoutsAfter } = await db
     .from("milestone_payouts")
     .select("id", { count: "exact", head: true });
-  report.milestone_payouts_created = count ?? 0;
+  report.milestone_payouts_created = (payoutsAfter ?? 0) - (payoutsBefore ?? 0);
 
   return report;
 }
