@@ -18,6 +18,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useClaim, useLead } from "@/lib/crm/api";
 import { currencyExact, shortDate } from "@/lib/crm/format";
 import { signRoofingContract } from "@/lib/crm/roofing-contract.functions";
+
+type ScopeSummaryLike = {
+  carrier?: string | null;
+  excluded_items?: string | null;
+  category_breakdown?: { category?: string | null; rcv?: string | null; acv?: string | null }[] | null;
+};
 import {
   RC_ADDRESS,
   RC_CIB,
