@@ -14,6 +14,7 @@ import { IssueCoc } from "@/components/crm/issue-coc";
 
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
+import { ScopeDocumentsPanel, ScopeSummaryCard } from "@/components/crm/scope-documents-panel";
 
 
 import { SupplementsPanel } from "@/components/crm/supplements-panel";
@@ -798,6 +799,8 @@ function LeadDetail() {
             </SectionCard>
             <PolicyDocumentsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
             <PolicySummaryCard summary={claim?.policy_summary ?? null} />
+            <ScopeDocumentsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
+            <ScopeSummaryCard summary={(claim as { scope_summary?: unknown } | null)?.scope_summary ?? null} />
           </TabsContent>
 
           {/* Supplements --------------------------------------------- */}
