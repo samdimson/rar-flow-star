@@ -735,6 +735,8 @@ export type Database = {
           date_of_loss: string | null
           deductible: number | null
           depreciation_amount: number | null
+          depreciation_non_recoverable: number | null
+          depreciation_recoverable: number | null
           depreciation_released_at: string | null
           id: string
           lead_id: string
@@ -763,6 +765,8 @@ export type Database = {
           date_of_loss?: string | null
           deductible?: number | null
           depreciation_amount?: number | null
+          depreciation_non_recoverable?: number | null
+          depreciation_recoverable?: number | null
           depreciation_released_at?: string | null
           id?: string
           lead_id: string
@@ -791,6 +795,8 @@ export type Database = {
           date_of_loss?: string | null
           deductible?: number | null
           depreciation_amount?: number | null
+          depreciation_non_recoverable?: number | null
+          depreciation_recoverable?: number | null
           depreciation_released_at?: string | null
           id?: string
           lead_id?: string
