@@ -997,6 +997,7 @@ function LeadDetail() {
             <IssueCoc
               leadId={leadId}
               canEdit={canEdit}
+              taskCode={lead?.task_code ?? null}
               cocSignedAt={production?.coc_signed_at ?? null}
               cocEmailedAt={
                 (production as { coc_emailed_at?: string | null } | null | undefined)?.coc_emailed_at ?? null

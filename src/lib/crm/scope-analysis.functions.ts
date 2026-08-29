@@ -146,7 +146,9 @@ export const analyzeScopeDocument = createServerFn({ method: "POST" })
 
     const existing = await context.supabase
       .from("insurance_claims")
-      .select("id, carrier, claim_number, policy_number, rcv_amount, acv_amount, deductible, depreciation_amount")
+      .select(
+        "id, carrier, claim_number, policy_number, rcv_amount, acv_amount, deductible, depreciation_amount, depreciation_recoverable, depreciation_non_recoverable",
+      )
       .eq("lead_id", data.leadId)
       .maybeSingle();
 
@@ -154,19 +156,29 @@ export const analyzeScopeDocument = createServerFn({ method: "POST" })
       scope_summary: summary,
       scope_document_id: data.documentId,
     };
-    const row = existing.data;
-    if (!row?.carrier && summary.carrier) patch["carrier"] = summary.carrier;
-    if (!row?.claim_number && summary.claim_number) patch["claim_number"] = summary.claim_number;
-    if (!row?.policy_number && summary.policy_number) patch["policy_number"] = summary.policy_number;
-    if (!row?.rcv_amount && money(summary.rcv_total)) patch["rcv_amount"] = money(summary.rcv_total);
-    if (!row?.acv_amount && money(summary.acv_total)) patch["acv_amount"] = money(summary.acv_total);
-    if (!row?.deductible && money(summary.deductible_net)) patch["deductible"] = money(summary.deductible_net);
-    if (!row?.depreciation_amount && money(summary.depreciation_total)) {
-      patch["depreciation_amount"] = money(summary.depreciation_total);
+    const row = existing.data as Record<string, unknown> | null;
+    const empty = (key: string) => !row?.[key];
+    if (empty("carrier") && summary.carrier) patch["carrier"] = summary.carrier;
+    if (empty("claim_number") && summary.claim_number) patch["claim_number"] = summary.claim_number;
+    if (empty("policy_number") && summary.policy_number) patch["policy_number"] = summary.policy_number;
+    if (empty("rcv_amount") && money(summary.rcv_total)) patch["rcv_amount"] = money(summary.rcv_total);
+    if (empty("acv_amount") && money(summary.acv_total)) patch["acv_amount"] = money(summary.acv_total);
+    if (empty("deductible") && money(summary.deductible_net)) patch["deductible"] = money(summary.deductible_net);
+    const recoverable = money(summary.depreciation_recoverable);
+    const nonRecoverable = money(summary.depreciation_non_recoverable);
+    if (empty("depreciation_recoverable") && recoverable) patch["depreciation_recoverable"] = recoverable;
+    if (empty("depreciation_non_recoverable") && nonRecoverable) {
+      patch["depreciation_non_recoverable"] = nonRecoverable;
+    }
+    // depreciation_amount drives the contract / invoice "recoverable depreciation" line,
+    // so it must be the recoverable portion — never the combined total.
+    if (empty("depreciation_amount") && recoverable) {
+      patch["depreciation_amount"] = recoverable;
     }
 
-    if (row?.id) {
-      const { error } = await context.supabase.from("insurance_claims").update(patch as never).eq("id", row.id);
+    const rowId = typeof row?.["id"] === "string" ? (row["id"] as string) : null;
+    if (rowId) {
+      const { error } = await context.supabase.from("insurance_claims").update(patch as never).eq("id", rowId);
       if (error) throw new Error(error.message);
     } else {
       const { error } = await context.supabase

@@ -498,3 +498,14 @@ export const CARRIERS = [
   "CSAA",
   "Other",
 ] as const;
+
+/**
+ * The Certificate of Completion can only be issued once production is finished:
+ * QC complete (6.4), job complete pending docs (6.5), or anything in closeout / post-job.
+ */
+export function canIssueCoc(taskCode: string | null | undefined): boolean {
+  if (!taskCode) return false;
+  const value = Number(taskCode);
+  if (Number.isNaN(value)) return false;
+  return value >= 6.4;
+}

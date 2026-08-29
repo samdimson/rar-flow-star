@@ -4,6 +4,7 @@ import {
   SA_COMPANY,
   SA_EMAIL,
   SA_PHONE,
+  canSignServiceAgreement,
   type ServiceAgreementFields,
 } from "./service-agreement";
 import {
@@ -41,10 +42,16 @@ export async function runSignServiceAgreement(
 
   const { data: lead, error: leadError } = await authed
     .from("leads")
-    .select("id, lead_number, customer_id, customer:customers(*)")
+    .select("id, lead_number, task_code, customer_id, customer:customers(*)")
     .eq("id", leadId)
     .single();
   if (leadError || !lead) throw new Error(leadError?.message ?? "Lead not found");
+
+  if (!canSignServiceAgreement(lead.task_code)) {
+    throw new Error(
+      "This lead is not at a service agreement step (tasks 2.3 through 3.1). Advance the lead before signing.",
+    );
+  }
 
   let logoBytes: Uint8Array | null = null;
   try {
