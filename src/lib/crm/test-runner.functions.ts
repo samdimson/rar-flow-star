@@ -307,15 +307,16 @@ export const runCrmTests = createServerFn({ method: "POST" })
         f2.length ? list(f2) : `${lineItems.length} line items consistent`,
       );
 
-      const tc6 = byNumber.get("RAR-TC6");
+      const t045 = byNumber.get("RAR-T045");
       add(
         "T-F3",
-        "RAR-TC6 contract amount is $20,140 after the change order",
-        Math.abs(Number(tc6?.contract_amount ?? 0) - 20140) < 0.01,
-        tc6 ? `contract_amount = ${money(Number(tc6.contract_amount ?? 0))}` : "RAR-TC6 not found",
+        "RAR-T045 contract amount is $23,520 after the approved change order",
+        Math.abs(Number(t045?.contract_amount ?? 0) - 23520) < 0.01,
+        t045 ? `contract_amount = ${money(Number(t045.contract_amount ?? 0))}` : "RAR-T045 not found",
       );
 
       const f4 = invoices
+        .filter((inv) => testLeadIds.has(inv.lead_id))
         .filter((inv) => inv.status === "paid")
         .filter((inv) => {
           const paid = payments
