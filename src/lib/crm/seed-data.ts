@@ -23,7 +23,7 @@ export type PropertyType =
 
 export type RoofType = "asphalt_shingle" | "metal" | "flat_tpo" | "flat_mod" | "tile";
 
-export type ActivitySpec = { type: string; subject: string; body?: string; days?: number };
+export type ActivitySpec = { type: string; subject: string; body?: string | undefined; days?: number | undefined };
 export type TaskSpec = { title: string; days?: number; details?: string };
 export type ApptSpec = { kind: string; title: string; days: number; attendees?: string; notes?: string };
 export type DocSpec = { category: string; file_name: string };

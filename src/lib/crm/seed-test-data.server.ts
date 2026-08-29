@@ -142,7 +142,10 @@ async function seedLead(
   repId: string | null,
   report: SeedReport,
 ): Promise<void> {
-  const person = personFor(spec.n, { property_type: spec.property_type, roof_type: spec.roof_type });
+  const person = personFor(spec.n, {
+    ...(spec.property_type ? { property_type: spec.property_type } : {}),
+    ...(spec.roof_type ? { roof_type: spec.roof_type } : {}),
+  });
 
   const propertyId = await insert("properties", {
     address_line1: person.address_line1,
