@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { buildCocPdf, buildEmailBody, COMPANY_EMAIL, sendCocEmail, toBase64 } from "./coc.server";
 import { laborLabel } from "./labor";
-import { roofTypeLabel } from "./workflow";
+import { canIssueCoc, roofTypeLabel } from "./workflow";
 
 const BUCKET = "crm-files";
 
@@ -20,11 +20,17 @@ export async function runIssueCoc(
   const { data: lead, error: leadError } = await authed
     .from("leads")
     .select(
-      "id, lead_number, contract_signed_at, assigned_rep_id, customer_id, customer:customers(*), property:properties(*)",
+      "id, lead_number, task_code, contract_signed_at, assigned_rep_id, customer_id, customer:customers(*), property:properties(*)",
     )
     .eq("id", leadId)
     .single();
   if (leadError || !lead) throw new Error(leadError?.message ?? "Lead not found");
+
+  if (!canIssueCoc(lead.task_code)) {
+    throw new Error(
+      "The Certificate of Completion can only be issued once production is complete (task 6.4 or later).",
+    );
+  }
 
   const [{ data: job }, { data: claim }, { data: estimate }, { data: rep }] = await Promise.all([
     db.from("production_jobs").select("*").eq("lead_id", leadId).limit(1).maybeSingle(),

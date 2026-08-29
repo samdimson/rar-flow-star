@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  canSignRoofingContract,
   RC_CC_EMAIL,
   RC_COMPANY,
   RC_EMAIL,
@@ -125,7 +126,9 @@ export async function runSignRoofingContract(
     contract_amount: contractAmount,
     signed_at: signedAt,
     status: "active",
-    direction_to_pay_signed: false,
+    // The contract's insurance-proceeds endorsement is the direction to pay,
+    // signed at the same moment by the homeowner.
+    direction_to_pay_signed: true,
   };
   if (existingContract) {
     const { error } = await db.from("contracts").update(contractRow).eq("id", existingContract.id);
@@ -140,6 +143,35 @@ export async function runSignRoofingContract(
     .update({ contract_signed_at: signedAt, contract_amount: contractAmount })
     .eq("id", leadId);
   if (leadUpdateError) throw new Error(leadUpdateError.message);
+
+  // Supplements are never folded into the contract price directly — they are recorded as an
+  // approved change order so apply_change_order_to_contract() deltas leads.contract_amount once.
+  const supplementAmount = num(input.fields.supplementAmount);
+  const CO_DESCRIPTION = "Supplement recorded at contract signing";
+  const { data: existingChangeOrder } = await db
+    .from("change_orders")
+    .select("id, amount")
+    .eq("lead_id", leadId)
+    .eq("description", CO_DESCRIPTION)
+    .maybeSingle();
+
+  if (supplementAmount > 0) {
+    const coRow = {
+      lead_id: leadId,
+      description: CO_DESCRIPTION,
+      amount: supplementAmount,
+      homeowner_approved: true,
+      supplement_submitted: true,
+      status: "approved",
+    };
+    const { error: coError } = existingChangeOrder
+      ? await db.from("change_orders").update(coRow).eq("id", existingChangeOrder.id)
+      : await db.from("change_orders").insert(coRow);
+    if (coError) throw new Error(`Could not record the supplement change order: ${coError.message}`);
+  } else if (existingChangeOrder) {
+    const { error: coError } = await db.from("change_orders").delete().eq("id", existingChangeOrder.id);
+    if (coError) throw new Error(`Could not clear the supplement change order: ${coError.message}`);
+  }
 
   let rep: { full_name?: string; phone?: string | null; email?: string | null } | null = null;
   if (lead.assigned_rep_id) {
