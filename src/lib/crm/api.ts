@@ -93,7 +93,34 @@ export const useAppointments = listHook("appointments", "starts_at", true);
 export const useDocuments = listHook("documents", "created_at");
 export const useNotes = listHook("notes", "created_at");
 export const useEstimates = listHook("estimates", "created_at");
-export const useContracts = listHook("contracts", "created_at");
+export type ContractWithLead = ContractRow & {
+  contract_type: string | null;
+  customer_id: string | null;
+  lead: {
+    id: string;
+    lead_number: string;
+    customer: { first_name: string; last_name: string } | null;
+    property: { address_line1: string; city: string | null; state: string | null } | null;
+  } | null;
+};
+
+export function useContracts(filter?: { column: string; value: string | null }) {
+  return useQuery({
+    queryKey: ["contracts", filter?.column ?? "all", filter?.value ?? "all"],
+    enabled: filter ? !!filter.value : true,
+    queryFn: async () => {
+      let q = anyTable("contracts").select(
+        `*, lead:leads(id, lead_number,
+          customer:customers(first_name, last_name),
+          property:properties(address_line1, city, state))`,
+      );
+      if (filter?.value) q = q.eq(filter.column, filter.value);
+      const { data, error } = await q.order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as ContractWithLead[];
+    },
+  });
+}
 
 export type InvoiceWithLead = InvoiceRow & {
   lead: {

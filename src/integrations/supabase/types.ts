@@ -434,8 +434,10 @@ export type Database = {
       }
       contracts: {
         Row: {
-          contract_amount: number
+          contract_amount: number | null
+          contract_type: string
           created_at: string
+          customer_id: string | null
           direction_to_pay_signed: boolean
           id: string
           lead_id: string
@@ -446,8 +448,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          contract_amount?: number
+          contract_amount?: number | null
+          contract_type?: string
           created_at?: string
+          customer_id?: string | null
           direction_to_pay_signed?: boolean
           id?: string
           lead_id: string
@@ -458,8 +462,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          contract_amount?: number
+          contract_amount?: number | null
+          contract_type?: string
           created_at?: string
+          customer_id?: string | null
           direction_to_pay_signed?: boolean
           id?: string
           lead_id?: string
@@ -470,6 +476,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "contracts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "contracts_lead_id_fkey"
             columns: ["lead_id"]
