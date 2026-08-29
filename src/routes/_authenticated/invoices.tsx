@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useInvoices, useLeads, usePayments, useDocuments, type DocumentRow } from "@/lib/crm/api";
+import { useInvoices, usePayments, useDocuments, type DocumentRow } from "@/lib/crm/api";
 import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { useAuth } from "@/hooks/use-auth";
 import { useEstimatorAccess } from "@/lib/crm/access";
