@@ -41,10 +41,16 @@ export async function runSignRoofingContract(
 
   const { data: lead, error: leadError } = await authed
     .from("leads")
-    .select("id, lead_number, customer_id, assigned_rep_id, customer:customers(*)")
+    .select("id, lead_number, task_code, customer_id, assigned_rep_id, customer:customers(*)")
     .eq("id", leadId)
     .single();
   if (leadError || !lead) throw new Error(leadError?.message ?? "Lead not found");
+
+  if (!canSignRoofingContract(lead.task_code)) {
+    throw new Error(
+      "This lead is not at the contract signing step (task 5.1). Advance the lead before signing the contract.",
+    );
+  }
 
   let logoBytes: Uint8Array | null = null;
   try {
