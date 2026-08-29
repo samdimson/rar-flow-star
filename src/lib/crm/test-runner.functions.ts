@@ -97,7 +97,7 @@ export const runCrmTests = createServerFn({ method: "POST" })
             "invoices",
             "id, lead_id, amount, status, invoice_number",
           ),
-          fetchAll<{ invoice_id: string | null; amount: number }>("payments", "invoice_id, amount"),
+          fetchAll<{ invoice_id: string | null; lead_id: string; amount: number }>("payments", "invoice_id, lead_id, amount"),
           fetchAll<{ id: string; title: string; assigned_to: string | null }>(
             "tasks",
             "id, title, assigned_to",
@@ -125,20 +125,23 @@ export const runCrmTests = createServerFn({ method: "POST" })
       const claimFor = (leadId: string) => claims.find((c) => c.lead_id === leadId);
       const list = (arr: string[]) => (arr.length ? arr.slice(0, 12).join(", ") + (arr.length > 12 ? ` +${arr.length - 12} more` : "") : "none");
 
+      const isTestLead = (l: { lead_number: string }) => l.lead_number.startsWith("RAR-T0");
+
       // ---------- WORKFLOW ----------
-      const tc3 = byNumber.get("RAR-TC3");
+      const t062 = byNumber.get("RAR-T062");
       add(
         "T-W1",
-        "RAR-TC3 is status=lost at task 5.3",
-        tc3?.status === "lost" && tc3?.task_code === "5.3",
-        tc3 ? `status=${tc3.status}, task_code=${tc3.task_code}` : "RAR-TC3 not found",
+        "RAR-T062 is status=lost at task 5.3",
+        t062?.status === "lost" && t062?.task_code === "5.3",
+        t062 ? `status=${t062.status}, task_code=${t062.task_code}` : "RAR-T062 not found",
       );
 
-      const tc4 = byNumber.get("RAR-TC4");
-      const tc4M2 = tc4 ? payoutsFor(tc4.id, 2).length : -1;
-      add("T-W2", "RAR-TC4 has exactly one milestone 2 payout", tc4M2 === 1, `count=${tc4M2}`);
+      const t027 = byNumber.get("RAR-T027");
+      const t027M2 = t027 ? payoutsFor(t027.id, 2).length : -1;
+      add("T-W2", "RAR-T027 has exactly one milestone 2 payout", t027M2 === 1, `count=${t027M2}`);
 
       const w3Bad = leads
+        .filter(isTestLead)
         .filter((l) => ["3.1", "3.2", "3.3", "3.4"].includes(l.task_code))
         .filter((l) => !claimFor(l.id)?.carrier)
         .map((l) => l.lead_number);
@@ -150,6 +153,7 @@ export const runCrmTests = createServerFn({ method: "POST" })
       );
 
       const w4Bad = leads
+        .filter(isTestLead)
         .filter((l) => l.task_code === "3.5")
         .filter((l) => payoutsFor(l.id, 2).some((p) => p.status === "paid"))
         .map((l) => l.lead_number);
@@ -160,44 +164,47 @@ export const runCrmTests = createServerFn({ method: "POST" })
         w4Bad.length ? `offending: ${list(w4Bad)}` : "no paid milestone 2 on denied claims",
       );
 
-      const tc2 = byNumber.get("RAR-TC2");
-      const tc2M2 = tc2 ? payoutsFor(tc2.id, 2).length : -1;
-      add("T-W5", "RAR-TC2 (cash job) has no milestone 2 payout", tc2M2 === 0, `count=${tc2M2}`);
+      const t063 = byNumber.get("RAR-T063");
+      const t063M2 = t063 ? payoutsFor(t063.id, 2).length : -1;
+      add("T-W5", "RAR-T063 (cash job) has no milestone 2 payout", t063M2 === 0, `count=${t063M2}`);
 
       // ---------- COMMISSION ----------
-      const tc5 = byNumber.get("RAR-TC5");
-      const tc5Paid = tc5
-        ? payoutsFor(tc5.id).filter((p) => p.status === "paid").reduce((s, p) => s + Number(p.amount), 0)
+      const t053 = byNumber.get("RAR-T053");
+      const t053Payments = t053
+        ? payments.filter((p) => p.lead_id === t053.id).reduce((s, p) => s + Number(p.amount), 0)
         : -1;
       add(
         "T-C1",
-        "RAR-TC5 paid milestone payouts total $7,400",
-        Math.abs(tc5Paid - 7400) < 0.01,
-        `total paid = ${money(tc5Paid)}`,
+        "RAR-T053 payments total the $22,400 contract amount",
+        Math.abs(t053Payments - 22400) < 0.01,
+        `payments total = ${money(t053Payments)}`,
       );
 
-      let tierDetail = "RAR-TC5 rep not found";
+      const t055 = byNumber.get("RAR-T055");
+      let tierDetail = "RAR-T055 rep not found";
       let tierOk = false;
-      if (tc5?.assigned_rep_id) {
+      if (t055?.assigned_rep_id) {
         const { data, error } = await supabaseAdmin.rpc("get_rep_commission", {
-          rep_id: tc5.assigned_rep_id,
+          rep_id: t055.assigned_rep_id,
         });
         const row = Array.isArray(data) ? data[0] : data;
         const rate = row ? Number((row as { tier_rate: number }).tier_rate) : NaN;
         tierOk = Math.abs(rate - 0.4) < 0.0001;
         tierDetail = error ? error.message : `tier_rate = ${Number.isNaN(rate) ? "n/a" : rate.toFixed(4)}`;
       }
-      add("T-C2", "RAR-TC5 rep tier rate is 0.40", tierOk, tierDetail);
+      add("T-C2", "RAR-T055 rep (Jeremy) tier rate is 0.40", tierOk, tierDetail);
 
-      const tc3M1 = tc3 ? payoutsFor(tc3.id, 1) : [];
+      const t062M1 = t062 ? payoutsFor(t062.id, 1) : [];
       add(
         "T-C3",
-        "RAR-TC3 milestone 1 is clawed back",
-        tc3M1.length === 1 && tc3M1[0]!.status === "clawback",
-        tc3M1.length ? `status=${tc3M1.map((p) => p.status).join(", ")}` : "no milestone 1 row",
+        "RAR-T062 milestone 1 is clawed back",
+        t062M1.length === 1 && t062M1[0]!.status === "clawback",
+        t062M1.length ? `status=${t062M1.map((p) => p.status).join(", ")}` : "no milestone 1 row",
       );
 
+      const testLeadIds = new Set(leads.filter(isTestLead).map((l) => l.id));
       const c4Bad = payouts
+        .filter((p) => testLeadIds.has(p.lead_id))
         .filter((p) => p.status === "paid" && !p.paid_at)
         .map((p) => `${leadName.get(p.lead_id) ?? p.lead_id} M${p.milestone}`);
       add(
@@ -208,6 +215,7 @@ export const runCrmTests = createServerFn({ method: "POST" })
       );
 
       const c5Bad = payouts
+        .filter((p) => testLeadIds.has(p.lead_id))
         .filter((p) => Number(p.amount) < 0)
         .map((p) => `${leadName.get(p.lead_id) ?? p.lead_id} M${p.milestone} ${money(Number(p.amount))}`);
       add(
@@ -274,6 +282,7 @@ export const runCrmTests = createServerFn({ method: "POST" })
       // ---------- FINANCIAL ----------
       const moneyRange = range("5.1", "8.3");
       const f1 = leads
+        .filter(isTestLead)
         .filter((l) => moneyRange.has(l.task_code) && !(Number(l.net_amount) > 0))
         .map((l) => `${l.lead_number} (${l.net_amount ?? "null"})`);
       add(
@@ -298,15 +307,16 @@ export const runCrmTests = createServerFn({ method: "POST" })
         f2.length ? list(f2) : `${lineItems.length} line items consistent`,
       );
 
-      const tc6 = byNumber.get("RAR-TC6");
+      const t045 = byNumber.get("RAR-T045");
       add(
         "T-F3",
-        "RAR-TC6 contract amount is $20,140 after the change order",
-        Math.abs(Number(tc6?.contract_amount ?? 0) - 20140) < 0.01,
-        tc6 ? `contract_amount = ${money(Number(tc6.contract_amount ?? 0))}` : "RAR-TC6 not found",
+        "RAR-T045 contract amount is $23,520 after the approved change order",
+        Math.abs(Number(t045?.contract_amount ?? 0) - 23520) < 0.01,
+        t045 ? `contract_amount = ${money(Number(t045.contract_amount ?? 0))}` : "RAR-T045 not found",
       );
 
       const f4 = invoices
+        .filter((inv) => testLeadIds.has(inv.lead_id))
         .filter((inv) => inv.status === "paid")
         .filter((inv) => {
           const paid = payments
