@@ -244,6 +244,7 @@ async function seedLead(
       lead_id: leadId,
       total_amount: total,
       status: spec.estimate?.status ?? "approved",
+      source: "internal",
       scope_gap_amount: spec.estimate?.scope_gap_amount ?? null,
       notes: spec.estimate?.notes ?? null,
       labor_type: "tear_off_replace",
