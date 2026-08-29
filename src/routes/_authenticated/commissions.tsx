@@ -71,6 +71,18 @@ function CommissionsPage() {
     [roles],
   );
 
+  const selectedProfile = repId ? profiles.find((p) => p.id === repId) : null;
+  const selectedUserRoles = repId ? roles.filter((r) => r.user_id === repId) : [];
+  const isOwnerAdmin =
+    !!repId &&
+    (selectedProfile?.email?.toLowerCase().startsWith("kba@") ||
+      selectedProfile?.email?.toLowerCase().startsWith("sdimson@") ||
+      (selectedUserRoles.some((r) => r.role === "admin" || r.role === "owner_manager") &&
+        !selectedUserRoles.some((r) => r.role === "sales_rep")));
+
+  const showManagerView = isManager && (showAllReps || isOwnerAdmin);
+  const showRepView = !showManagerView;
+
   const repsForSummary = useMemo(
     () =>
       repOptions.map((p) => ({
