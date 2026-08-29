@@ -88,6 +88,7 @@ export type JobCommissionPayout = {
   amount: number;
   status: string;
   triggered_at: string;
+  paid_at: string | null;
 };
 
 export type JobCommissionRow = {
@@ -114,7 +115,7 @@ export function useJobsCommissionDetail(opts: { repId: string | null; allReps: b
       let query = supabase
         .from("milestone_payouts")
         .select(
-          "milestone, amount, status, triggered_at, rep_id, lead_id, " +
+          "milestone, amount, status, triggered_at, paid_at, rep_id, lead_id, " +
             "lead:leads!lead_id(id, lead_number, task_code, net_amount, contract_amount, " +
             "customer:customers!customer_id(first_name, last_name), " +
             "property:properties!property_id(address_line1, city, state, postal_code))",
@@ -129,6 +130,7 @@ export function useJobsCommissionDetail(opts: { repId: string | null; allReps: b
         amount: number;
         status: string;
         triggered_at: string;
+        paid_at: string | null;
         rep_id: string | null;
         lead_id: string;
         lead: {
@@ -183,6 +185,7 @@ export function useJobsCommissionDetail(opts: { repId: string | null; allReps: b
           amount: Number(r.amount ?? 0),
           status: r.status,
           triggered_at: r.triggered_at,
+          paid_at: r.paid_at,
         };
         if (r.status === "paid") job.totalPaid += Number(r.amount ?? 0);
         if (r.triggered_at > job.latestTriggeredAt) job.latestTriggeredAt = r.triggered_at;
