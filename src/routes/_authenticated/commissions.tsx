@@ -6,7 +6,6 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, KpiCard, LoadingBlock, SectionCard } from "@/components/crm/primitives";
 import { JobsCommissionTable } from "@/components/crm/jobs-commission-table";
-import { MilestoneTable } from "@/components/crm/milestone-table";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -312,8 +311,8 @@ function CommissionsPage() {
                 : undefined
             }
           />
-          <KpiCard label="Commission earned (closed jobs)" value={currencyExact(commission?.commission_amount)} />
           <KpiCard label="Net base (closed jobs)" value={currencyExact(commission?.total_net)} />
+          <KpiCard label="YTD earned" value={currencyExact(totals.ytd)} tone="positive" />
         </div>
 
         <SectionCard title="Tier progress" contentClassName="space-y-3">
@@ -359,23 +358,6 @@ function CommissionsPage() {
               <dd>{currencyExact(breakdown.net)}</dd>
             </div>
           </dl>
-        </SectionCard>
-
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard label="Total pending" value={currencyExact(totals.pending)} />
-          <KpiCard label="Total paid" value={currencyExact(totals.paid)} />
-          <KpiCard label="Total clawback" value={currencyExact(totals.clawback)} />
-          <KpiCard label="YTD earned" value={currencyExact(totals.ytd)} tone="positive" />
-        </div>
-
-        <SectionCard title={`Milestone payouts — ${repName}`}>
-          {isLoading ? (
-            <LoadingBlock label="Loading payouts" />
-          ) : !repId && !showAllReps ? (
-            <EmptyState message="Select a rep to view milestone payouts." />
-          ) : (
-            <MilestoneTable payouts={payouts} canManage={canManage} />
-          )}
         </SectionCard>
 
         <SectionCard title={`Jobs & Commission Detail — ${repName}`}>
