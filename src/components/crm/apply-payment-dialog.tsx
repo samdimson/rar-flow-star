@@ -26,11 +26,17 @@ export function ApplyPaymentDialog({
   invoiceId,
   invoiceAmount,
   alreadyCollected,
+  leadNumber,
+  customerName,
+  address,
 }: {
   leadId: string;
   invoiceId: string;
   invoiceAmount: number;
   alreadyCollected: number;
+  leadNumber?: string | null;
+  customerName?: string | null;
+  address?: string | null;
 }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
