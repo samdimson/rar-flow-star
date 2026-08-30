@@ -55,14 +55,24 @@ const leadCustomerName = (lead: LeadRow) => {
 const leadAddress = (lead: LeadRow) =>
   (lead as LeadRow & WithRelations).property?.address_line1 ?? "";
 
+const INSPECTION_FIELDS: RequiredField[] = [
+  "damage_type",
+  "damage_areas",
+  "roof_condition",
+  "inspection_notes",
+  "inspection_photos",
+];
+
 export function AdvanceDialog({
   lead,
   claim,
   trigger,
+  setActiveTab,
 }: {
   lead: LeadRow;
   claim?: ClaimRow | null | undefined;
   trigger?: React.ReactNode;
+  setActiveTab?: (tab: string) => void;
 }) {
   const { canEdit } = useAuth();
   const [open, setOpen] = useState(false);
