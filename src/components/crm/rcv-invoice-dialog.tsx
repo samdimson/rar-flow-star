@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { currencyExact, shortDate, todayIso } from "@/lib/crm/format";
 import { generateRcvInvoice, emailRcvInvoice } from "@/lib/crm/rcv-invoice.functions";
 import { roofTypeLabel } from "@/lib/crm/workflow";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 type Form = {
   invoiceNumber: string;
