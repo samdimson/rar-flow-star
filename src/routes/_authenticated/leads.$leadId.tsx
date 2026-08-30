@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowLeft, CheckCircle2, Clock, FileText, PenLine, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, FileText, PenLine, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
@@ -33,6 +33,8 @@ import {
   useAppointments,
   useChangeOrders,
   useClaim,
+  useDocuments,
+  missingRequirements,
   useInvoices,
   useLead,
   useNotes,
@@ -228,6 +230,8 @@ function LeadDetail() {
   const { data: changeOrders = [] } = useChangeOrders({ column: "lead_id", value: leadId });
   const { data: history = [] } = useStageHistory({ column: "lead_id", value: leadId });
   const { data: profiles = [] } = useProfiles();
+  const { data: leadDocuments = [] } = useDocuments({ column: "lead_id", value: leadId });
+  const photoCount = leadDocuments.filter((d) => d.category === "photo").length;
 
   const { data: invoiceDocs = [] } = useQuery({
     queryKey: ["lead-invoice-docs", leadId],
@@ -453,6 +457,28 @@ function LeadDetail() {
 
   const rep = profiles.find((p) => p.id === lead.assigned_rep_id);
 
+  // If the only thing standing between this lead and its next step is the
+  // inspection report, "Advance stage" should open that form instead of a
+  // dialog the rep can't get past.
+  const INSPECTION_FIELDS = [
+    "damage_type",
+    "damage_areas",
+    "roof_condition",
+    "inspection_notes",
+    "inspection_photos",
+  ];
+  const nextCode = TASK_BY_CODE[lead.task_code]?.next?.[0];
+  const nextRequires = nextCode
+    ? (TASK_BY_CODE[nextCode]?.required ?? []).some((f) => INSPECTION_FIELDS.includes(f))
+    : false;
+  const inspectionMissing =
+    nextCode && nextRequires
+      ? missingRequirements(lead, claim, nextCode, lead.task_code, photoCount).some((f) =>
+          INSPECTION_FIELDS.includes(f),
+        )
+      : false;
+  const interceptAdvance = Boolean(nextCode && inspectionMissing);
+
   return (
     <AppShell
       title={
@@ -479,7 +505,19 @@ function LeadDetail() {
               <ArrowLeft className="size-4" /> Leads
             </Link>
           </Button>
-          <AdvanceDialog lead={lead} claim={claim} />
+          {interceptAdvance && nextCode ? (
+            <InspectionForm
+              lead={lead}
+              autoAdvanceTo={nextCode}
+              trigger={
+                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Advance stage <ArrowRight className="size-4" />
+                </Button>
+              }
+            />
+          ) : (
+            <AdvanceDialog lead={lead} claim={claim} />
+          )}
         </>
       }
     >

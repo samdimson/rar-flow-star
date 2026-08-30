@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useDocuments, type LeadRow } from "@/lib/crm/api";
+import { useAdvanceLead, useDocuments, type LeadRow } from "@/lib/crm/api";
 import { ROOF_TYPES } from "@/lib/crm/workflow";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 import { cn } from "@/lib/utils";
@@ -45,10 +45,29 @@ type LeadWithRelations = LeadRow & {
     | null;
 };
 
-export function InspectionForm({ lead, trigger }: { lead: LeadWithRelations; trigger?: React.ReactNode }) {
+export function InspectionForm({
+  lead,
+  trigger,
+  autoAdvanceTo,
+  open: openProp,
+  onOpenChange,
+}: {
+  lead: LeadWithRelations;
+  trigger?: React.ReactNode;
+  /** When set, a successful submit immediately advances the lead to this task code. */
+  autoAdvanceTo?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const { canEdit, user } = useAuth();
   const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const advance = useAdvanceLead();
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = openProp ?? uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -109,16 +128,17 @@ export function InspectionForm({ lead, trigger }: { lead: LeadWithRelations; tri
   const submit = async () => {
     setSaving(true);
     try {
-      const { error: leadErr } = await supabase
-        .from("leads")
-        .update({
-          damage_type: damageType,
-          damage_areas: damageAreas,
-          roof_condition: roofCondition,
-          inspection_notes: notes,
-          storm_date: stormDate,
-        })
-        .eq("id", lead.id);
+      const leadPatch = {
+        damage_type: damageType,
+        damage_areas: damageAreas,
+        roof_condition: roofCondition,
+        inspection_notes: notes,
+        storm_date: stormDate,
+        // Carriers need a date of loss AND an inspection date on file; the
+        // inspection just happened, so stamp it when it's still empty.
+        inspection_date: lead.inspection_date ?? new Date().toISOString().slice(0, 10),
+      };
+      const { error: leadErr } = await supabase.from("leads").update(leadPatch).eq("id", lead.id);
       if (leadErr) throw leadErr;
 
       if (lead.property_id) {
@@ -144,6 +164,15 @@ export function InspectionForm({ lead, trigger }: { lead: LeadWithRelations; tri
       qc.invalidateQueries();
       toast.success("Inspection report saved");
       setOpen(false);
+
+      // The rep shouldn't have to click "Advance stage" separately — the report
+      // itself was the blocking requirement, so move the lead forward now.
+      if (autoAdvanceTo) {
+        await advance.mutateAsync({
+          lead: { ...(lead as LeadRow), ...leadPatch } as LeadRow,
+          toTaskCode: autoAdvanceTo,
+        });
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not save inspection report");
     } finally {
