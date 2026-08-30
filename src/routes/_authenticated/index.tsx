@@ -211,7 +211,10 @@ function Dashboard() {
                         params={{ leadId: l.id }}
                         className="font-medium text-primary hover:underline"
                       >
-                        {l.lead_number}
+                        {l.lead_number} ·{" "}
+                        <span className="text-orange-500">
+                          {l.customer?.first_name} {l.customer?.last_name}
+                        </span>
                       </Link>
                       <span className="block truncate text-xs text-sky-400">
                         {l.property?.address_line1} · last touched {shortDate(l.updated_at)}
