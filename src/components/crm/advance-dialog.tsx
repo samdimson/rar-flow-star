@@ -35,7 +35,12 @@ import {
   type ClaimRow,
   type LeadRow,
 } from "@/lib/crm/api";
-import { TASK_BY_CODE } from "@/lib/crm/workflow";
+import {
+  REQUIRED_FIELD_TAB,
+  TAB_LABELS,
+  TASK_BY_CODE,
+  type RequiredField,
+} from "@/lib/crm/workflow";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 type WithRelations = {
