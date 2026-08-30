@@ -51,10 +51,28 @@ function PipelinePage() {
   const advance = useAdvanceLead();
   const [dragId, setDragId] = useState<string | null>(null);
   const [hoverStage, setHoverStage] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
   const [pendingOverride, setPendingOverride] = useState<
     { lead: LeadWithRelations; toTaskCode: string } | null
   >(null);
   const [overrideReason, setOverrideReason] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const filteredLeads = q
+    ? leads.filter((l) => {
+        const customer = l.customer;
+        const haystack = [
+          customer?.first_name,
+          customer?.last_name,
+          l.lead_number,
+          l.property?.address_line1,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      })
+    : leads;
 
   const drop = (stageId: number) => {
     setHoverStage(null);
@@ -98,9 +116,19 @@ function PipelinePage() {
       subtitle="Drag a card between stages — the workflow engine records history, tasks and automation."
       actions={<LeadFormDialog />}
     >
+      <div className="relative mb-4">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <Input
+          className="pl-9"
+          placeholder="Search by customer name, lead number, or address…"
+          aria-label="Search leads"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
       <div className="flex gap-3 overflow-x-auto pb-4">
         {STAGES.map((stage) => {
-          const rows = leads.filter((l) => l.stage_id === stage.id);
+          const rows = filteredLeads.filter((l) => l.stage_id === stage.id);
           const value = rows.reduce((s, l) => s + Number(l.contract_amount ?? l.estimated_value ?? 0), 0);
           return (
             <section
