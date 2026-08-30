@@ -99,6 +99,7 @@ export type ContractWithLead = ContractRow & {
   lead: {
     id: string;
     lead_number: string;
+    task_code: string | null;
     customer: { first_name: string; last_name: string } | null;
     property: { address_line1: string; city: string | null; state: string | null } | null;
   } | null;
@@ -110,7 +111,7 @@ export function useContracts(filter?: { column: string; value: string | null }) 
     enabled: filter ? !!filter.value : true,
     queryFn: async () => {
       let q = anyTable("contracts").select(
-        `*, lead:leads(id, lead_number,
+        `*, lead:leads(id, lead_number, task_code,
           customer:customers(first_name, last_name),
           property:properties(address_line1, city, state))`,
       );
