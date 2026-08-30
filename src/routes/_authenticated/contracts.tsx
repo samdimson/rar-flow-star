@@ -246,8 +246,6 @@ function ContractsPage() {
       <div className="space-y-5">
         {isLoading ? (
           <LoadingBlock label="Loading contracts" />
-        ) : contracts.length === 0 ? (
-          <EmptyState message="No contracts yet. One is created when a lead reaches 5.1 — Contract Signed, Sold." />
         ) : (
           <>
             {SECTIONS.map((section) => {
@@ -266,32 +264,33 @@ function ContractsPage() {
               );
             })}
 
-            {hasArchived ? (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
-                  <CardTitle className="text-sm font-semibold">Archive</CardTitle>
-                  <Input
-                    className="w-full max-w-xs"
-                    placeholder="Search archive…"
-                    aria-label="Search archived contracts"
-                    value={archiveQuery}
-                    onChange={(e) => setArchiveQuery(e.target.value)}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
+                <CardTitle className="text-sm font-semibold">
+                  Archive
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">{archived.length}</span>
+                </CardTitle>
+                <Input
+                  className="w-full max-w-xs"
+                  placeholder="Search archive…"
+                  aria-label="Search archived contracts"
+                  value={archiveQuery}
+                  onChange={(e) => setArchiveQuery(e.target.value)}
+                />
+              </CardHeader>
+              <CardContent className="pt-0">
+                {archived.length === 0 ? (
+                  <EmptyState message="No archived contracts yet." />
+                ) : (
+                  <ContractsTable
+                    rows={archived}
+                    canViewFinance={canViewFinance}
+                    docFor={docFor}
+                    openDoc={openDoc}
                   />
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {archived.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-muted-foreground">No archived contracts match.</p>
-                  ) : (
-                    <ContractsTable
-                      rows={archived}
-                      canViewFinance={canViewFinance}
-                      docFor={docFor}
-                      openDoc={openDoc}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            ) : null}
+                )}
+              </CardContent>
+            </Card>
           </>
         )}
       </div>
