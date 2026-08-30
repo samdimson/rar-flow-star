@@ -136,6 +136,36 @@ function TestRunnerPage() {
         </div>
       </SectionCard>
 
+      <SectionCard title="Seed test inspection report">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Creates one filled inspection report with 10 uploaded photos on the selected lead, satisfying the task 2.1
+          gate.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={inspectionLeadId} onValueChange={setInspectionLeadId}>
+            <SelectTrigger className="w-[340px]">
+              <SelectValue placeholder="Select a lead" />
+            </SelectTrigger>
+            <SelectContent>
+              {leads.map((l) => (
+                <SelectItem key={l.id} value={l.id}>
+                  {l.lead_number} — {l.customer ? `${l.customer.first_name} ${l.customer.last_name}` : "No customer"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            disabled={!inspectionLeadId || inspectionMutation.isPending}
+            onClick={() => inspectionMutation.mutate(inspectionLeadId)}
+          >
+            {inspectionMutation.isPending ? "Seeding…" : "Seed test inspection report"}
+          </Button>
+        </div>
+      </SectionCard>
+
+
+
       {seedReport ? (
         <SectionCard title="Seed report">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
