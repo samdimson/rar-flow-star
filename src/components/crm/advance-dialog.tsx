@@ -185,23 +185,6 @@ export function AdvanceDialog({
             />
           </div>
 
-          {canManage ? (
-            <label className="flex items-start gap-2 rounded-md border border-border p-3 text-xs">
-              <input
-                type="checkbox"
-                checked={override}
-                onChange={(e) => {
-                  setOverride(e.target.checked);
-                  setTarget("");
-                }}
-                className="mt-0.5 size-4"
-              />
-              <span>
-                <span className="font-semibold">Manual override</span> — jump to any workflow task and skip
-                required-field checks. Recorded in the audit log.
-              </span>
-            </label>
-          ) : null}
         </div>
 
         <DialogFooter>
