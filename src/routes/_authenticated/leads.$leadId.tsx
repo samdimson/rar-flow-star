@@ -560,7 +560,6 @@ function LeadDetail() {
                 <TabsTrigger value="inspection">Conduct Inspections</TabsTrigger>
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                <TabsTrigger value="production">Production</TabsTrigger>
                 {!lead.service_agreement_signed_at && canSignServiceAgreement(lead.task_code) && canEdit ? (
                   <Button asChild size="sm" className="mx-1 h-8">
                     <Link to="/service-agreement" search={{ leadId: lead.id }}>
@@ -582,6 +581,7 @@ function LeadDetail() {
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">View</p>
               <TabsList className="flex h-auto w-full flex-wrap justify-start">
                 <TabsTrigger value="job-cost">Job Cost</TabsTrigger>
+                <TabsTrigger value="production">Production</TabsTrigger>
                 <TabsTrigger value="commissions">Commissions</TabsTrigger>
                 <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger>
                 <TabsTrigger value="history">Status history</TabsTrigger>
