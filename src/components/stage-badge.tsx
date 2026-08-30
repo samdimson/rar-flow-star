@@ -38,7 +38,7 @@ export function TaskBadge({ code, className }: { code: string; className?: strin
       )}
       title={task?.description}
     >
-      <span className="font-mono text-[11px] font-semibold text-primary">{code}</span>
+      <span className="font-mono text-[11px] font-semibold text-primary">{task?.displayCode ?? code}</span>
       <span className="truncate text-foreground">{task?.name ?? "Unknown task"}</span>
     </span>
   );
