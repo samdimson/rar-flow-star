@@ -26,6 +26,7 @@ import { useAdvanceLead, useLeads, type LeadWithRelations } from "@/lib/crm/api"
 import { currency, shortDate } from "@/lib/crm/format";
 import { STAGES, TASK_BY_CODE, tasksForStage } from "@/lib/crm/workflow";
 import { cn } from "@/lib/utils";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Pipeline — Rise Above Roofing Oklahoma CRM";
 const description =
