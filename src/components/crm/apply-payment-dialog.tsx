@@ -105,7 +105,10 @@ export function ApplyPaymentDialog({
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Apply Payment</DialogTitle>
+          <DialogTitle>
+            <LeadIdentityHeader leadNumber={leadNumber} customerName={customerName} address={address} />
+            <span className="mt-1 block text-base">Apply Payment</span>
+          </DialogTitle>
           <DialogDescription>
             Balance due {currencyExact(balance)} of {currencyExact(Number(invoiceAmount))}.
           </DialogDescription>
