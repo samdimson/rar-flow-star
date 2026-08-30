@@ -161,13 +161,15 @@ export function AdvanceDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-            Advance stage <ArrowRight className="size-4" />
-          </Button>
-        )}
-      </DialogTrigger>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Advance stage <ArrowRight className="size-4" />
+            </Button>
+          )}
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
