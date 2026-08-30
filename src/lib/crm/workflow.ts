@@ -132,7 +132,14 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
     name: "Inspection Complete",
     description: "Photos and damage documented",
     next: ["2.2", "2.3"],
-    required: ["inspection_date"],
+    required: [
+      "inspection_date",
+      "damage_type",
+      "damage_areas",
+      "roof_condition",
+      "inspection_notes",
+      "inspection_photos",
+    ],
     followUps: [{ title: "Review damage and qualify claim", dueInDays: 1, kind: "review", priority: "high" }],
   },
   {
