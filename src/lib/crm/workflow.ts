@@ -57,6 +57,30 @@ export const REQUIRED_FIELD_LABELS: Record<RequiredField, string> = {
   install_date: "Install date",
 };
 
+/** Which lead-detail tab hosts the input for each required field. */
+export const REQUIRED_FIELD_TAB: Record<RequiredField, string> = {
+  inspection_date: "overview",
+  damage_type: "inspection",
+  damage_areas: "inspection",
+  roof_condition: "inspection",
+  inspection_notes: "inspection",
+  inspection_photos: "inspection",
+  carrier: "insurance",
+  claim_number: "insurance",
+  adjuster_meeting_at: "insurance",
+  rcv_amount: "insurance",
+  scope_document: "insurance",
+  contract_signed_at: "overview",
+  contract_amount: "overview",
+  production_manager_id: "overview",
+  install_date: "overview",
+};
+
+export const TAB_LABELS: Record<string, string> = {
+  overview: "Overview",
+  insurance: "Insurance",
+  inspection: "Conduct Inspection",
+};
 
 export type FollowUp = {
   title: string;
