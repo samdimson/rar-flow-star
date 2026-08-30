@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEstimatorAccess } from "@/lib/crm/access";
 import { RcvInvoiceDialog } from "@/components/crm/rcv-invoice-dialog";
 import { ApplyPaymentDialog } from "@/components/crm/apply-payment-dialog";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Invoices & Payments — Rise Above Roofing Oklahoma CRM";
 const description =
