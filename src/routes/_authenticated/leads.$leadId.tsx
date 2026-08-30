@@ -484,19 +484,7 @@ function LeadDetail() {
               <ArrowLeft className="size-4" /> Leads
             </Link>
           </Button>
-          {interceptAdvance && nextCode ? (
-            <InspectionForm
-              lead={lead}
-              autoAdvanceTo={nextCode}
-              trigger={
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Advance stage <ArrowRight className="size-4" />
-                </Button>
-              }
-            />
-          ) : (
-            <AdvanceDialog lead={lead} claim={claim} />
-          )}
+          <AdvanceDialog lead={lead} claim={claim} setActiveTab={setActiveTab} />
         </>
       }
     >
