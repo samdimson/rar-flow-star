@@ -89,7 +89,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
   {
     code: "1.2",
     stageId: 1,
-    name: "Lead — Attempting Contact",
+    name: "Schedule Inspection",
     description: "Rep actively trying to reach homeowner",
     next: ["1.3", "1.4"],
     followUps: [{ title: "Next contact attempt", dueInDays: 1, kind: "contact", priority: "high" }],
@@ -97,6 +97,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
   {
     code: "1.3",
     stageId: 1,
+    displayStageId: 2,
     name: "Inspection Scheduled",
     description: "Homeowner agreed; inspection on calendar",
     next: ["2.1"],
@@ -107,7 +108,8 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
   {
     code: "1.4",
     stageId: 1,
-    name: "Nurture — Not Ready",
+    displayCode: "1.3",
+    name: "Nurture — Follow-up",
     description: "Homeowner declined for now; bi-weekly follow-up",
     next: ["1.2", "1.3"],
     setStatus: "nurture",
