@@ -164,6 +164,15 @@ export function InspectionForm({
       qc.invalidateQueries();
       toast.success("Inspection report saved");
       setOpen(false);
+
+      // The rep shouldn't have to click "Advance stage" separately — the report
+      // itself was the blocking requirement, so move the lead forward now.
+      if (autoAdvanceTo) {
+        await advance.mutateAsync({
+          lead: { ...(lead as LeadRow), ...leadPatch } as LeadRow,
+          toTaskCode: autoAdvanceTo,
+        });
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not save inspection report");
     } finally {
