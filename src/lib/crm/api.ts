@@ -99,6 +99,7 @@ export type ContractWithLead = ContractRow & {
   lead: {
     id: string;
     lead_number: string;
+    task_code: string | null;
     customer: { first_name: string; last_name: string } | null;
     property: { address_line1: string; city: string | null; state: string | null } | null;
   } | null;
