@@ -190,6 +190,9 @@ function InvoicesPage() {
                 invoiceId={invoice.id}
                 invoiceAmount={Number(invoice.amount)}
                 alreadyCollected={paid}
+                leadNumber={invoice.lead?.lead_number}
+                customerName={customer ? `${customer.first_name ?? ""} ${customer.last_name ?? ""}`.trim() : null}
+                address={property?.address_line1 ?? null}
               />
             </div>
           ) : null}

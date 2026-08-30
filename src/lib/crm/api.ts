@@ -565,7 +565,19 @@ export async function applyTransition({ lead, toTaskCode, reason, isOverride }: 
   const task = TASK_BY_CODE[toTaskCode];
   if (!task) throw new Error(`Unknown workflow task ${toTaskCode}`);
 
-  if (!isOverride) {
+  // Manual override skips workflow + required-field validation, so the caller's
+  // role must be re-verified server-side (security definer) — never trust the UI.
+  let override = false;
+  if (isOverride) {
+    const { data: allowed, error: roleError } = await supabase.rpc("can_manage");
+    if (roleError) throw new Error("Could not verify override permission. Try again.");
+    if (allowed !== true) {
+      throw new Error("Manual override requires manager or admin permissions.");
+    }
+    override = true;
+  }
+
+  if (!override) {
     const validNext = TASK_BY_CODE[lead.task_code]?.next ?? [];
     if (!validNext.includes(toTaskCode)) {
       throw new Error(

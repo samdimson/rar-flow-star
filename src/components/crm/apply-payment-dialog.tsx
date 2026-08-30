@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { currencyExact, todayIso } from "@/lib/crm/format";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const KINDS = ["deductible", "acv", "depreciation", "supplement", "other"] as const;
 type Kind = (typeof KINDS)[number];
@@ -26,11 +27,17 @@ export function ApplyPaymentDialog({
   invoiceId,
   invoiceAmount,
   alreadyCollected,
+  leadNumber,
+  customerName,
+  address,
 }: {
   leadId: string;
   invoiceId: string;
   invoiceAmount: number;
   alreadyCollected: number;
+  leadNumber?: string | null | undefined;
+  customerName?: string | null | undefined;
+  address?: string | null | undefined;
 }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -99,7 +106,10 @@ export function ApplyPaymentDialog({
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Apply Payment</DialogTitle>
+          <DialogTitle>
+            <LeadIdentityHeader leadNumber={leadNumber} customerName={customerName} address={address} />
+            <span className="mt-1 block text-base">Apply Payment</span>
+          </DialogTitle>
           <DialogDescription>
             Balance due {currencyExact(balance)} of {currencyExact(Number(invoiceAmount))}.
           </DialogDescription>

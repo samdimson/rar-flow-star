@@ -35,6 +35,19 @@ import {
   type LeadRow,
 } from "@/lib/crm/api";
 import { TASK_BY_CODE, WORKFLOW_TASKS } from "@/lib/crm/workflow";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
+
+type WithRelations = {
+  customer?: { first_name?: string | null; last_name?: string | null } | null;
+  property?: { address_line1?: string | null } | null;
+};
+
+const leadCustomerName = (lead: LeadRow) => {
+  const c = (lead as LeadRow & WithRelations).customer;
+  return c ? `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() : "";
+};
+const leadAddress = (lead: LeadRow) =>
+  (lead as LeadRow & WithRelations).property?.address_line1 ?? "";
 
 export function AdvanceDialog({
   lead,
@@ -97,7 +110,14 @@ export function AdvanceDialog({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Move {lead.lead_number} forward</DialogTitle>
+          <DialogTitle>
+            <LeadIdentityHeader
+              leadNumber={lead.lead_number}
+              customerName={leadCustomerName(lead)}
+              address={leadAddress(lead)}
+            />
+            <span className="mt-1 block text-base">Move forward</span>
+          </DialogTitle>
           <DialogDescription>
             Currently at {lead.task_code} — {current?.name}. Required fields are enforced before advancing.
           </DialogDescription>
