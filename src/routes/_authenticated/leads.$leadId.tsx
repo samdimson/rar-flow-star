@@ -560,7 +560,7 @@ function LeadDetail() {
                 <TabsTrigger value="insurance">Insurance</TabsTrigger>
                 <TabsTrigger
                   value="supplements"
-                  disabled={lead.stage_id === 1}
+                  disabled={lead.stage_id <= 2}
                   className="disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Supplements
@@ -605,28 +605,28 @@ function LeadDetail() {
               <TabsList className="flex h-auto w-full flex-wrap justify-start">
                 <TabsTrigger
                   value="job-cost"
-                  disabled={lead.stage_id === 1}
+                  disabled={lead.stage_id <= 2}
                   className="disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Job Cost
                 </TabsTrigger>
                 <TabsTrigger
                   value="production"
-                  disabled={lead.stage_id === 1}
+                  disabled={lead.stage_id <= 2}
                   className="disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Production
                 </TabsTrigger>
                 <TabsTrigger
                   value="commissions"
-                  disabled={lead.stage_id === 1}
+                  disabled={lead.stage_id <= 2}
                   className="disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Commissions
                 </TabsTrigger>
                 <TabsTrigger
                   value="billing"
-                  disabled={lead.stage_id === 1}
+                  disabled={lead.stage_id <= 2}
                   className="disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Invoices &amp; Payments
