@@ -248,12 +248,13 @@ function ContractsPage() {
           <>
             {SECTIONS.map((section) => {
               const rows = active.filter((c) => (c.contract_type ?? "contract") === section.value);
-              if (rows.length === 0) return null;
               return (
                 <CategorySection
                   key={section.value}
                   label={section.label}
                   contracts={rows}
+                  alwaysShow
+                  emptyMessage={`No ${section.label.toLowerCase()} contracts yet.`}
                   canViewFinance={canViewFinance}
                   docFor={docFor}
                   openDoc={openDoc}
