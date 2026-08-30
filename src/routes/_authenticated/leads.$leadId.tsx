@@ -457,27 +457,6 @@ function LeadDetail() {
 
   const rep = profiles.find((p) => p.id === lead.assigned_rep_id);
 
-  // If the only thing standing between this lead and its next step is the
-  // inspection report, "Advance stage" should open that form instead of a
-  // dialog the rep can't get past.
-  const INSPECTION_FIELDS = [
-    "damage_type",
-    "damage_areas",
-    "roof_condition",
-    "inspection_notes",
-    "inspection_photos",
-  ];
-  const nextCode = TASK_BY_CODE[lead.task_code]?.next?.[0];
-  const nextRequires = nextCode
-    ? (TASK_BY_CODE[nextCode]?.required ?? []).some((f) => INSPECTION_FIELDS.includes(f))
-    : false;
-  const inspectionMissing =
-    nextCode && nextRequires
-      ? missingRequirements(lead, claim, nextCode, lead.task_code, photoCount).some((f) =>
-          INSPECTION_FIELDS.includes(f),
-        )
-      : false;
-  const interceptAdvance = Boolean(nextCode && inspectionMissing);
 
   return (
     <AppShell
