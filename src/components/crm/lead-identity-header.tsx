@@ -10,10 +10,10 @@ export function LeadIdentityHeader({
   address,
   className,
 }: {
-  leadNumber?: string | null;
-  customerName?: string | null;
-  address?: string | null;
-  className?: string;
+  leadNumber?: string | null | undefined;
+  customerName?: string | null | undefined;
+  address?: string | null | undefined;
+  className?: string | undefined;
 }) {
   const name = customerName?.trim();
   return (
