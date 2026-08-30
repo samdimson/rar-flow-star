@@ -616,7 +616,13 @@ export async function applyTransition({ lead, toTaskCode, reason, isOverride }: 
     .eq("lead_id", lead.id)
     .maybeSingle();
 
-  const missing = missingRequirements(lead, claim, toTaskCode, lead.task_code);
+  const { count: photoCount } = await supabase
+    .from("documents")
+    .select("id", { count: "exact", head: true })
+    .eq("lead_id", lead.id)
+    .eq("category", "photo");
+
+  const missing = missingRequirements(lead, claim, toTaskCode, lead.task_code, photoCount ?? 0);
   if (missing.length && !isOverride) {
     throw new Error(
       `Cannot advance to ${task.code} ${task.name}. Missing required: ${missing.map(requirementLabel).join(", ")}.`,
