@@ -554,7 +554,13 @@ function LeadDetail() {
               <TabsList className="flex h-auto w-full flex-wrap justify-start">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="insurance">Insurance</TabsTrigger>
-                <TabsTrigger value="supplements">Supplements</TabsTrigger>
+                <TabsTrigger
+                  value="supplements"
+                  disabled={lead.stage_id === 1}
+                  className="disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Supplements
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -564,7 +570,13 @@ function LeadDetail() {
               </p>
               <TabsList className="flex h-auto w-full flex-wrap items-center justify-start">
                 <TabsTrigger value="calendar">Appointments</TabsTrigger>
-                <TabsTrigger value="inspection">Conduct Inspections</TabsTrigger>
+                <TabsTrigger
+                  value="inspection"
+                  disabled={lead.stage_id === 1}
+                  className="disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Conduct Inspections
+                </TabsTrigger>
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
                 {!lead.service_agreement_signed_at && canSignServiceAgreement(lead.task_code) && canEdit ? (
@@ -587,10 +599,34 @@ function LeadDetail() {
             <div>
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">View</p>
               <TabsList className="flex h-auto w-full flex-wrap justify-start">
-                <TabsTrigger value="job-cost">Job Cost</TabsTrigger>
-                <TabsTrigger value="production">Production</TabsTrigger>
-                <TabsTrigger value="commissions">Commissions</TabsTrigger>
-                <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger>
+                <TabsTrigger
+                  value="job-cost"
+                  disabled={lead.stage_id === 1}
+                  className="disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Job Cost
+                </TabsTrigger>
+                <TabsTrigger
+                  value="production"
+                  disabled={lead.stage_id === 1}
+                  className="disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Production
+                </TabsTrigger>
+                <TabsTrigger
+                  value="commissions"
+                  disabled={lead.stage_id === 1}
+                  className="disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Commissions
+                </TabsTrigger>
+                <TabsTrigger
+                  value="billing"
+                  disabled={lead.stage_id === 1}
+                  className="disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Invoices &amp; Payments
+                </TabsTrigger>
                 <TabsTrigger value="history">Status history</TabsTrigger>
                 <div className="hidden">
                   <TabsTrigger value="timeline">Timeline</TabsTrigger>
