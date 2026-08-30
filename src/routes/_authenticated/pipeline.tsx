@@ -167,7 +167,7 @@ function PipelinePage() {
                 ))}
                 {rows.length === 0 ? (
                   <p className="rounded-md border border-dashed border-border px-2 py-6 text-center text-xs text-muted-foreground">
-                    Nothing here
+                    {q ? "No matches" : "Nothing here"}
                   </p>
                 ) : null}
               </div>
