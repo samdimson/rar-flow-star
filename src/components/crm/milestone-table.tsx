@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/crm/primitives";
 import { currencyExact, dateTime, titleCase } from "@/lib/crm/format";
-import {
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
+import {
   MILESTONE_LABELS,
   PAYOUT_STATUS_CLASSES,
   useMarkPayoutPaid,
