@@ -40,12 +40,10 @@ export const Route = createFileRoute("/_authenticated/")({
 function Dashboard() {
   const { canViewFinance, profile } = useAuth();
   const { data: leads = [], isLoading } = useLeads();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: tasks = [] } = useTasks();
-  const { data: profiles = [] } = useProfiles();
-  const { data: invoices = [] } = useInvoices();
-  const { data: payments = [] } = usePayments();
 
-  if (isLoading) {
+  if (isLoading || statsLoading || !stats) {
     return (
       <AppShell icon={LayoutDashboard} title="Management Dashboard">
         <LoadingBlock label="Loading pipeline" />
@@ -54,28 +52,28 @@ function Dashboard() {
   }
 
   const now = Date.now();
-  const in30 = leads.filter((l) => now - new Date(l.created_at).getTime() < 30 * 86_400_000);
-  const contacted = in30.filter((l) => l.task_code !== "1.1");
-  const contactRate = in30.length ? Math.round((contacted.length / in30.length) * 100) : 0;
+  const contactRate = stats.new_leads_30d
+    ? Math.round((stats.contacted_30d / stats.new_leads_30d) * 100)
+    : 0;
 
-  const at = (codes: string[]) => leads.filter((l) => codes.includes(l.task_code));
-  const inStage = (stage: number) => leads.filter((l) => l.stage_id === stage);
+  const taskCount = (...codes: string[]) =>
+    codes.reduce((sum, c) => sum + (stats.task_counts[c] ?? 0), 0);
+  const stageRow = (stage: number) => stats.stage_counts.find((s) => s.stage_id === stage);
+  const stageCount = (stage: number) => stageRow(stage)?.count ?? 0;
 
-  const inspectionsScheduled = at(["1.3"]);
-  const inspectionsComplete = at(["2.1"]);
-  const qualified = at(["2.3"]);
-  const claimsPending = inStage(3);
-  const estimating = inStage(4);
-  const sold = leads.filter((l) => ["5.1", "5.2"].includes(l.task_code));
-  const awaitingProduction = at(["5.3", "5.4", "5.5", "5.6"]);
-  const inProduction = inStage(6);
-  const closeout = inStage(7);
-  const won = leads.filter((l) => l.status === "won");
+  const inspectionsScheduled = taskCount("1.3");
+  const inspectionsComplete = taskCount("2.1");
+  const qualified = taskCount("2.3");
+  const claimsPending = stageCount(3);
+  const estimating = stageCount(4);
+  const sold = taskCount("5.1", "5.2");
+  const awaitingProduction = taskCount("5.3", "5.4", "5.5", "5.6");
+  const inProduction = stageCount(6);
+  const closeout = stageCount(7);
+  const wonCount = stats.won_count;
 
-  const revenue = won.reduce((s, l) => s + Number(l.contract_amount ?? l.estimated_value ?? 0), 0);
-  const invoiced = invoices.reduce((s, i) => s + Number(i.amount), 0);
-  const collected = payments.reduce((s, p) => s + Number(p.amount), 0);
-  const outstanding = Math.max(invoiced - collected, 0);
+  const revenue = stats.total_contract_value;
+  const outstanding = Math.max(stats.invoiced_total - stats.collected_total, 0);
 
   const openTasks = tasks.filter((t) => t.status === "open");
   const overdue = openTasks.filter((t) => t.due_at && new Date(t.due_at).getTime() < now);
@@ -88,32 +86,17 @@ function Dashboard() {
   );
 
   const funnel = STAGES.map((s) => {
-    const rows = inStage(s.id);
-    return {
-      ...s,
-      count: rows.length,
-      value: rows.reduce((sum, l) => sum + Number(l.contract_amount ?? l.estimated_value ?? 0), 0),
-    };
+    const row = stageRow(s.id);
+    return { ...s, count: row?.count ?? 0, value: Number(row?.value ?? 0) };
   });
   const maxStage = Math.max(1, ...funnel.map((f) => f.count));
 
-  const repRows = profiles
-    .map((p) => {
-      const mine = leads.filter((l) => l.assigned_rep_id === p.id);
-      const myWon = mine.filter((l) => l.status === "won");
-      return {
-        id: p.id,
-        name: p.full_name || p.email || "Unnamed",
-        leads: mine.length,
-        inspections: mine.filter((l) => l.stage_id >= 2).length,
-        sold: mine.filter((l) => l.stage_id >= 5).length,
-        won: myWon.length,
-        revenue: myWon.reduce((s, l) => s + Number(l.contract_amount ?? 0), 0),
-        rate: mine.length ? Math.round((mine.filter((l) => l.stage_id >= 5).length / mine.length) * 100) : 0,
-      };
-    })
-    .filter((r) => r.leads > 0)
-    .sort((a, b) => b.revenue - a.revenue);
+  const repRows = stats.rep_performance.map((r) => ({
+    ...r,
+    revenue: Number(r.revenue),
+    rate: r.leads ? Math.round((r.sold / r.leads) * 100) : 0,
+  }));
+
 
   return (
     <AppShell icon={LayoutDashboard}
