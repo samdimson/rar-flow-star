@@ -829,7 +829,12 @@ function LeadDetail() {
                 <p className="mb-3 text-sm text-muted-foreground">
                   Damage findings, roof details and at least 10 photos are required before leaving task 2.1.
                 </p>
-                <InspectionForm lead={lead} />
+                <InspectionForm
+                  lead={lead}
+                  {...(TASK_BY_CODE[lead.task_code]?.next?.includes("2.1")
+                    ? { autoAdvanceTo: "2.1" }
+                    : {})}
+                />
               </SectionCard>
             ) : (
               <SectionCard title="Inspection report">
