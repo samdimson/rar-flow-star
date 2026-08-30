@@ -122,7 +122,7 @@ export function AdvanceDialog({
             <span className="mt-1 block text-base">Move forward</span>
           </DialogTitle>
           <DialogDescription>
-            Currently at {lead.task_code} — {current?.name}. Required fields are enforced before advancing.
+            Currently at {TASK_BY_CODE[lead.task_code]?.displayCode ?? lead.task_code} — {current?.name}. Required fields are enforced before advancing.
           </DialogDescription>
         </DialogHeader>
 
@@ -138,7 +138,7 @@ export function AdvanceDialog({
                   const t = TASK_BY_CODE[code];
                   return (
                     <SelectItem key={code} value={code}>
-                      {code} — {t?.name}
+                      {t?.displayCode ?? code} — {t?.name}
                     </SelectItem>
                   );
                 })}

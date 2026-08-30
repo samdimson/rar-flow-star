@@ -1258,8 +1258,10 @@ function LeadDetail() {
                   {history.map((h) => (
                     <li key={h.id} className="py-2.5">
                       <p className="text-sm font-medium">
-                        {h.from_task_code ? `${h.from_task_code} → ` : ""}
-                        {h.to_task_code} — {TASK_BY_CODE[h.to_task_code]?.name}
+                        {h.from_task_code
+                          ? `${TASK_BY_CODE[h.from_task_code]?.displayCode ?? h.from_task_code} → `
+                          : ""}
+                        {TASK_BY_CODE[h.to_task_code]?.displayCode ?? h.to_task_code} — {TASK_BY_CODE[h.to_task_code]?.name}
                         {h.is_override ? (
                           <span className="ml-2 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
                             manual override
