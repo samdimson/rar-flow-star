@@ -147,10 +147,19 @@ function PipelinePage() {
       <Dialog open={Boolean(pendingOverride)} onOpenChange={(o) => !o && setPendingOverride(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Manager override required</DialogTitle>
+            <DialogTitle>
+              {pendingOverride ? (
+                <LeadIdentityHeader
+                  leadNumber={pendingOverride.lead.lead_number}
+                  customerName={`${pendingOverride.lead.customer?.first_name ?? ""} ${pendingOverride.lead.customer?.last_name ?? ""}`.trim()}
+                  address={pendingOverride.lead.property?.address_line1 ?? ""}
+                />
+              ) : null}
+              <span className="mt-1 block text-base">Manager override required</span>
+            </DialogTitle>
             <DialogDescription>
               {pendingOverride
-                ? `${pendingOverride.toTaskCode} is not a valid next step from ${pendingOverride.lead.task_code}. Give a reason to record this override on ${pendingOverride.lead.lead_number}.`
+                ? `${pendingOverride.toTaskCode} is not a valid next step from ${pendingOverride.lead.task_code}. Give a reason to record this override.`
                 : null}
             </DialogDescription>
           </DialogHeader>
