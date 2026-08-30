@@ -236,9 +236,12 @@ function PipelineCard({
         params={{ leadId: lead.id }}
         className="text-sm font-medium text-foreground hover:text-primary hover:underline"
       >
-        <span className="text-orange-500">{lead.customer?.first_name} {lead.customer?.last_name}</span>
+        <LeadIdentityHeader
+          customerName={`${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim()}
+          address={lead.property?.address_line1 ?? null}
+          leadNumber={lead.lead_number}
+        />
       </Link>
-      <p className="truncate text-xs text-sky-400">{lead.property?.address_line1}</p>
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <TaskBadge code={lead.task_code} />
         {followUpDue ? (
@@ -249,8 +252,7 @@ function PipelineCard({
       </div>
 
       <p className="mt-2 text-xs text-muted-foreground">
-        {lead.lead_number}
-        {canViewFinance ? ` · ${currency(lead.contract_amount ?? lead.estimated_value)}` : ""}
+        {canViewFinance ? currency(lead.contract_amount ?? lead.estimated_value) : ""}
         {lead.install_date ? ` · install ${shortDate(lead.install_date)}` : ""}
       </p>
       {canEdit ? (

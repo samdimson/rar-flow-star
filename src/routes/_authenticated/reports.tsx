@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLeads, useProfiles } from "@/lib/crm/api";
 import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { LEAD_SOURCES, STAGES, TASK_BY_CODE, WORKFLOW_TASKS } from "@/lib/crm/workflow";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Reports — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -242,7 +243,12 @@ function ReportsPage() {
                         params={{ leadId: lead.id }}
                         className="text-primary hover:underline"
                       >
-                        {lead.lead_number} · <span className="text-sky-400">{lead.property?.address_line1}</span>
+                        <LeadIdentityHeader
+                          variant="inline"
+                          customerName={`${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim()}
+                          address={lead.property?.address_line1 ?? null}
+                          leadNumber={lead.lead_number}
+                        />
                       </Link>
                     </td>
                     <td className="py-2 pr-3"><TaskBadge code={lead.task_code} /></td>

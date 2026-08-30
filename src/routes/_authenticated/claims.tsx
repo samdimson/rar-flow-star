@@ -7,6 +7,7 @@ import { TaskBadge } from "@/components/stage-badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useClaims, useLeads, useSupplements } from "@/lib/crm/api";
 import { currency, dateTime, shortDate } from "@/lib/crm/format";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Insurance Claims — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -81,12 +82,16 @@ function ClaimsPage() {
                             params={{ leadId: lead.id }}
                             className="font-medium text-primary hover:underline"
                           >
-                            {lead.lead_number}
+                            <LeadIdentityHeader
+                              variant="stacked"
+                              customerName={`${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim()}
+                              address={lead.property?.address_line1 ?? null}
+                              leadNumber={lead.lead_number}
+                            />
                           </Link>
                         ) : (
                           "—"
                         )}
-                        <span className="block text-xs text-sky-400">{lead?.property?.address_line1}</span>
                       </td>
                       <td className="px-3 py-2.5">{lead ? <TaskBadge code={lead.task_code} /> : "—"}</td>
                       <td className="px-3 py-2.5 text-xs">

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAppointments, useLeads } from "@/lib/crm/api";
 import { dateTime, isoDate, titleCase } from "@/lib/crm/format";
 import { cn } from "@/lib/utils";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Calendar — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -94,13 +95,19 @@ function CalendarPage() {
                     {events.slice(0, 3).map((e) => {
                       const lead = leadFor(e.lead_id);
                       return (
-                        <li key={e.id} className="truncate rounded bg-primary/10 px-1 py-0.5 text-[11px] text-primary">
+                        <li key={e.id} className="rounded bg-primary/10 px-1 py-0.5 text-[11px] text-primary">
                           {lead ? (
-                            <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="hover:underline">
-                              {e.title}
+                            <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="block hover:underline">
+                              <span className="block truncate">{e.title}</span>
+                              <LeadIdentityHeader
+                                className="[&>span]:truncate"
+                                customerName={`${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim()}
+                                address={lead.property?.address_line1 ?? null}
+                                leadNumber={lead.lead_number}
+                              />
                             </Link>
                           ) : (
-                            e.title
+                            <span className="block truncate">{e.title}</span>
                           )}
                         </li>
                       );
@@ -134,7 +141,12 @@ function CalendarPage() {
                         params={{ leadId: lead.id }}
                         className="text-xs text-primary hover:underline"
                       >
-                        {lead.lead_number} · <span className="text-sky-400">{lead.property?.address_line1}</span>
+                        <LeadIdentityHeader
+                          variant="inline"
+                          customerName={`${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim()}
+                          address={lead.property?.address_line1 ?? null}
+                          leadNumber={lead.lead_number}
+                        />
                       </Link>
                     ) : null}
                   </li>

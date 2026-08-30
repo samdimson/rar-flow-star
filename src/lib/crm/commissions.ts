@@ -9,7 +9,14 @@ export type MilestonePayoutRow = Database["public"]["Tables"]["milestone_payouts
 export type CommissionTierRow = Database["public"]["Tables"]["commission_tiers"]["Row"];
 
 export type PayoutWithLead = MilestonePayoutRow & {
-  lead: { id: string; lead_number: string; task_code: string; net_amount: number | null } | null;
+  lead: {
+    id: string;
+    lead_number: string;
+    task_code: string;
+    net_amount: number | null;
+    customer?: { first_name: string | null; last_name: string | null } | null;
+    property?: { address_line1: string | null } | null;
+  } | null;
 };
 
 export type RepCommission = {
@@ -72,7 +79,11 @@ export function useMilestonePayouts(opts: { repId?: string | null; leadId?: stri
     queryFn: async () => {
       let query = supabase
         .from("milestone_payouts")
-        .select("*, lead:leads(id, lead_number, task_code, net_amount)")
+        .select(
+          "*, lead:leads(id, lead_number, task_code, net_amount, " +
+            "customer:customers!customer_id(first_name, last_name), " +
+            "property:properties!property_id(address_line1))",
+        )
         .order("triggered_at", { ascending: false });
       if (repId) query = query.eq("rep_id", repId);
       if (leadId) query = query.eq("lead_id", leadId);

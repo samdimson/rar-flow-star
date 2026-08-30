@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEstimatorAccess } from "@/lib/crm/access";
 import { RcvInvoiceDialog } from "@/components/crm/rcv-invoice-dialog";
 import { ApplyPaymentDialog } from "@/components/crm/apply-payment-dialog";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Invoices & Payments — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -110,25 +111,28 @@ function InvoicesPage() {
         <CardContent className="p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-semibold text-orange-500">
-                  {customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
-                </span>
-                {invoice.lead ? (
-                  <Link
-                    to="/leads/$leadId"
-                    params={{ leadId: invoice.lead.id }}
-                    className="text-xs text-muted-foreground hover:underline"
-                  >
-                    {invoice.lead.lead_number}
-                  </Link>
-                ) : null}
-              </div>
-              <p className="text-sm text-sky-400">
-                {property
-                  ? `${property.address_line1}${property.city ? `, ${property.city}` : ""}${property.state ? ` ${property.state}` : ""}${property.postal_code ? ` ${property.postal_code}` : ""}`
-                  : "—"}
-              </p>
+              {invoice.lead ? (
+                <Link to="/leads/$leadId" params={{ leadId: invoice.lead.id }} className="block hover:underline">
+                  <LeadIdentityHeader
+                    customerName={customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
+                    address={
+                      property
+                        ? `${property.address_line1}${property.city ? `, ${property.city}` : ""}${property.state ? ` ${property.state}` : ""}${property.postal_code ? ` ${property.postal_code}` : ""}`
+                        : null
+                    }
+                    leadNumber={invoice.lead.lead_number}
+                  />
+                </Link>
+              ) : (
+                <LeadIdentityHeader
+                  customerName={customer ? `${customer.first_name} ${customer.last_name}` : "Customer"}
+                  address={
+                    property
+                      ? `${property.address_line1}${property.city ? `, ${property.city}` : ""}${property.state ? ` ${property.state}` : ""}${property.postal_code ? ` ${property.postal_code}` : ""}`
+                      : null
+                  }
+                />
+              )}
               <div className="flex flex-wrap items-center gap-2 pt-1 text-sm">
                 <span className="font-medium">{invoice.invoice_number || "Invoice"}</span>
                 <Badge variant={archived ? "default" : "secondary"} className={archived ? "bg-green-600 text-white hover:bg-green-600" : ""}>

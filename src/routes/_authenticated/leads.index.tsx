@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLeads, useProfiles } from "@/lib/crm/api";
 import { currency, shortDate, titleCase } from "@/lib/crm/format";
 import { LEAD_SOURCES, STAGES } from "@/lib/crm/workflow";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Leads — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -165,11 +166,11 @@ function LeadsPage() {
                         params={{ leadId: l.id }}
                         className="font-medium text-primary hover:underline"
                       >
-                        {l.lead_number}
+                        <LeadIdentityHeader
+                          customerName={`${l.customer?.first_name ?? ""} ${l.customer?.last_name ?? ""}`.trim()}
+                          leadNumber={l.lead_number}
+                        />
                       </Link>
-                      <span className="block text-xs text-orange-500">
-                        {l.customer?.first_name} {l.customer?.last_name}
-                      </span>
                       <StatusBadge status={l.status} className="mt-1" />
                     </td>
                     <td className="px-3 py-2.5">
