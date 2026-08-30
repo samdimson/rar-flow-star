@@ -1656,6 +1656,7 @@ export type Database = {
       can_manage: { Args: never; Returns: boolean }
       can_view_all_leads: { Args: never; Returns: boolean }
       can_view_finance: { Args: never; Returns: boolean }
+      get_dashboard_stats: { Args: never; Returns: Json }
       get_rep_commission: {
         Args: { rep_id: string }
         Returns: {
@@ -1686,6 +1687,9 @@ export type Database = {
         }
         Returns: boolean
       }
+      owns_customer: { Args: { _customer_id: string }; Returns: boolean }
+      owns_lead: { Args: { _lead_id: string }; Returns: boolean }
+      owns_property: { Args: { _property_id: string }; Returns: boolean }
     }
     Enums: {
       activity_type:

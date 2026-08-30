@@ -339,6 +339,44 @@ export function useProfiles() {
   });
 }
 
+export type DashboardStats = {
+  total_leads: number;
+  new_leads_30d: number;
+  contacted_30d: number;
+  won_count: number;
+  total_contract_value: number;
+  task_counts: Record<string, number>;
+  stage_counts: { stage_id: number; count: number; value: number }[];
+  rep_performance: {
+    id: string;
+    name: string;
+    leads: number;
+    inspections: number;
+    sold: number;
+    won: number;
+    revenue: number;
+  }[];
+  invoiced_total: number;
+  collected_total: number;
+};
+
+/**
+ * Company-wide dashboard aggregates. Runs through a SECURITY DEFINER function so
+ * every role — including rep-scoped sales reps — sees the same company numbers.
+ */
+export function useDashboardStats() {
+  return useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: async (): Promise<DashboardStats> => {
+      const { data, error } = await supabase.rpc("get_dashboard_stats");
+      if (error) throw error;
+      return data as unknown as DashboardStats;
+    },
+  });
+}
+
+
+
 export function useAllRoles() {
   return useQuery({
     queryKey: ["user_roles"],
