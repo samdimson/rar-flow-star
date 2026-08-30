@@ -21,6 +21,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useAdvanceLead, type ClaimRow, type LeadRow } from "@/lib/crm/api";
 import { ROOF_TYPES } from "@/lib/crm/workflow";
+import {
+  MIN_INSPECTION_PHOTOS,
+  isInspectionReportComplete,
+  useInspectionReports,
+  type InspectionReportRow as ReportRow,
+} from "@/lib/crm/inspection-reports";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 import { cn } from "@/lib/utils";
@@ -30,7 +36,7 @@ const BUCKET = "crm-files";
 const DAMAGE_TYPES = ["Hail", "Wind", "Hail & Wind", "Other"];
 const DAMAGE_AREAS = ["Roof", "Gutters", "Downspouts", "Siding", "Windows", "Fence", "Other Structures"];
 const ROOF_CONDITIONS = ["Good", "Fair", "Poor", "Severely Damaged"];
-const MIN_PHOTOS = 10;
+const MIN_PHOTOS = MIN_INSPECTION_PHOTOS;
 
 type LeadWithRelations = LeadRow & {
   customer?: { first_name?: string | null; last_name?: string | null } | null;
@@ -44,55 +50,6 @@ type LeadWithRelations = LeadRow & {
       }
     | null;
 };
-
-type ReportRow = {
-  id: string;
-  lead_id: string;
-  damage_type: string | null;
-  damage_areas: string[] | null;
-  roof_condition: string | null;
-  roof_age: number | null;
-  roof_type: string | null;
-  roof_stories: number | null;
-  storm_date: string | null;
-  inspection_notes: string | null;
-  created_at: string;
-};
-
-function useInspectionReports(leadId: string) {
-  return useQuery({
-    queryKey: ["inspection_reports", leadId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("inspection_reports")
-        .select("*")
-        .eq("lead_id", leadId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as ReportRow[];
-    },
-  });
-}
-
-function useReportPhotoCounts(leadId: string) {
-  return useQuery({
-    queryKey: ["inspection_report_photos", leadId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("documents")
-        .select("inspection_report_id")
-        .eq("lead_id", leadId)
-        .eq("category", "photo");
-      if (error) throw error;
-      const counts: Record<string, number> = {};
-      for (const row of data ?? []) {
-        const key = (row as { inspection_report_id: string | null }).inspection_report_id;
-        if (key) counts[key] = (counts[key] ?? 0) + 1;
-      }
-      return counts;
-    },
-  });
-}
 
 const fmtDate = (v?: string | null) => (v ? new Date(`${v}T00:00:00`).toLocaleDateString() : "—");
 
@@ -113,8 +70,7 @@ export function InspectionForm({
 }) {
   const { canEdit } = useAuth();
   const advance = useAdvanceLead();
-  const { data: reports = [], isLoading } = useInspectionReports(lead.id);
-  const { data: photoCounts = {} } = useReportPhotoCounts(lead.id);
+  const { reports, photoCounts, isLoading } = useInspectionReports(lead.id);
 
   const [editing, setEditing] = useState<ReportRow | null>(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -132,18 +88,7 @@ export function InspectionForm({
     setOpen(true);
   };
 
-  const reportComplete = (r: ReportRow) =>
-    Boolean(
-      r.damage_type &&
-        r.damage_areas && r.damage_areas.length > 0 &&
-        r.roof_condition &&
-        r.roof_age != null &&
-        r.roof_type &&
-        r.roof_stories != null &&
-        r.storm_date &&
-        r.inspection_notes &&
-        (photoCounts[r.id] ?? 0) >= MIN_PHOTOS,
-    );
+  const reportComplete = (r: ReportRow) => isInspectionReportComplete(r, photoCounts[r.id] ?? 0);
 
   const qualifyClosedNoClaim = async () => {
     try {
