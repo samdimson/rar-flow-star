@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { currencyExact, todayIso } from "@/lib/crm/format";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const KINDS = ["deductible", "acv", "depreciation", "supplement", "other"] as const;
 type Kind = (typeof KINDS)[number];
