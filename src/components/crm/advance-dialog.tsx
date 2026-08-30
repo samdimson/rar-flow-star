@@ -97,7 +97,14 @@ export function AdvanceDialog({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Move {lead.lead_number} forward</DialogTitle>
+          <DialogTitle>
+            <LeadIdentityHeader
+              leadNumber={lead.lead_number}
+              customerName={leadCustomerName(lead)}
+              address={leadAddress(lead)}
+            />
+            <span className="mt-1 block text-base">Move forward</span>
+          </DialogTitle>
           <DialogDescription>
             Currently at {lead.task_code} — {current?.name}. Required fields are enforced before advancing.
           </DialogDescription>
