@@ -512,7 +512,7 @@ function LeadDetail() {
                     title={t.description}
                   >
                     <span className="font-mono text-[11px] font-semibold">
-                      {idx >= filtered.length ? t.code : (t.displayCode ?? t.code)}
+                      {t.displayCode ?? t.code}
                     </span>
                     <span className="truncate">{t.name}</span>
                   </span>
