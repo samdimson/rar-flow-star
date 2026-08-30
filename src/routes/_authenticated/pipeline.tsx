@@ -63,7 +63,9 @@ function PipelinePage() {
 
     const current = TASK_BY_CODE[lead.task_code];
     const target =
-      current?.next?.find((code) => TASK_BY_CODE[code]?.stageId === stageId) ??
+      current?.next?.find(
+        (code) => (TASK_BY_CODE[code]?.displayStageId ?? TASK_BY_CODE[code]?.stageId) === stageId,
+      ) ??
       tasksForStage(stageId as (typeof STAGES)[number]["id"])[0]?.code;
     if (!target) return;
 

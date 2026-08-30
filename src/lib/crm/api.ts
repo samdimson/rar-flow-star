@@ -604,7 +604,7 @@ export async function applyTransition({ lead, toTaskCode, reason, isOverride }: 
   const actor = auth.user?.id ?? null;
 
   const patch: Tables["leads"]["Update"] = {
-    stage_id: task.stageId,
+    stage_id: task.displayStageId ?? task.stageId,
     task_code: task.code,
   };
   if (task.setStatus) patch.status = task.setStatus;
