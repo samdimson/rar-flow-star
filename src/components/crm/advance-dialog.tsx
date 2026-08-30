@@ -97,6 +97,35 @@ export function AdvanceDialog({
 
   if (!canEdit) return null;
 
+  // Dead-end guard: when the next step is gated on the inspection report, send
+  // the rep straight to that tab instead of a dialog they can't get past.
+  const inspectionGate = options.find((code) =>
+    (TASK_BY_CODE[code]?.required ?? []).some((f) => INSPECTION_FIELDS.includes(f)),
+  );
+  const inspectionBlocked =
+    inspectionGate && setActiveTab
+      ? missingRequirements(lead, effectiveClaim, inspectionGate, lead.task_code, photoCount).some(
+          (f) => INSPECTION_FIELDS.includes(f),
+        )
+      : false;
+
+  if (inspectionBlocked && setActiveTab) {
+    return (
+      <Button
+        size="sm"
+        className="bg-primary text-primary-foreground hover:bg-primary/90"
+        onClick={() => setActiveTab("inspection")}
+      >
+        Advance stage <ArrowRight className="size-4" />
+      </Button>
+    );
+  }
+
+  const missingTabs = setActiveTab
+    ? Array.from(new Set(missing.map((f) => REQUIRED_FIELD_TAB[f]).filter(Boolean)))
+    : [];
+
+
   const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5";
 
   const submit = () => {
