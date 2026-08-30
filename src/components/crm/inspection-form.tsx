@@ -19,8 +19,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useAdvanceLead, type LeadRow } from "@/lib/crm/api";
+import { useAdvanceLead, type ClaimRow, type LeadRow } from "@/lib/crm/api";
 import { ROOF_TYPES } from "@/lib/crm/workflow";
+import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 import { cn } from "@/lib/utils";
 
