@@ -111,7 +111,7 @@ export function useContracts(filter?: { column: string; value: string | null }) 
     enabled: filter ? !!filter.value : true,
     queryFn: async () => {
       let q = anyTable("contracts").select(
-        `*, lead:leads(id, lead_number,
+        `*, lead:leads(id, lead_number, task_code,
           customer:customers(first_name, last_name),
           property:properties(address_line1, city, state))`,
       );
