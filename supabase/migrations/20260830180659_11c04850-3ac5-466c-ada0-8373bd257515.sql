@@ -1,0 +1,1 @@
+UPDATE public.leads SET stage_id = 2, updated_at = now() WHERE task_code = '1.3' AND stage_id <> 2;
