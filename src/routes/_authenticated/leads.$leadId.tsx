@@ -228,6 +228,8 @@ function LeadDetail() {
   const { data: changeOrders = [] } = useChangeOrders({ column: "lead_id", value: leadId });
   const { data: history = [] } = useStageHistory({ column: "lead_id", value: leadId });
   const { data: profiles = [] } = useProfiles();
+  const { data: leadDocuments = [] } = useDocuments({ column: "lead_id", value: leadId });
+  const photoCount = leadDocuments.filter((d) => d.category === "photo").length;
 
   const { data: invoiceDocs = [] } = useQuery({
     queryKey: ["lead-invoice-docs", leadId],
