@@ -579,7 +579,7 @@ function LeadDetail() {
                   disabled={lead.stage_id === 1}
                   className="disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Conduct Inspections
+                  Conduct/View Inspections
                 </TabsTrigger>
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>

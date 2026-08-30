@@ -563,6 +563,7 @@ export type Database = {
           file_name: string
           file_size: number | null
           id: string
+          inspection_report_id: string | null
           lead_id: string | null
           mime_type: string | null
           storage_path: string
@@ -577,6 +578,7 @@ export type Database = {
           file_name: string
           file_size?: number | null
           id?: string
+          inspection_report_id?: string | null
           lead_id?: string | null
           mime_type?: string | null
           storage_path: string
@@ -591,6 +593,7 @@ export type Database = {
           file_name?: string
           file_size?: number | null
           id?: string
+          inspection_report_id?: string | null
           lead_id?: string | null
           mime_type?: string | null
           storage_path?: string
@@ -603,6 +606,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_inspection_report_id_fkey"
+            columns: ["inspection_report_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_reports"
             referencedColumns: ["id"]
           },
           {
@@ -713,6 +723,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "estimates_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inspection_reports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          damage_areas: string[] | null
+          damage_type: string | null
+          id: string
+          inspection_notes: string | null
+          lead_id: string
+          roof_age: number | null
+          roof_condition: string | null
+          roof_stories: number | null
+          roof_type: string | null
+          storm_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          damage_areas?: string[] | null
+          damage_type?: string | null
+          id?: string
+          inspection_notes?: string | null
+          lead_id: string
+          roof_age?: number | null
+          roof_condition?: string | null
+          roof_stories?: number | null
+          roof_type?: string | null
+          storm_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          damage_areas?: string[] | null
+          damage_type?: string | null
+          id?: string
+          inspection_notes?: string | null
+          lead_id?: string
+          roof_age?: number | null
+          roof_condition?: string | null
+          roof_stories?: number | null
+          roof_type?: string | null
+          storm_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_reports_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
