@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/crm/primitives";
 import { currencyExact, dateTime, titleCase } from "@/lib/crm/format";
 import {
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
   MILESTONE_LABELS,
   PAYOUT_STATUS_CLASSES,
   useMarkPayoutPaid,
@@ -61,7 +62,16 @@ export function MilestoneTable({
                       params={{ leadId: p.lead.id }}
                       className="text-primary underline-offset-2 hover:underline"
                     >
-                      {p.lead.lead_number}
+                      <LeadIdentityHeader
+                        variant="inline"
+                        customerName={
+                          p.lead.customer
+                            ? `${p.lead.customer.first_name ?? ""} ${p.lead.customer.last_name ?? ""}`.trim()
+                            : null
+                        }
+                        address={p.lead.property?.address_line1 ?? null}
+                        leadNumber={p.lead.lead_number}
+                      />
                     </Link>
                   ) : (
                     "—"

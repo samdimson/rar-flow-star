@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useCustomers, useLeads, useProperties } from "@/lib/crm/api";
 import { currency, shortDate } from "@/lib/crm/format";
 import { useAuth } from "@/hooks/use-auth";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Customers — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -92,7 +93,11 @@ function CustomersPage() {
                           params={{ leadId: l.id }}
                           className="text-sm font-medium text-primary hover:underline"
                         >
-                          {l.lead_number}
+                          <LeadIdentityHeader
+                            variant="inline"
+                            address={l.property?.address_line1 ?? null}
+                            leadNumber={l.lead_number}
+                          />
                         </Link>
                         <span className="flex items-center gap-2">
                           <TaskBadge code={l.task_code} />

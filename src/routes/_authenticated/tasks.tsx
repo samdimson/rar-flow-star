@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useLeads, useProfiles, useTasks, useUpsert } from "@/lib/crm/api";
 import { dateTime, titleCase } from "@/lib/crm/format";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Tasks — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -99,7 +100,12 @@ function TasksPage() {
                       <p className="text-xs text-muted-foreground">
                         {lead ? (
                           <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="text-primary hover:underline">
-                            {lead.lead_number} · <span className="text-orange-500">{lead.customer?.last_name}</span>
+                            <LeadIdentityHeader
+                              variant="inline"
+                              customerName={`${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim()}
+                              address={lead.property?.address_line1 ?? null}
+                              leadNumber={lead.lead_number}
+                            />
                           </Link>
                         ) : (
                           "No linked lead"
