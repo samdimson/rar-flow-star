@@ -34,7 +34,7 @@ import {
   type ClaimRow,
   type LeadRow,
 } from "@/lib/crm/api";
-import { TASK_BY_CODE, WORKFLOW_TASKS } from "@/lib/crm/workflow";
+import { TASK_BY_CODE } from "@/lib/crm/workflow";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 type WithRelations = {
@@ -58,11 +58,10 @@ export function AdvanceDialog({
   claim?: ClaimRow | null | undefined;
   trigger?: React.ReactNode;
 }) {
-  const { canEdit, canManage } = useAuth();
+  const { canEdit } = useAuth();
   const [open, setOpen] = useState(false);
-  const [override, setOverride] = useState(false);
   const current = TASK_BY_CODE[lead.task_code];
-  const options = override ? WORKFLOW_TASKS.map((t) => t.code) : (current?.next ?? []);
+  const options = current?.next ?? [];
   const [target, setTarget] = useState(options[0] ?? "");
   const [reason, setReason] = useState("");
   const [confirmDenial, setConfirmDenial] = useState(false);
@@ -78,7 +77,7 @@ export function AdvanceDialog({
 
   if (!canEdit) return null;
 
-  const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5" && !override;
+  const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5";
 
   const submit = () => {
     if (!effectiveTarget) return;
@@ -88,12 +87,11 @@ export function AdvanceDialog({
     }
     setConfirmDenial(false);
     advance.mutate(
-      { lead, toTaskCode: effectiveTarget, reason: reason || undefined, isOverride: override },
+      { lead, toTaskCode: effectiveTarget, reason: reason || undefined },
       {
         onSuccess: () => {
           setOpen(false);
           setReason("");
-          setOverride(false);
         },
       },
     );
@@ -141,13 +139,7 @@ export function AdvanceDialog({
                 })}
               </SelectContent>
             </Select>
-            {targetTask ? (
-              <p className="text-xs text-muted-foreground">{targetTask.description}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                This task is terminal — enable manual override to move elsewhere.
-              </p>
-            )}
+            {targetTask ? <p className="text-xs text-muted-foreground">{targetTask.description}</p> : null}
           </div>
 
           {missing.length > 0 ? (
@@ -155,7 +147,6 @@ export function AdvanceDialog({
               <ShieldAlert className="size-4" />
               <AlertDescription>
                 Missing required information: {missing.map(requirementLabel).join(", ")}.
-                {override ? " Override will record this in the audit log." : ""}
               </AlertDescription>
             </Alert>
           ) : null}
@@ -187,23 +178,6 @@ export function AdvanceDialog({
             />
           </div>
 
-          {canManage ? (
-            <label className="flex items-start gap-2 rounded-md border border-border p-3 text-xs">
-              <input
-                type="checkbox"
-                checked={override}
-                onChange={(e) => {
-                  setOverride(e.target.checked);
-                  setTarget("");
-                }}
-                className="mt-0.5 size-4"
-              />
-              <span>
-                <span className="font-semibold">Manual override</span> — jump to any workflow task and skip
-                required-field checks. Recorded in the audit log.
-              </span>
-            </label>
-          ) : null}
         </div>
 
         <DialogFooter>
