@@ -31,6 +31,7 @@ import {
   requirementLabel,
   useAdvanceLead,
   useClaim,
+  useDocuments,
   type ClaimRow,
   type LeadRow,
 } from "@/lib/crm/api";
@@ -70,9 +71,13 @@ export function AdvanceDialog({
   // read the claim row for this lead rather than trusting the optional prop.
   const { data: fetchedClaim } = useClaim(lead.id);
   const effectiveClaim = fetchedClaim ?? claim ?? null;
+  const { data: leadDocs = [] } = useDocuments({ column: "lead_id", value: lead.id });
+  const photoCount = leadDocs.filter((d) => d.category === "photo").length;
 
   const effectiveTarget = options.includes(target) ? target : (options[0] ?? "");
-  const missing = effectiveTarget ? missingRequirements(lead, effectiveClaim, effectiveTarget, lead.task_code) : [];
+  const missing = effectiveTarget
+    ? missingRequirements(lead, effectiveClaim, effectiveTarget, lead.task_code, photoCount)
+    : [];
   const targetTask = effectiveTarget ? TASK_BY_CODE[effectiveTarget] : undefined;
 
   if (!canEdit) return null;

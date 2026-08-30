@@ -11,6 +11,7 @@ import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { DocumentsPanel } from "@/components/crm/documents-panel";
 import { IssueCoc } from "@/components/crm/issue-coc";
+import { InspectionForm } from "@/components/crm/inspection-form";
 
 import { EditableSection, RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { PolicyDocumentsPanel, PolicySummaryCard } from "@/components/crm/policy-documents-panel";
@@ -572,7 +573,16 @@ function LeadDetail() {
 
           {/* Overview -------------------------------------------------- */}
           <TabsContent value="overview" className="mt-4 space-y-4">
+            {lead.task_code === "1.3" || lead.task_code === "2.1" ? (
+              <SectionCard title="Inspection report">
+                <p className="mb-3 text-sm text-muted-foreground">
+                  Damage findings, roof details and at least 10 photos are required before leaving task 2.1.
+                </p>
+                <InspectionForm lead={lead} />
+              </SectionCard>
+            ) : null}
             <div className="grid gap-4 lg:grid-cols-2">
+
               <SectionCard title="Customer">
                 <EditableSection
                   canEdit={canEdit}

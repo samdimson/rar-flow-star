@@ -24,6 +24,11 @@ export const STAGES: { id: StageId; name: string; short: string }[] = [
 /** Fields that must be present on the lead/claim before advancing to a task. */
 export type RequiredField =
   | "inspection_date"
+  | "damage_type"
+  | "damage_areas"
+  | "roof_condition"
+  | "inspection_notes"
+  | "inspection_photos"
   | "carrier"
   | "claim_number"
   | "adjuster_meeting_at"
@@ -36,6 +41,11 @@ export type RequiredField =
 
 export const REQUIRED_FIELD_LABELS: Record<RequiredField, string> = {
   inspection_date: "Inspection date",
+  damage_type: "Damage type",
+  damage_areas: "Damaged areas",
+  roof_condition: "Roof condition",
+  inspection_notes: "Inspection notes",
+  inspection_photos: "10 inspection photos",
   carrier: "Insurance carrier",
   claim_number: "Claim number",
   adjuster_meeting_at: "Adjuster meeting date/time",
@@ -46,6 +56,7 @@ export const REQUIRED_FIELD_LABELS: Record<RequiredField, string> = {
   production_manager_id: "Production manager",
   install_date: "Install date",
 };
+
 
 export type FollowUp = {
   title: string;
@@ -121,7 +132,14 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
     name: "Inspection Complete",
     description: "Photos and damage documented",
     next: ["2.2", "2.3"],
-    required: ["inspection_date"],
+    required: [
+      "inspection_date",
+      "damage_type",
+      "damage_areas",
+      "roof_condition",
+      "inspection_notes",
+      "inspection_photos",
+    ],
     followUps: [{ title: "Review damage and qualify claim", dueInDays: 1, kind: "review", priority: "high" }],
   },
   {
