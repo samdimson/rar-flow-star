@@ -48,6 +48,7 @@ import {
 } from "@/lib/crm/api";
 import { currency, currencyExact, dateTime, shortDate, titleCase } from "@/lib/crm/format";
 import { canSignServiceAgreement } from "@/lib/crm/service-agreement";
+import { useInspectionReports } from "@/lib/crm/inspection-reports";
 import { canSignRoofingContract } from "@/lib/crm/roofing-contract";
 
 import { laborLabel, laborRate } from "@/lib/crm/labor";
@@ -230,6 +231,7 @@ function LeadDetail() {
   const { data: history = [] } = useStageHistory({ column: "lead_id", value: leadId });
   const { data: profiles = [] } = useProfiles();
   const { data: leadDocuments = [] } = useDocuments({ column: "lead_id", value: leadId });
+  const { hasComplete: hasCompleteInspection } = useInspectionReports(leadId);
 
   const { data: invoiceDocs = [] } = useQuery({
     queryKey: ["lead-invoice-docs", leadId],
