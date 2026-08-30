@@ -539,37 +539,58 @@ function LeadDetail() {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="flex h-auto w-full flex-wrap justify-start">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="insurance">Insurance</TabsTrigger>
-            {!lead.service_agreement_signed_at && canSignServiceAgreement(lead.task_code) && canEdit ? (
-              <Button asChild size="sm" className="mx-1 h-8">
-                <Link to="/service-agreement" search={{ leadId: lead.id }}>
-                  <PenLine className="size-4" aria-hidden="true" /> Sign Service Agreement
-                </Link>
-              </Button>
-            ) : null}
-            {!lead.contract_signed_at && canSignRoofingContract(lead.task_code) && canEdit ? (
-              <Button asChild size="sm" className="mx-1 h-8">
-                <Link to="/contract" search={{ leadId: lead.id }}>
-                  <PenLine className="size-4" aria-hidden="true" /> Sign Contract
-                </Link>
-              </Button>
-            ) : null}
-
-            <TabsTrigger value="supplements">Supplements</TabsTrigger>
-            <TabsTrigger value="calendar">Appointments</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="production">Production</TabsTrigger>
-            <TabsTrigger value="job-cost">Job Cost</TabsTrigger>
-            <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger>
-            <TabsTrigger value="commissions">Commissions</TabsTrigger>
-            <TabsTrigger value="history">Status history</TabsTrigger>
-            <div className="hidden">
-              <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <div className="space-y-4">
+            <div>
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                General Info
+              </p>
+              <TabsList className="flex h-auto w-full flex-wrap justify-start">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="insurance">Insurance</TabsTrigger>
+                <TabsTrigger value="supplements">Supplements</TabsTrigger>
+              </TabsList>
             </div>
-          </TabsList>
+
+            <div>
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Actions
+              </p>
+              <TabsList className="flex h-auto w-full flex-wrap items-center justify-start">
+                <TabsTrigger value="calendar">Appointments</TabsTrigger>
+                <TabsTrigger value="inspection">Conduct Inspections</TabsTrigger>
+                <TabsTrigger value="documents">Documents</TabsTrigger>
+                <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger value="production">Production</TabsTrigger>
+                {!lead.service_agreement_signed_at && canSignServiceAgreement(lead.task_code) && canEdit ? (
+                  <Button asChild size="sm" className="mx-1 h-8">
+                    <Link to="/service-agreement" search={{ leadId: lead.id }}>
+                      <PenLine className="size-4" aria-hidden="true" /> Sign Service Agreement
+                    </Link>
+                  </Button>
+                ) : null}
+                {!lead.contract_signed_at && canSignRoofingContract(lead.task_code) && canEdit ? (
+                  <Button asChild size="sm" className="mx-1 h-8">
+                    <Link to="/contract" search={{ leadId: lead.id }}>
+                      <PenLine className="size-4" aria-hidden="true" /> Sign Contract
+                    </Link>
+                  </Button>
+                ) : null}
+              </TabsList>
+            </div>
+
+            <div>
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">View</p>
+              <TabsList className="flex h-auto w-full flex-wrap justify-start">
+                <TabsTrigger value="job-cost">Job Cost</TabsTrigger>
+                <TabsTrigger value="commissions">Commissions</TabsTrigger>
+                <TabsTrigger value="billing">Invoices &amp; Payments</TabsTrigger>
+                <TabsTrigger value="history">Status history</TabsTrigger>
+                <div className="hidden">
+                  <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                </div>
+              </TabsList>
+            </div>
+          </div>
 
           {/* Overview -------------------------------------------------- */}
           <TabsContent value="overview" className="mt-4 space-y-4">
