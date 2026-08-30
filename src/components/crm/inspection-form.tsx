@@ -19,8 +19,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useAdvanceLead, type LeadRow } from "@/lib/crm/api";
+import { useAdvanceLead, type ClaimRow, type LeadRow } from "@/lib/crm/api";
 import { ROOF_TYPES } from "@/lib/crm/workflow";
+import { AdvanceDialog } from "@/components/crm/advance-dialog";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 import { cn } from "@/lib/utils";
 
@@ -97,11 +98,13 @@ const fmtDate = (v?: string | null) => (v ? new Date(`${v}T00:00:00`).toLocaleDa
 
 export function InspectionForm({
   lead,
+  claim,
   autoAdvanceTo,
   open: openProp,
   onOpenChange,
 }: {
   lead: LeadWithRelations;
+  claim?: ClaimRow | null | undefined;
   trigger?: React.ReactNode;
   /** When set, a successful submit immediately advances the lead to this task code. */
   autoAdvanceTo?: string;
@@ -109,11 +112,13 @@ export function InspectionForm({
   onOpenChange?: (open: boolean) => void;
 }) {
   const { canEdit } = useAuth();
+  const advance = useAdvanceLead();
   const { data: reports = [], isLoading } = useInspectionReports(lead.id);
   const { data: photoCounts = {} } = useReportPhotoCounts(lead.id);
 
   const [editing, setEditing] = useState<ReportRow | null>(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const [open23, setOpen23] = useState(false);
   const open = openProp ?? uncontrolledOpen;
   const setOpen = (next: boolean) => {
     setUncontrolledOpen(next);
@@ -125,6 +130,28 @@ export function InspectionForm({
   const startNew = () => {
     setEditing(null);
     setOpen(true);
+  };
+
+  const reportComplete = (r: ReportRow) =>
+    Boolean(
+      r.damage_type &&
+        r.damage_areas && r.damage_areas.length > 0 &&
+        r.roof_condition &&
+        r.roof_age != null &&
+        r.roof_type &&
+        r.roof_stories != null &&
+        r.storm_date &&
+        r.inspection_notes &&
+        (photoCounts[r.id] ?? 0) >= MIN_PHOTOS,
+    );
+
+  const qualifyClosedNoClaim = async () => {
+    try {
+      await advance.mutateAsync({ lead: lead as LeadRow, toTaskCode: "2.2" });
+      toast.success("Advanced to 2.2 — Closed, No Claim");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Advance failed");
+    }
   };
 
   return (
@@ -150,6 +177,8 @@ export function InspectionForm({
         <ul className="space-y-2">
           {reports.map((r) => {
             const count = photoCounts[r.id] ?? 0;
+            const complete = reportComplete(r);
+            const showQualifiers = lead.task_code === "2.1" && complete;
             return (
               <li
                 key={r.id}
@@ -166,17 +195,46 @@ export function InspectionForm({
                     </span>
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setEditing(r);
-                    setOpen(true);
-                  }}
-                >
-                  <Pencil className="mr-2 size-3.5" aria-hidden="true" />
-                  Edit
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {showQualifiers ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void qualifyClosedNoClaim()}
+                        disabled={advance.isPending}
+                      >
+                        2.2 — Closed, No Claim
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                        onClick={() => setOpen23(true)}
+                      >
+                        2.3 — Opportunity, Claim Qualified
+                      </Button>
+                      <AdvanceDialog
+                        lead={lead as LeadRow}
+                        claim={claim}
+                        hideTrigger
+                        open={open23}
+                        onOpenChange={setOpen23}
+                        initialTarget="2.3"
+                      />
+                    </>
+                  ) : null}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditing(r);
+                      setOpen(true);
+                    }}
+                  >
+                    <Pencil className="mr-2 size-3.5" aria-hidden="true" />
+                    Edit
+                  </Button>
+                </div>
               </li>
             );
           })}

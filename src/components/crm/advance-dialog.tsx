@@ -68,17 +68,30 @@ export function AdvanceDialog({
   claim,
   trigger,
   setActiveTab,
+  open: openProp,
+  onOpenChange,
+  initialTarget,
+  hideTrigger,
 }: {
   lead: LeadRow;
   claim?: ClaimRow | null | undefined;
   trigger?: React.ReactNode;
   setActiveTab?: (tab: string) => void;
+  open?: boolean;
+  onOpenChange?: (v: boolean) => void;
+  initialTarget?: string;
+  hideTrigger?: boolean;
 }) {
   const { canEdit } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = openProp ?? uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
   const current = TASK_BY_CODE[lead.task_code];
   const options = current?.next ?? [];
-  const [target, setTarget] = useState(options[0] ?? "");
+  const [target, setTarget] = useState(initialTarget ?? options[0] ?? "");
   const [reason, setReason] = useState("");
   const [confirmDenial, setConfirmDenial] = useState(false);
   const advance = useAdvanceLead();
@@ -89,7 +102,7 @@ export function AdvanceDialog({
   const { data: leadDocs = [] } = useDocuments({ column: "lead_id", value: lead.id });
   const photoCount = leadDocs.filter((d) => d.category === "photo").length;
 
-  const effectiveTarget = options.includes(target) ? target : (options[0] ?? "");
+  const effectiveTarget = options.includes(target) ? target : (initialTarget && options.includes(initialTarget) ? initialTarget : options[0] ?? "");
   const missing = effectiveTarget
     ? missingRequirements(lead, effectiveClaim, effectiveTarget, lead.task_code, photoCount)
     : [];
@@ -148,13 +161,15 @@ export function AdvanceDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-            Advance stage <ArrowRight className="size-4" />
-          </Button>
-        )}
-      </DialogTrigger>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Advance stage <ArrowRight className="size-4" />
+            </Button>
+          )}
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
