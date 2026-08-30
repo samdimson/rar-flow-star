@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Columns3 } from "lucide-react";
+import { Columns3, Search } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { AdvanceDialog } from "@/components/crm/advance-dialog";
@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
