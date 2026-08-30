@@ -488,9 +488,14 @@ function LeadDetail() {
           <StageBadge stageId={lead.stage_id} />
           <div className="flex flex-wrap items-center gap-2">
             {(() => {
-              const stageTasks = WORKFLOW_TASKS.filter(
+              const filtered = WORKFLOW_TASKS.filter(
                 (t) => (t.displayStageId ?? t.stageId) === lead.stage_id,
               );
+              const currentTask = TASK_BY_CODE[lead.task_code];
+              const stageTasks =
+                currentTask && !filtered.some((t) => t.code === lead.task_code)
+                  ? [...filtered, currentTask]
+                  : filtered;
               const currentIndex = stageTasks.findIndex((t) => t.code === lead.task_code);
               return stageTasks.map((t, idx) => {
                 const isCurrent = t.code === lead.task_code;
