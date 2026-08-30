@@ -511,7 +511,9 @@ function LeadDetail() {
                     className={`inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${tone}`}
                     title={t.description}
                   >
-                    <span className="font-mono text-[11px] font-semibold">{t.displayCode ?? t.code}</span>
+                    <span className="font-mono text-[11px] font-semibold">
+                      {idx >= filtered.length ? t.code : (t.displayCode ?? t.code)}
+                    </span>
                     <span className="truncate">{t.name}</span>
                   </span>
                 );
