@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
-import { ClipboardCheck, Upload } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ClipboardCheck, Pencil, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useAdvanceLead, useDocuments, type LeadRow } from "@/lib/crm/api";
+import { useAdvanceLead, type LeadRow } from "@/lib/crm/api";
 import { ROOF_TYPES } from "@/lib/crm/workflow";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 import { cn } from "@/lib/utils";
@@ -45,9 +44,59 @@ type LeadWithRelations = LeadRow & {
     | null;
 };
 
+type ReportRow = {
+  id: string;
+  lead_id: string;
+  damage_type: string | null;
+  damage_areas: string[] | null;
+  roof_condition: string | null;
+  roof_age: number | null;
+  roof_type: string | null;
+  roof_stories: number | null;
+  storm_date: string | null;
+  inspection_notes: string | null;
+  created_at: string;
+};
+
+function useInspectionReports(leadId: string) {
+  return useQuery({
+    queryKey: ["inspection_reports", leadId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("inspection_reports")
+        .select("*")
+        .eq("lead_id", leadId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as ReportRow[];
+    },
+  });
+}
+
+function useReportPhotoCounts(leadId: string) {
+  return useQuery({
+    queryKey: ["inspection_report_photos", leadId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("inspection_report_id")
+        .eq("lead_id", leadId)
+        .eq("category", "photo");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      for (const row of data ?? []) {
+        const key = (row as { inspection_report_id: string | null }).inspection_report_id;
+        if (key) counts[key] = (counts[key] ?? 0) + 1;
+      }
+      return counts;
+    },
+  });
+}
+
+const fmtDate = (v?: string | null) => (v ? new Date(`${v}T00:00:00`).toLocaleDateString() : "—");
+
 export function InspectionForm({
   lead,
-  trigger,
   autoAdvanceTo,
   open: openProp,
   onOpenChange,
@@ -59,31 +108,167 @@ export function InspectionForm({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const { canEdit, user } = useAuth();
-  const qc = useQueryClient();
-  const advance = useAdvanceLead();
+  const { canEdit } = useAuth();
+  const { data: reports = [], isLoading } = useInspectionReports(lead.id);
+  const { data: photoCounts = {} } = useReportPhotoCounts(lead.id);
+
+  const [editing, setEditing] = useState<ReportRow | null>(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const open = openProp ?? uncontrolledOpen;
   const setOpen = (next: boolean) => {
     setUncontrolledOpen(next);
     onOpenChange?.(next);
   };
+
+  if (!canEdit) return null;
+
+  const startNew = () => {
+    setEditing(null);
+    setOpen(true);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">
+          Each report needs damage findings, roof details and at least {MIN_PHOTOS} photos.
+        </p>
+        <Button variant="secondary" onClick={startNew}>
+          <Plus className="mr-2 size-4" aria-hidden="true" />
+          New inspection report
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading reports…</p>
+      ) : reports.length === 0 ? (
+        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          <ClipboardCheck className="mx-auto mb-2 size-5" aria-hidden="true" />
+          No inspection reports yet.
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {reports.map((r) => {
+            const count = photoCounts[r.id] ?? 0;
+            return (
+              <li
+                key={r.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3"
+              >
+                <div className="min-w-0 space-y-1">
+                  <p className="text-sm font-semibold">
+                    {r.damage_type || "Damage type not set"} · {r.roof_condition || "Condition not set"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Date of loss {fmtDate(r.storm_date)} · {(r.damage_areas ?? []).join(", ") || "No areas"} ·{" "}
+                    <span className={cn(count >= MIN_PHOTOS ? "font-semibold text-green-600" : "")}>
+                      {count} of {MIN_PHOTOS} photos
+                    </span>
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditing(r);
+                    setOpen(true);
+                  }}
+                >
+                  <Pencil className="mr-2 size-3.5" aria-hidden="true" />
+                  Edit
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {open ? (
+        <ReportDialog
+          key={editing?.id ?? "new"}
+          lead={lead}
+          report={editing}
+          {...(autoAdvanceTo ? { autoAdvanceTo } : {})}
+          onClose={() => {
+            setOpen(false);
+            setEditing(null);
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function ReportDialog({
+  lead,
+  report,
+  autoAdvanceTo,
+  onClose,
+}: {
+  lead: LeadWithRelations;
+  report: ReportRow | null;
+  autoAdvanceTo?: string;
+  onClose: () => void;
+}) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const advance = useAdvanceLead();
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [damageType, setDamageType] = useState(lead.damage_type ?? "");
-  const [damageAreas, setDamageAreas] = useState<string[]>(lead.damage_areas ?? []);
-  const [roofCondition, setRoofCondition] = useState(lead.roof_condition ?? "");
-  const [roofAge, setRoofAge] = useState(lead.property?.roof_age != null ? String(lead.property.roof_age) : "");
-  const [roofType, setRoofType] = useState(lead.property?.roof_type ?? "");
-  const [roofStories, setRoofStories] = useState(
-    lead.property?.roof_stories != null ? String(lead.property.roof_stories) : "",
-  );
-  const [stormDate, setStormDate] = useState(lead.storm_date ?? "");
-  const [notes, setNotes] = useState(lead.inspection_notes ?? "");
+  // A brand-new report needs a row before photos can be tagged to it.
+  const [reportId, setReportId] = useState<string | null>(report?.id ?? null);
 
-  const { data: docs = [] } = useDocuments({ column: "lead_id", value: lead.id });
-  const photoCount = useMemo(() => docs.filter((d) => d.category === "photo").length, [docs]);
+  const [damageType, setDamageType] = useState(report?.damage_type ?? "");
+  const [damageAreas, setDamageAreas] = useState<string[]>(report?.damage_areas ?? []);
+  const [roofCondition, setRoofCondition] = useState(report?.roof_condition ?? "");
+  const [roofAge, setRoofAge] = useState(
+    report?.roof_age != null ? String(report.roof_age) : lead.property?.roof_age != null ? String(lead.property.roof_age) : "",
+  );
+  const [roofType, setRoofType] = useState(report?.roof_type ?? lead.property?.roof_type ?? "");
+  const [roofStories, setRoofStories] = useState(
+    report?.roof_stories != null
+      ? String(report.roof_stories)
+      : lead.property?.roof_stories != null
+        ? String(lead.property.roof_stories)
+        : "",
+  );
+  const [stormDate, setStormDate] = useState(report?.storm_date ?? "");
+  const [notes, setNotes] = useState(report?.inspection_notes ?? "");
+
+  const { data: photos = [], refetch: refetchPhotos } = useQuery({
+    queryKey: ["inspection_report_photo_list", reportId],
+    enabled: !!reportId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("id")
+        .eq("category", "photo")
+        .eq("inspection_report_id", reportId!);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const photoCount = photos.length;
+
+  useEffect(() => {
+    if (reportId) void refetchPhotos();
+  }, [reportId, refetchPhotos]);
+
+  const values = useMemo(
+    () => ({
+      lead_id: lead.id,
+      damage_type: damageType || null,
+      damage_areas: damageAreas,
+      roof_condition: roofCondition || null,
+      roof_age: roofAge.trim() === "" ? null : Number(roofAge),
+      roof_type: roofType || null,
+      roof_stories: roofStories.trim() === "" ? null : Number(roofStories),
+      storm_date: stormDate || null,
+      inspection_notes: notes || null,
+    }),
+    [lead.id, damageType, damageAreas, roofCondition, roofAge, roofType, roofStories, stormDate, notes],
+  );
 
   const complete =
     damageType.trim() !== "" &&
@@ -96,17 +281,31 @@ export function InspectionForm({
     notes.trim() !== "" &&
     photoCount >= MIN_PHOTOS;
 
-  if (!canEdit) return null;
+  /** Photos need a report row to attach to, so create a draft on first upload. */
+  const ensureReport = async () => {
+    if (reportId) return reportId;
+    const { data, error } = await supabase
+      .from("inspection_reports")
+      .insert({ ...values, created_by: user?.id ?? null })
+      .select("id")
+      .single();
+    if (error) throw error;
+    setReportId(data.id);
+    void qc.invalidateQueries({ queryKey: ["inspection_reports", lead.id] });
+    return data.id as string;
+  };
 
   const uploadPhotos = async (files: File[]) => {
     setBusy(true);
     try {
+      const rid = await ensureReport();
       for (const file of files) {
         const path = `${lead.id}/${Date.now()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
         const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file);
         if (upErr) throw upErr;
         const { error } = await supabase.from("documents").insert({
           lead_id: lead.id,
+          inspection_report_id: rid,
           category: "photo",
           file_name: file.name,
           file_size: file.size,
@@ -116,7 +315,7 @@ export function InspectionForm({
         });
         if (error) throw error;
       }
-      qc.invalidateQueries();
+      await qc.invalidateQueries();
       toast.success(files.length > 1 ? `${files.length} photos uploaded` : "Photo uploaded");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
@@ -128,14 +327,18 @@ export function InspectionForm({
   const submit = async () => {
     setSaving(true);
     try {
+      const rid = await ensureReport();
+      const { error: repErr } = await supabase.from("inspection_reports").update(values).eq("id", rid);
+      if (repErr) throw repErr;
+
+      // Mirror the just-saved report onto the lead/property columns the task 2.1
+      // required-field gate reads.
       const leadPatch = {
         damage_type: damageType,
         damage_areas: damageAreas,
         roof_condition: roofCondition,
         inspection_notes: notes,
         storm_date: stormDate,
-        // Carriers need a date of loss AND an inspection date on file; the
-        // inspection just happened, so stamp it when it's still empty.
         inspection_date: lead.inspection_date ?? new Date().toISOString().slice(0, 10),
       };
       const { error: leadErr } = await supabase.from("leads").update(leadPatch).eq("id", lead.id);
@@ -156,18 +359,16 @@ export function InspectionForm({
       await supabase.from("activities").insert({
         lead_id: lead.id,
         type: "note",
-        subject: "Inspection report completed",
+        subject: report ? "Inspection report updated" : "Inspection report completed",
         body: notes,
         actor_id: user?.id ?? null,
       });
 
-      qc.invalidateQueries();
+      await qc.invalidateQueries();
       toast.success("Inspection report saved");
-      setOpen(false);
+      onClose();
 
-      // The rep shouldn't have to click "Advance stage" separately — the report
-      // itself was the blocking requirement, so move the lead forward now.
-      if (autoAdvanceTo) {
+      if (autoAdvanceTo && lead.task_code === "1.3") {
         await advance.mutateAsync({
           lead: { ...(lead as LeadRow), ...leadPatch } as LeadRow,
           toTaskCode: autoAdvanceTo,
@@ -181,15 +382,7 @@ export function InspectionForm({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button variant="secondary">
-            <ClipboardCheck className="mr-2 size-4" aria-hidden="true" />
-            Complete Inspection Report
-          </Button>
-        )}
-      </DialogTrigger>
+    <Dialog open onOpenChange={(o) => (!o ? onClose() : undefined)}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
@@ -202,7 +395,8 @@ export function InspectionForm({
             />
           </DialogTitle>
           <DialogDescription>
-            Capture damage findings, roof details and at least {MIN_PHOTOS} photos for the claim file.
+            {report ? "Edit this inspection report" : "New inspection report"} — capture damage findings, roof details
+            and at least {MIN_PHOTOS} photos for the claim file.
           </DialogDescription>
         </DialogHeader>
 
@@ -294,7 +488,7 @@ export function InspectionForm({
 
           <div className="space-y-2 rounded-md border border-border p-3 sm:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Label htmlFor="insp-photos">Inspection photos</Label>
+              <Label htmlFor="insp-photos">Inspection photos (this report)</Label>
               <span
                 className={cn(
                   "text-sm font-semibold",
@@ -318,13 +512,13 @@ export function InspectionForm({
             />
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Upload className="size-3.5" aria-hidden="true" />
-              Saved to Documents as photos; stored privately with signed links.
+              Saved to Documents as photos for this report; stored privately with signed links.
             </p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button disabled={!complete || saving || busy} onClick={() => void submit()}>
             {saving ? "Saving…" : "Save inspection report"}
           </Button>
