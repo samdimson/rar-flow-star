@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowLeft, CheckCircle2, Clock, FileText, PenLine, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, FileText, PenLine, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
@@ -33,6 +33,8 @@ import {
   useAppointments,
   useChangeOrders,
   useClaim,
+  useDocuments,
+  missingRequirements,
   useInvoices,
   useLead,
   useNotes,
