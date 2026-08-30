@@ -829,6 +829,7 @@ function LeadDetail() {
                 </p>
                 <InspectionForm
                   lead={lead}
+                  claim={claim}
                   {...(TASK_BY_CODE[lead.task_code]?.next?.includes("2.1")
                     ? { autoAdvanceTo: "2.1" }
                     : {})}
