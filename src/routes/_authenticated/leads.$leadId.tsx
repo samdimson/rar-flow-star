@@ -34,7 +34,6 @@ import {
   useChangeOrders,
   useClaim,
   useDocuments,
-  missingRequirements,
   useInvoices,
   useLead,
   useNotes,
@@ -231,7 +230,6 @@ function LeadDetail() {
   const { data: history = [] } = useStageHistory({ column: "lead_id", value: leadId });
   const { data: profiles = [] } = useProfiles();
   const { data: leadDocuments = [] } = useDocuments({ column: "lead_id", value: leadId });
-  const photoCount = leadDocuments.filter((d) => d.category === "photo").length;
 
   const { data: invoiceDocs = [] } = useQuery({
     queryKey: ["lead-invoice-docs", leadId],
