@@ -34,7 +34,7 @@ import {
   type ClaimRow,
   type LeadRow,
 } from "@/lib/crm/api";
-import { TASK_BY_CODE, WORKFLOW_TASKS } from "@/lib/crm/workflow";
+import { TASK_BY_CODE } from "@/lib/crm/workflow";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 type WithRelations = {
@@ -139,13 +139,7 @@ export function AdvanceDialog({
                 })}
               </SelectContent>
             </Select>
-            {targetTask ? (
-              <p className="text-xs text-muted-foreground">{targetTask.description}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                This task is terminal — enable manual override to move elsewhere.
-              </p>
-            )}
+            {targetTask ? <p className="text-xs text-muted-foreground">{targetTask.description}</p> : null}
           </div>
 
           {missing.length > 0 ? (
@@ -153,7 +147,6 @@ export function AdvanceDialog({
               <ShieldAlert className="size-4" />
               <AlertDescription>
                 Missing required information: {missing.map(requirementLabel).join(", ")}.
-                {override ? " Override will record this in the audit log." : ""}
               </AlertDescription>
             </Alert>
           ) : null}
