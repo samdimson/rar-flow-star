@@ -128,16 +128,17 @@ export function InspectionForm({
   const submit = async () => {
     setSaving(true);
     try {
-      const { error: leadErr } = await supabase
-        .from("leads")
-        .update({
-          damage_type: damageType,
-          damage_areas: damageAreas,
-          roof_condition: roofCondition,
-          inspection_notes: notes,
-          storm_date: stormDate,
-        })
-        .eq("id", lead.id);
+      const leadPatch = {
+        damage_type: damageType,
+        damage_areas: damageAreas,
+        roof_condition: roofCondition,
+        inspection_notes: notes,
+        storm_date: stormDate,
+        // Carriers need a date of loss AND an inspection date on file; the
+        // inspection just happened, so stamp it when it's still empty.
+        inspection_date: lead.inspection_date ?? new Date().toISOString().slice(0, 10),
+      };
+      const { error: leadErr } = await supabase.from("leads").update(leadPatch).eq("id", lead.id);
       if (leadErr) throw leadErr;
 
       if (lead.property_id) {
