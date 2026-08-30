@@ -45,10 +45,29 @@ type LeadWithRelations = LeadRow & {
     | null;
 };
 
-export function InspectionForm({ lead, trigger }: { lead: LeadWithRelations; trigger?: React.ReactNode }) {
+export function InspectionForm({
+  lead,
+  trigger,
+  autoAdvanceTo,
+  open: openProp,
+  onOpenChange,
+}: {
+  lead: LeadWithRelations;
+  trigger?: React.ReactNode;
+  /** When set, a successful submit immediately advances the lead to this task code. */
+  autoAdvanceTo?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const { canEdit, user } = useAuth();
   const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const advance = useAdvanceLead();
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = openProp ?? uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
 
