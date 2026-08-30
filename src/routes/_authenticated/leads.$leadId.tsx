@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock, FileText, PenLine, Plus } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, FileText, PenLine, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { sendAppointmentEmail } from "@/lib/crm/appointment-email.functions";
@@ -34,7 +34,6 @@ import {
   useChangeOrders,
   useClaim,
   useDocuments,
-  missingRequirements,
   useInvoices,
   useLead,
   useNotes,
@@ -231,7 +230,6 @@ function LeadDetail() {
   const { data: history = [] } = useStageHistory({ column: "lead_id", value: leadId });
   const { data: profiles = [] } = useProfiles();
   const { data: leadDocuments = [] } = useDocuments({ column: "lead_id", value: leadId });
-  const photoCount = leadDocuments.filter((d) => d.category === "photo").length;
 
   const { data: invoiceDocs = [] } = useQuery({
     queryKey: ["lead-invoice-docs", leadId],
@@ -249,6 +247,7 @@ function LeadDetail() {
   const saveTask = useUpsert("tasks", "Task");
   const saveNote = useUpsert("notes", "Note");
   const [noteBody, setNoteBody] = useState("");
+  const [activeTab, setActiveTab] = useState("overview");
   const sendEmail = useServerFn(sendAppointmentEmail);
   const queryClient = useQueryClient();
 
@@ -457,27 +456,6 @@ function LeadDetail() {
 
   const rep = profiles.find((p) => p.id === lead.assigned_rep_id);
 
-  // If the only thing standing between this lead and its next step is the
-  // inspection report, "Advance stage" should open that form instead of a
-  // dialog the rep can't get past.
-  const INSPECTION_FIELDS = [
-    "damage_type",
-    "damage_areas",
-    "roof_condition",
-    "inspection_notes",
-    "inspection_photos",
-  ];
-  const nextCode = TASK_BY_CODE[lead.task_code]?.next?.[0];
-  const nextRequires = nextCode
-    ? (TASK_BY_CODE[nextCode]?.required ?? []).some((f) => INSPECTION_FIELDS.includes(f))
-    : false;
-  const inspectionMissing =
-    nextCode && nextRequires
-      ? missingRequirements(lead, claim, nextCode, lead.task_code, photoCount).some((f) =>
-          INSPECTION_FIELDS.includes(f),
-        )
-      : false;
-  const interceptAdvance = Boolean(nextCode && inspectionMissing);
 
   return (
     <AppShell
@@ -505,19 +483,7 @@ function LeadDetail() {
               <ArrowLeft className="size-4" /> Leads
             </Link>
           </Button>
-          {interceptAdvance && nextCode ? (
-            <InspectionForm
-              lead={lead}
-              autoAdvanceTo={nextCode}
-              trigger={
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Advance stage <ArrowRight className="size-4" />
-                </Button>
-              }
-            />
-          ) : (
-            <AdvanceDialog lead={lead} claim={claim} />
-          )}
+          <AdvanceDialog lead={lead} claim={claim} setActiveTab={setActiveTab} />
         </>
       }
     >
@@ -583,7 +549,7 @@ function LeadDetail() {
           ) : null}
         </div>
 
-        <Tabs defaultValue="overview">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="space-y-4">
             <div>
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -861,7 +827,12 @@ function LeadDetail() {
                 <p className="mb-3 text-sm text-muted-foreground">
                   Damage findings, roof details and at least 10 photos are required before leaving task 2.1.
                 </p>
-                <InspectionForm lead={lead} />
+                <InspectionForm
+                  lead={lead}
+                  {...(TASK_BY_CODE[lead.task_code]?.next?.includes("2.1")
+                    ? { autoAdvanceTo: "2.1" }
+                    : {})}
+                />
               </SectionCard>
             ) : (
               <SectionCard title="Inspection report">
