@@ -434,7 +434,16 @@ export function RcvInvoiceDialog({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit RCV Invoice" : "Generate RCV Invoice"}</DialogTitle>
+          <DialogTitle>
+            {loaded?.lead ? (
+              <LeadIdentityHeader
+                leadNumber={loaded.lead.lead_number}
+                customerName={`${loaded.lead.customer?.first_name ?? ""} ${loaded.lead.customer?.last_name ?? ""}`.trim()}
+                address={loaded.lead.property?.address_line1 ?? propertyAddress}
+              />
+            ) : null}
+            <span className="mt-1 block text-base">{isEdit ? "Edit RCV Invoice" : "Generate RCV Invoice"}</span>
+          </DialogTitle>
           <DialogDescription>
             {isEdit
               ? "Update any field, then save to update the invoice and regenerate the PDF."
