@@ -1,15 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
 import { SectionCard } from "@/components/crm/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { seedTestData } from "@/lib/crm/seed-test-data.functions";
+import { useLeads } from "@/lib/crm/api";
+import { seedTestData, seedTestInspectionReport } from "@/lib/crm/seed-test-data.functions";
 import { runCrmTests } from "@/lib/crm/test-runner.functions";
 
 const title = "CRM Test Runner — Rise Above Roofing Oklahoma CRM";
