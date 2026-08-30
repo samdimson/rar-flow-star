@@ -22,7 +22,7 @@ export function LeadIdentityHeader({
   const name = customerName?.trim();
 
   if (variant === "inline") {
-    const parts: React.ReactNode[] = [];
+    const parts: ReactNode[] = [];
     if (name) parts.push(<span key="n" className="font-semibold text-orange-500">{name}</span>);
     if (address) parts.push(<span key="a" className="text-sky-400">{address}</span>);
     if (leadNumber) parts.push(<span key="l" className="text-xs font-normal text-muted-foreground">{leadNumber}</span>);
