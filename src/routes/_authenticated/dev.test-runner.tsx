@@ -64,6 +64,21 @@ function TestRunnerPage() {
     },
   });
 
+  const qc = useQueryClient();
+  const { data: leads = [] } = useLeads();
+  const [inspectionLeadId, setInspectionLeadId] = useState("");
+  const seedInspection = useServerFn(seedTestInspectionReport);
+  const inspectionMutation = useMutation({
+    mutationFn: (leadId: string) => seedInspection({ data: { leadId } }),
+    onError: (error: Error) => toast.error(error.message),
+    onSuccess: async (result) => {
+      await qc.invalidateQueries();
+      toast.success(`Seeded inspection report with ${result.photos} photos`);
+    },
+  });
+
+
+
   useEffect(() => {
     mutation.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
