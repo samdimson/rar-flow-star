@@ -495,7 +495,10 @@ function LeadDetail() {
           <div className="flex flex-wrap items-center gap-2">
             {(() => {
               const filtered = WORKFLOW_TASKS.filter(
-                (t) => (t.displayStageId ?? t.stageId) === lead.stage_id,
+                (t) =>
+                  (t.displayStageId ?? t.stageId) === lead.stage_id &&
+                  t.code !== "2.2" &&
+                  t.code !== "2.3",
               );
               const currentTask = TASK_BY_CODE[lead.task_code];
               const stageTasks =
@@ -503,27 +506,44 @@ function LeadDetail() {
                   ? [...filtered, currentTask]
                   : filtered;
               const currentIndex = stageTasks.findIndex((t) => t.code === lead.task_code);
-              return stageTasks.map((t, idx) => {
-                const isCurrent = t.code === lead.task_code;
-                const isPast = currentIndex !== -1 && idx < currentIndex;
-                const tone = isCurrent
-                  ? "border-transparent bg-green-500 text-white"
-                  : isPast
-                    ? "border-transparent bg-muted text-muted-foreground"
-                    : "border-border bg-transparent text-muted-foreground";
-                return (
-                  <span
-                    key={t.code}
-                    className={`inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${tone}`}
-                    title={t.description}
-                  >
-                    <span className="font-mono text-[11px] font-semibold">
-                      {t.displayCode ?? t.code}
+              const is21Active = lead.task_code === "2.1";
+              return (
+                <>
+                  {stageTasks.map((t, idx) => {
+                    const isCurrent = t.code === lead.task_code;
+                    const isPast = currentIndex !== -1 && idx < currentIndex;
+                    const tone =
+                      isCurrent && t.code === "2.1" && !hasCompleteInspection
+                        ? "border-transparent bg-yellow-500 text-white"
+                        : isCurrent
+                          ? "border-transparent bg-green-500 text-white"
+                          : isPast
+                            ? "border-transparent bg-muted text-muted-foreground"
+                            : "border-border bg-transparent text-muted-foreground";
+                    const label =
+                      t.code === "2.1" && is21Active && hasCompleteInspection
+                        ? "Inspection Complete"
+                        : t.name;
+                    return (
+                      <span
+                        key={t.code}
+                        className={`inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${tone}`}
+                        title={t.description}
+                      >
+                        <span className="font-mono text-[11px] font-semibold">
+                          {t.displayCode ?? t.code}
+                        </span>
+                        <span className="truncate">{label}</span>
+                      </span>
+                    );
+                  })}
+                  {is21Active && hasCompleteInspection ? (
+                    <span className="text-xs text-muted-foreground">
+                      Select 2.2 or 2.3 on the inspection report below
                     </span>
-                    <span className="truncate">{t.name}</span>
-                  </span>
-                );
-              });
+                  ) : null}
+                </>
+              );
             })()}
           </div>
           <StatusBadge status={lead.status} />
