@@ -7,6 +7,7 @@ import { TaskBadge } from "@/components/stage-badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useAllRoles, useCommissions, useLeads, useProfiles, useTasks } from "@/lib/crm/api";
 import { currency, titleCase } from "@/lib/crm/format";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Sales Reps — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -102,7 +103,12 @@ function RepsPage() {
                               params={{ leadId: l.id }}
                               className="text-primary hover:underline"
                             >
-                              {l.lead_number}
+                              <LeadIdentityHeader
+                                variant="inline"
+                                customerName={`${l.customer?.first_name ?? ""} ${l.customer?.last_name ?? ""}`.trim()}
+                                address={l.property?.address_line1 ?? null}
+                                leadNumber={l.lead_number}
+                              />
                             </Link>
                             <TaskBadge code={l.task_code} />
                           </li>

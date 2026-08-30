@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useLeads } from "@/lib/crm/api";
 import { currency, shortDate } from "@/lib/crm/format";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Opportunities & Jobs — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -86,11 +87,11 @@ function JobsPage() {
                         params={{ leadId: l.id }}
                         className="font-medium text-primary hover:underline"
                       >
-                        {l.lead_number}
+                        <LeadIdentityHeader
+                          customerName={`${l.customer?.first_name ?? ""} ${l.customer?.last_name ?? ""}`.trim()}
+                          leadNumber={l.lead_number}
+                        />
                       </Link>
-                      <span className="block text-xs text-orange-500">
-                        {l.customer?.first_name} {l.customer?.last_name}
-                      </span>
                     </td>
                     <td className="px-3 py-2.5 text-xs text-sky-400">{l.property?.address_line1}</td>
                     <td className="px-3 py-2.5"><StageBadge stageId={l.stage_id} /></td>

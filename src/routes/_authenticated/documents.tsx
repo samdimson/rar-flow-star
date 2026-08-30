@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDocumentCustomers, useDocuments, useLeads, type DocumentRow } from "@/lib/crm/api";
 import { dateTime } from "@/lib/crm/format";
 import { DOCUMENT_CATEGORIES } from "@/lib/crm/workflow";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Documents & Photos — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -117,7 +118,12 @@ function DocumentsPage() {
                         {lead ? " · " : ""}
                         {lead ? (
                           <Link to="/leads/$leadId" params={{ leadId: lead.id }} className="text-primary hover:underline">
-                            {lead.lead_number}
+                            <LeadIdentityHeader
+                              variant="inline"
+                              customerName={`${lead.customer?.first_name ?? ""} ${lead.customer?.last_name ?? ""}`.trim()}
+                              address={lead.property?.address_line1 ?? null}
+                              leadNumber={lead.lead_number}
+                            />
                           </Link>
                         ) : null}
                       </p>

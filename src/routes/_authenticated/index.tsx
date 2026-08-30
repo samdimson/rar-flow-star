@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useDashboardStats, useLeads, useTasks } from "@/lib/crm/api";
 import { currency, relativeDays, shortDate } from "@/lib/crm/format";
 import { STAGES } from "@/lib/crm/workflow";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Management Dashboard — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -211,13 +212,14 @@ function Dashboard() {
                         params={{ leadId: l.id }}
                         className="font-medium text-primary hover:underline"
                       >
-                        {l.lead_number} ·{" "}
-                        <span className="text-orange-500">
-                          {l.customer?.first_name} {l.customer?.last_name}
-                        </span>
+                        <LeadIdentityHeader
+                          customerName={`${l.customer?.first_name ?? ""} ${l.customer?.last_name ?? ""}`.trim()}
+                          address={l.property?.address_line1 ?? null}
+                          leadNumber={l.lead_number}
+                        />
                       </Link>
-                      <span className="block truncate text-xs text-sky-400">
-                        {l.property?.address_line1} · last touched {shortDate(l.updated_at)}
+                      <span className="block truncate text-xs text-muted-foreground">
+                        Last touched {shortDate(l.updated_at)}
                       </span>
                     </li>
                   ))}
@@ -285,11 +287,12 @@ function Dashboard() {
                         params={{ leadId: l.id }}
                         className="text-sm font-medium text-primary hover:underline"
                       >
-                        {l.lead_number} · <span className="text-orange-500">{l.customer?.first_name} {l.customer?.last_name}</span>
+                        <LeadIdentityHeader
+                          customerName={`${l.customer?.first_name ?? ""} ${l.customer?.last_name ?? ""}`.trim()}
+                          address={[l.property?.address_line1, l.property?.city].filter(Boolean).join(", ") || null}
+                          leadNumber={l.lead_number}
+                        />
                       </Link>
-                      <p className="truncate text-xs text-sky-400">
-                        {l.property?.address_line1}, {l.property?.city}
-                      </p>
                     </div>
                     <TaskBadge code={l.task_code} />
                   </li>

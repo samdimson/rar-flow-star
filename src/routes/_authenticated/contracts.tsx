@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useContracts, useDocuments, type ContractWithLead, type DocumentRow } from "@/lib/crm/api";
 import { currency, relativeDays, shortDate, titleCase } from "@/lib/crm/format";
 import { cn } from "@/lib/utils";
+import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 const title = "Contracts — Rise Above Roofing Oklahoma CRM";
 const description =
@@ -103,7 +104,15 @@ function ContractsTable({
                 <td className="px-3 py-2.5">
                   {c.lead ? (
                     <Link to="/leads/$leadId" params={{ leadId: c.lead.id }} className="text-primary hover:underline">
-                      {c.lead.lead_number}
+                      <LeadIdentityHeader
+                        customerName={
+                          c.lead.customer
+                            ? `${c.lead.customer.first_name ?? ""} ${c.lead.customer.last_name ?? ""}`.trim()
+                            : null
+                        }
+                        address={c.lead.property?.address_line1 ?? null}
+                        leadNumber={c.lead.lead_number}
+                      />
                     </Link>
                   ) : (
                     "—"
