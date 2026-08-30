@@ -58,11 +58,10 @@ export function AdvanceDialog({
   claim?: ClaimRow | null | undefined;
   trigger?: React.ReactNode;
 }) {
-  const { canEdit, canManage } = useAuth();
+  const { canEdit } = useAuth();
   const [open, setOpen] = useState(false);
-  const [override, setOverride] = useState(false);
   const current = TASK_BY_CODE[lead.task_code];
-  const options = override ? WORKFLOW_TASKS.map((t) => t.code) : (current?.next ?? []);
+  const options = current?.next ?? [];
   const [target, setTarget] = useState(options[0] ?? "");
   const [reason, setReason] = useState("");
   const [confirmDenial, setConfirmDenial] = useState(false);
@@ -78,7 +77,7 @@ export function AdvanceDialog({
 
   if (!canEdit) return null;
 
-  const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5" && !override;
+  const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5";
 
   const submit = () => {
     if (!effectiveTarget) return;
@@ -88,12 +87,11 @@ export function AdvanceDialog({
     }
     setConfirmDenial(false);
     advance.mutate(
-      { lead, toTaskCode: effectiveTarget, reason: reason || undefined, isOverride: override },
+      { lead, toTaskCode: effectiveTarget, reason: reason || undefined },
       {
         onSuccess: () => {
           setOpen(false);
           setReason("");
-          setOverride(false);
         },
       },
     );
