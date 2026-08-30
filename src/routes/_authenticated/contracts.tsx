@@ -239,8 +239,6 @@ function ContractsPage() {
     })();
   };
 
-  const hasArchived = contracts.some(isArchived);
-
   return (
     <AppShell icon={FileSignature} title="Contracts" subtitle="Signed agreements and rescission windows">
       <div className="space-y-5">
