@@ -773,6 +773,22 @@ function LeadDetail() {
             </SectionCard>
           </TabsContent>
 
+          {/* Inspection ---------------------------------------------- */}
+          <TabsContent value="inspection" className="mt-4 space-y-4">
+            {lead.task_code === "1.3" || lead.task_code === "2.1" ? (
+              <SectionCard title="Inspection report">
+                <p className="mb-3 text-sm text-muted-foreground">
+                  Damage findings, roof details and at least 10 photos are required before leaving task 2.1.
+                </p>
+                <InspectionForm lead={lead} />
+              </SectionCard>
+            ) : (
+              <SectionCard title="Inspection report">
+                <EmptyState message="Inspection report is available once the lead reaches task 1.3 or 2.1." />
+              </SectionCard>
+            )}
+          </TabsContent>
+
           {/* Insurance ----------------------------------------------- */}
           <TabsContent value="insurance" className="mt-4 space-y-4">
             <SectionCard title="Insurance claim">
