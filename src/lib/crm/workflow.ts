@@ -58,6 +58,10 @@ export type FollowUp = {
 export type WorkflowTask = {
   code: string;
   stageId: StageId;
+  /** Stage this task is displayed/recorded under, when it differs from stageId. */
+  displayStageId?: StageId;
+  /** Code shown in the stage pill row, when it differs from code. */
+  displayCode?: string;
   name: string;
   description: string;
   next: string[];
