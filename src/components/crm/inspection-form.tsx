@@ -177,6 +177,8 @@ export function InspectionForm({
         <ul className="space-y-2">
           {reports.map((r) => {
             const count = photoCounts[r.id] ?? 0;
+            const complete = reportComplete(r);
+            const showQualifiers = lead.task_code === "2.1" && complete;
             return (
               <li
                 key={r.id}
@@ -193,17 +195,46 @@ export function InspectionForm({
                     </span>
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setEditing(r);
-                    setOpen(true);
-                  }}
-                >
-                  <Pencil className="mr-2 size-3.5" aria-hidden="true" />
-                  Edit
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {showQualifiers ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void qualifyClosedNoClaim()}
+                        disabled={advance.isPending}
+                      >
+                        2.2 — Closed, No Claim
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                        onClick={() => setOpen23(true)}
+                      >
+                        2.3 — Opportunity, Claim Qualified
+                      </Button>
+                      <AdvanceDialog
+                        lead={lead as LeadRow}
+                        claim={claim}
+                        hideTrigger
+                        open={open23}
+                        onOpenChange={setOpen23}
+                        initialTarget="2.3"
+                      />
+                    </>
+                  ) : null}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditing(r);
+                      setOpen(true);
+                    }}
+                  >
+                    <Pencil className="mr-2 size-3.5" aria-hidden="true" />
+                    Edit
+                  </Button>
+                </div>
               </li>
             );
           })}
