@@ -17,7 +17,7 @@ import { StageBadge, TaskBadge } from "@/components/stage-badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
-import { useInvoices, useLeads, usePayments, useProfiles, useTasks } from "@/lib/crm/api";
+import { useDashboardStats, useLeads, useTasks } from "@/lib/crm/api";
 import { currency, relativeDays, shortDate } from "@/lib/crm/format";
 import { STAGES } from "@/lib/crm/workflow";
 
@@ -115,37 +115,37 @@ function Dashboard() {
     >
       <div className="space-y-6">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <KpiCard label="New leads (30d)" value={in30.length} hint={`${contactRate}% contact rate`} icon={<Users className="size-4" />} />
+          <KpiCard label="New leads (30d)" value={stats.new_leads_30d} hint={`${contactRate}% contact rate`} icon={<Users className="size-4" />} />
           <KpiCard
             label="Inspections"
-            value={`${inspectionsScheduled.length} / ${inspectionsComplete.length}`}
+            value={`${inspectionsScheduled} / ${inspectionsComplete}`}
             hint="Scheduled / completed"
             icon={<CalendarClock className="size-4" />}
           />
           <KpiCard
             label="Claim qualified"
-            value={qualified.length}
-            hint={`${claimsPending.length} claims in filing`}
+            value={qualified}
+            hint={`${claimsPending} claims in filing`}
             icon={<ShieldCheck className="size-4" />}
           />
           <KpiCard
             label="Contracts sold"
-            value={sold.length}
-            hint={`${estimating.length} estimates in progress`}
+            value={sold}
+            hint={`${estimating} estimates in progress`}
             icon={<FileSignature className="size-4" />}
           />
           <KpiCard
             label="Jobs awaiting production"
-            value={awaitingProduction.length}
+            value={awaitingProduction}
             hint="Permit, materials, scheduling"
             icon={<HardHat className="size-4" />}
           />
-          <KpiCard label="Jobs in production" value={inProduction.length} hint="Crews on site" tone="warning" icon={<HardHat className="size-4" />} />
-          <KpiCard label="Awaiting closeout" value={closeout.length} hint="Depreciation & final payment" icon={<Banknote className="size-4" />} />
+          <KpiCard label="Jobs in production" value={inProduction} hint="Crews on site" tone="warning" icon={<HardHat className="size-4" />} />
+          <KpiCard label="Awaiting closeout" value={closeout} hint="Depreciation & final payment" icon={<Banknote className="size-4" />} />
           <KpiCard
             label={canViewFinance ? "Revenue won" : "Jobs won"}
-            value={canViewFinance ? currency(revenue) : won.length}
-            hint={canViewFinance ? `${currency(outstanding)} outstanding from carriers` : `${won.length} closed won`}
+            value={canViewFinance ? currency(revenue) : wonCount}
+            hint={canViewFinance ? `${currency(outstanding)} outstanding from carriers` : `${wonCount} closed won`}
             tone="positive"
             icon={<TrendingUp className="size-4" />}
           />
