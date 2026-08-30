@@ -1,15 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
 import { SectionCard } from "@/components/crm/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { seedTestData } from "@/lib/crm/seed-test-data.functions";
+import { useLeads } from "@/lib/crm/api";
+import { seedTestData, seedTestInspectionReport } from "@/lib/crm/seed-test-data.functions";
 import { runCrmTests } from "@/lib/crm/test-runner.functions";
 
 const title = "CRM Test Runner — Rise Above Roofing Oklahoma CRM";
@@ -61,6 +63,21 @@ function TestRunnerPage() {
       mutation.mutate();
     },
   });
+
+  const qc = useQueryClient();
+  const { data: leads = [] } = useLeads();
+  const [inspectionLeadId, setInspectionLeadId] = useState("");
+  const seedInspection = useServerFn(seedTestInspectionReport);
+  const inspectionMutation = useMutation({
+    mutationFn: (leadId: string) => seedInspection({ data: { leadId } }),
+    onError: (error: Error) => toast.error(error.message),
+    onSuccess: async (result) => {
+      await qc.invalidateQueries();
+      toast.success(`Seeded inspection report with ${result.photos} photos`);
+    },
+  });
+
+
 
   useEffect(() => {
     mutation.mutate();
@@ -118,6 +135,36 @@ function TestRunnerPage() {
           </span>
         </div>
       </SectionCard>
+
+      <SectionCard title="Seed test inspection report">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Creates one filled inspection report with 10 uploaded photos on the selected lead, satisfying the task 2.1
+          gate.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={inspectionLeadId} onValueChange={setInspectionLeadId}>
+            <SelectTrigger className="w-[340px]">
+              <SelectValue placeholder="Select a lead" />
+            </SelectTrigger>
+            <SelectContent>
+              {leads.map((l) => (
+                <SelectItem key={l.id} value={l.id}>
+                  {l.lead_number} — {l.customer ? `${l.customer.first_name} ${l.customer.last_name}` : "No customer"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            disabled={!inspectionLeadId || inspectionMutation.isPending}
+            onClick={() => inspectionMutation.mutate(inspectionLeadId)}
+          >
+            {inspectionMutation.isPending ? "Seeding…" : "Seed test inspection report"}
+          </Button>
+        </div>
+      </SectionCard>
+
+
 
       {seedReport ? (
         <SectionCard title="Seed report">

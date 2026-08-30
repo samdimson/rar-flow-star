@@ -13,6 +13,7 @@ import {
   type LeadSpec,
   type RepKey,
 } from "./seed-data";
+import { TEST_PHOTO_JPEG_BASE64 } from "./test-photo";
 
 export type SeedReport = {
   leads_created: number;
@@ -453,4 +454,90 @@ async function profileId(key: Exclude<RepKey, "random">): Promise<string | null>
   const id = (data as { id: string } | null)?.id ?? null;
   profileCache.set(email, id);
   return id;
+}
+
+/* ---------------------------------------------------------------------------
+ * Dev-only: seed one complete inspection report (with 10 real photos) so the
+ * task 2.1 gate and signed-URL previews can be exercised in QA/demos.
+ * ------------------------------------------------------------------------ */
+
+export type SeedInspectionResult = { report_id: string; photos: number };
+
+const TEST_INSPECTION = {
+  damage_type: "Hail",
+  damage_areas: ["Roof", "Gutters", "Downspouts"],
+  roof_condition: "Poor",
+  roof_age: 12,
+  roof_type: "asphalt_shingle",
+  roof_stories: 1,
+  inspection_notes:
+    "Hail impacts observed across all roof slopes with granule loss and soft-metal denting on vents/gutters consistent with storm date. Recommend full replacement.",
+};
+
+export async function seedTestInspection(leadId: string): Promise<SeedInspectionResult> {
+  const { data: lead, error: leadErr } = await db
+    .from("leads")
+    .select("id, property_id, inspection_date")
+    .eq("id", leadId)
+    .maybeSingle();
+  if (leadErr) throw new Error(`leads: ${leadErr.message}`);
+  if (!lead) throw new Error("Lead not found");
+
+  const stormDate = dateOnly(-30);
+  const reportId = await insert("inspection_reports", {
+    lead_id: leadId,
+    ...TEST_INSPECTION,
+    storm_date: stormDate,
+  });
+
+  const bytes = Uint8Array.from(atob(TEST_PHOTO_JPEG_BASE64), (c) => c.charCodeAt(0));
+  const stamp = Date.now();
+  const docs: Record<string, unknown>[] = [];
+
+  for (let i = 1; i <= 10; i += 1) {
+    const path = `leads/${leadId}/inspection-test/${stamp}-photo-${i}.jpg`;
+    const { error: upErr } = await supabaseAdmin.storage
+      .from("crm-files")
+      .upload(path, bytes, { contentType: "image/jpeg", upsert: true });
+    if (upErr) throw new Error(`storage: ${upErr.message}`);
+    docs.push({
+      lead_id: leadId,
+      inspection_report_id: reportId,
+      category: "photo",
+      file_name: `photo-${i}.jpg`,
+      file_size: bytes.byteLength,
+      mime_type: "image/jpeg",
+      storage_path: path,
+      caption: "QA test inspection photo",
+    });
+  }
+  const photos = await insertMany("documents", docs);
+
+  const { error: leadUpdErr } = await db
+    .from("leads")
+    .update({
+      damage_type: TEST_INSPECTION.damage_type,
+      damage_areas: TEST_INSPECTION.damage_areas,
+      roof_condition: TEST_INSPECTION.roof_condition,
+      inspection_notes: TEST_INSPECTION.inspection_notes,
+      storm_date: stormDate,
+      inspection_date: (lead as { inspection_date: string | null }).inspection_date ?? dateOnly(0),
+    })
+    .eq("id", leadId);
+  if (leadUpdErr) throw new Error(`leads: ${leadUpdErr.message}`);
+
+  const propertyId = (lead as { property_id: string | null }).property_id;
+  if (propertyId) {
+    const { error: propErr } = await db
+      .from("properties")
+      .update({
+        roof_age: TEST_INSPECTION.roof_age,
+        roof_type: TEST_INSPECTION.roof_type,
+        roof_stories: TEST_INSPECTION.roof_stories,
+      })
+      .eq("id", propertyId);
+    if (propErr) throw new Error(`properties: ${propErr.message}`);
+  }
+
+  return { report_id: reportId, photos };
 }
