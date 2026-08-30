@@ -109,6 +109,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
     code: "1.3",
     stageId: 1,
     displayStageId: 2,
+    displayCode: "2.0",
     name: "Inspection Scheduled",
     description: "Homeowner agreed; inspection on calendar",
     next: ["2.1"],
