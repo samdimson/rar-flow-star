@@ -249,6 +249,7 @@ function LeadDetail() {
   const saveTask = useUpsert("tasks", "Task");
   const saveNote = useUpsert("notes", "Note");
   const [noteBody, setNoteBody] = useState("");
+  const [activeTab, setActiveTab] = useState("overview");
   const sendEmail = useServerFn(sendAppointmentEmail);
   const queryClient = useQueryClient();
 
