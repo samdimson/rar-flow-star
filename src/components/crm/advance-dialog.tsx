@@ -194,8 +194,27 @@ export function AdvanceDialog({
           {missing.length > 0 ? (
             <Alert variant="destructive">
               <ShieldAlert className="size-4" />
-              <AlertDescription>
-                Missing required information: {missing.map(requirementLabel).join(", ")}.
+              <AlertDescription className="space-y-2">
+                <span className="block">
+                  Missing required information: {missing.map(requirementLabel).join(", ")}.
+                </span>
+                {missingTabs.length > 0 ? (
+                  <span className="flex flex-wrap gap-2">
+                    {missingTabs.map((tab) => (
+                      <Button
+                        key={tab}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setActiveTab?.(tab);
+                          setOpen(false);
+                        }}
+                      >
+                        Go to {TAB_LABELS[tab] ?? tab} tab
+                      </Button>
+                    ))}
+                  </span>
+                ) : null}
               </AlertDescription>
             </Alert>
           ) : null}
