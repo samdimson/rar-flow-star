@@ -159,12 +159,16 @@ function CategorySection({
   canViewFinance,
   docFor,
   openDoc,
+  alwaysShow,
+  emptyMessage,
 }: {
   label: string;
   contracts: ContractWithLead[];
   canViewFinance: boolean;
   docFor: (leadId: string | null, type: string) => DocumentRow | null;
   openDoc: (doc: DocumentRow) => void;
+  alwaysShow?: boolean;
+  emptyMessage?: string;
 }) {
   const [open, setOpen] = useState(true);
   const [query, setQuery] = useState("");
@@ -196,7 +200,7 @@ function CategorySection({
         <CollapsibleContent>
           <CardContent className="pt-0">
             {rows.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">No matches in this section.</p>
+              <EmptyState message={emptyMessage ?? "No matches in this section."} />
             ) : (
               <ContractsTable rows={rows} canViewFinance={canViewFinance} docFor={docFor} openDoc={openDoc} />
             )}
@@ -248,12 +252,13 @@ function ContractsPage() {
           <>
             {SECTIONS.map((section) => {
               const rows = active.filter((c) => (c.contract_type ?? "contract") === section.value);
-              if (rows.length === 0) return null;
               return (
                 <CategorySection
                   key={section.value}
                   label={section.label}
                   contracts={rows}
+                  alwaysShow
+                  emptyMessage={`No ${section.label.toLowerCase()} contracts yet.`}
                   canViewFinance={canViewFinance}
                   docFor={docFor}
                   openDoc={openDoc}
