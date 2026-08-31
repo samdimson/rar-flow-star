@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { ArrowRight, ShieldAlert } from "lucide-react";
+import { ArrowRight, CalendarClock, ShieldAlert } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -88,6 +92,10 @@ export function AdvanceDialog({
   const [target, setTarget] = useState(initialTarget ?? options[0] ?? "");
   const [reason, setReason] = useState("");
   const [confirmDenial, setConfirmDenial] = useState(false);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [meetingAt, setMeetingAt] = useState("");
+  const [savingMeeting, setSavingMeeting] = useState(false);
+  const queryClient = useQueryClient();
   const advance = useAdvanceLead();
   // Required-field checks for rcv_amount live on insurance_claims, so always
   // read the claim row for this lead rather than trusting the optional prop.
@@ -134,8 +142,39 @@ export function AdvanceDialog({
 
   const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5";
 
+  const needsAdjusterMeeting =
+    effectiveTarget === "3.2" && !effectiveClaim?.adjuster_meeting_at;
+  const blocked = missing.length > 0 || needsAdjusterMeeting;
+
+  const saveMeeting = async () => {
+    if (!meetingAt) return;
+    setSavingMeeting(true);
+    try {
+      const iso = new Date(meetingAt).toISOString();
+      if (effectiveClaim?.id) {
+        const { error } = await supabase
+          .from("insurance_claims")
+          .update({ adjuster_meeting_at: iso })
+          .eq("id", effectiveClaim.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("insurance_claims")
+          .insert({ lead_id: lead.id, adjuster_meeting_at: iso });
+        if (error) throw error;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["insurance_claims"] });
+      setShowScheduler(false);
+      toast.success("Adjuster meeting scheduled");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save meeting");
+    } finally {
+      setSavingMeeting(false);
+    }
+  };
+
   const submit = () => {
-    if (!effectiveTarget) return;
+    if (!effectiveTarget || blocked) return;
     if (needsDenialConfirm && !confirmDenial) {
       setConfirmDenial(true);
       return;
@@ -254,13 +293,47 @@ export function AdvanceDialog({
             />
           </div>
 
+          {needsAdjusterMeeting && showScheduler ? (
+            <div className="space-y-1.5 rounded-md border border-border p-3">
+              <Label htmlFor="advance-meeting">Adjuster meeting</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  id="advance-meeting"
+                  type="datetime-local"
+                  value={meetingAt}
+                  onChange={(e) => setMeetingAt(e.target.value)}
+                  className="max-w-[16rem]"
+                />
+                <Button size="sm" onClick={saveMeeting} disabled={!meetingAt || savingMeeting}>
+                  {savingMeeting ? "Saving…" : "Save"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowScheduler(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
         </div>
 
         <DialogFooter>
+          {needsAdjusterMeeting && !showScheduler ? (
+            <Button variant="outline" onClick={() => setShowScheduler(true)}>
+              <CalendarClock className="size-4" /> Schedule Adjuster Meeting
+            </Button>
+          ) : null}
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={submit} disabled={!effectiveTarget || advance.isPending}>
+          <Button
+            onClick={submit}
+            disabled={!effectiveTarget || blocked || advance.isPending}
+            className={
+              blocked
+                ? "bg-muted text-muted-foreground hover:bg-muted"
+                : "bg-accent text-accent-foreground hover:bg-accent/90"
+            }
+          >
             {advance.isPending ? "Saving…" : "Confirm move"}
           </Button>
         </DialogFooter>
