@@ -142,8 +142,39 @@ export function AdvanceDialog({
 
   const needsDenialConfirm = lead.task_code === "3.4" && effectiveTarget === "3.5";
 
+  const needsAdjusterMeeting =
+    effectiveTarget === "3.2" && !effectiveClaim?.adjuster_meeting_at;
+  const blocked = missing.length > 0 || needsAdjusterMeeting;
+
+  const saveMeeting = async () => {
+    if (!meetingAt) return;
+    setSavingMeeting(true);
+    try {
+      const iso = new Date(meetingAt).toISOString();
+      if (effectiveClaim?.id) {
+        const { error } = await supabase
+          .from("insurance_claims")
+          .update({ adjuster_meeting_at: iso })
+          .eq("id", effectiveClaim.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("insurance_claims")
+          .insert({ lead_id: lead.id, adjuster_meeting_at: iso });
+        if (error) throw error;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["insurance_claims"] });
+      setShowScheduler(false);
+      toast.success("Adjuster meeting scheduled");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save meeting");
+    } finally {
+      setSavingMeeting(false);
+    }
+  };
+
   const submit = () => {
-    if (!effectiveTarget) return;
+    if (!effectiveTarget || blocked) return;
     if (needsDenialConfirm && !confirmDenial) {
       setConfirmDenial(true);
       return;
