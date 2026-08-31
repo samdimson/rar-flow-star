@@ -513,31 +513,15 @@ export async function seedTestInspection(leadId: string): Promise<SeedInspection
   }
   const photos = await insertMany("documents", docs);
 
+  // inspection_reports is the sole source of truth; only workflow dates stay on the lead.
   const { error: leadUpdErr } = await db
     .from("leads")
     .update({
-      damage_type: TEST_INSPECTION.damage_type,
-      damage_areas: TEST_INSPECTION.damage_areas,
-      roof_condition: TEST_INSPECTION.roof_condition,
-      inspection_notes: TEST_INSPECTION.inspection_notes,
       storm_date: stormDate,
       inspection_date: (lead as { inspection_date: string | null }).inspection_date ?? dateOnly(0),
     })
     .eq("id", leadId);
   if (leadUpdErr) throw new Error(`leads: ${leadUpdErr.message}`);
-
-  const propertyId = (lead as { property_id: string | null }).property_id;
-  if (propertyId) {
-    const { error: propErr } = await db
-      .from("properties")
-      .update({
-        roof_age: TEST_INSPECTION.roof_age,
-        roof_type: TEST_INSPECTION.roof_type,
-        roof_stories: TEST_INSPECTION.roof_stories,
-      })
-      .eq("id", propertyId);
-    if (propErr) throw new Error(`properties: ${propErr.message}`);
-  }
 
   return { report_id: reportId, photos };
 }

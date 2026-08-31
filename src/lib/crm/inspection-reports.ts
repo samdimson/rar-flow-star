@@ -33,6 +33,27 @@ export function isInspectionReportComplete(r: InspectionReportRow, photoCount: n
 }
 
 /**
+ * Server/imperative variant of the `hasComplete` check for callers outside React
+ * (e.g. the workflow transition gate).
+ */
+export async function fetchHasCompleteInspectionReport(leadId: string) {
+  const [{ data: reports, error: repErr }, { data: docs, error: docErr }] = await Promise.all([
+    supabase.from("inspection_reports").select("*").eq("lead_id", leadId),
+    supabase.from("documents").select("inspection_report_id").eq("lead_id", leadId).eq("category", "photo"),
+  ]);
+  if (repErr) throw repErr;
+  if (docErr) throw docErr;
+  const counts: Record<string, number> = {};
+  for (const row of docs ?? []) {
+    const key = (row as { inspection_report_id: string | null }).inspection_report_id;
+    if (key) counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return ((reports ?? []) as InspectionReportRow[]).some((r) =>
+    isInspectionReportComplete(r, counts[r.id] ?? 0),
+  );
+}
+
+/**
  * Fetches a lead's inspection reports plus per-report photo counts and exposes
  * `hasComplete` — true when at least one report satisfies the full completeness
  * check used to unlock the 2.2/2.3 qualification buttons.

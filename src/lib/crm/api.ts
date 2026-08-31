@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { addBusinessDays, TASK_BY_CODE, type RequiredField, REQUIRED_FIELD_LABELS } from "./workflow";
 import { isoDate } from "./format";
+import { fetchHasCompleteInspectionReport } from "./inspection-reports";
 
 type Tables = Database["public"]["Tables"];
 

@@ -334,31 +334,6 @@ function ReportDialog({
       const { error: repErr } = await supabase.from("inspection_reports").update(values).eq("id", rid);
       if (repErr) throw repErr;
 
-      // Mirror the just-saved report onto the lead/property columns the task 2.1
-      // required-field gate reads.
-      const leadPatch = {
-        damage_type: damageType,
-        damage_areas: damageAreas,
-        roof_condition: roofCondition,
-        inspection_notes: notes,
-        storm_date: stormDate,
-        inspection_date: lead.inspection_date ?? new Date().toISOString().slice(0, 10),
-      };
-      const { error: leadErr } = await supabase.from("leads").update(leadPatch).eq("id", lead.id);
-      if (leadErr) throw leadErr;
-
-      if (lead.property_id) {
-        const { error: propErr } = await supabase
-          .from("properties")
-          .update({
-            roof_age: Number(roofAge),
-            roof_type: roofType as never,
-            roof_stories: Number(roofStories),
-          })
-          .eq("id", lead.property_id);
-        if (propErr) throw propErr;
-      }
-
       await supabase.from("activities").insert({
         lead_id: lead.id,
         type: "note",
@@ -372,10 +347,7 @@ function ReportDialog({
       onClose();
 
       if (autoAdvanceTo && lead.task_code === "1.3") {
-        await advance.mutateAsync({
-          lead: { ...(lead as LeadRow), ...leadPatch } as LeadRow,
-          toTaskCode: autoAdvanceTo,
-        });
+        await advance.mutateAsync({ lead: lead as LeadRow, toTaskCode: autoAdvanceTo });
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not save inspection report");
