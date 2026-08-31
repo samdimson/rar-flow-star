@@ -221,6 +221,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
   {
     code: "3.6",
     stageId: 3,
+    displayCode: "3.5",
     name: "Reinspection / 2nd Adjuster",
     description: "Carrier granted second inspection",
     next: ["3.4"],
