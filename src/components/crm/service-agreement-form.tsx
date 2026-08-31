@@ -7,6 +7,13 @@ import { SignaturePad } from "@/components/crm/signature-pad";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useClaim, useLead } from "@/lib/crm/api";
 import { shortDate } from "@/lib/crm/format";
 import { signServiceAgreement } from "@/lib/crm/service-agreement.functions";
@@ -19,6 +26,7 @@ import {
   SERVICE_AGREEMENT_TERMS,
   type ServiceAgreementFields,
 } from "@/lib/crm/service-agreement";
+import { CARRIERS } from "@/lib/crm/workflow";
 
 const EMPTY: ServiceAgreementFields = {
   homeownerName: "",
@@ -46,6 +54,8 @@ export function ServiceAgreementForm({
 
   const [fields, setFields] = useState<ServiceAgreementFields>(EMPTY);
   const [prefilled, setPrefilled] = useState(false);
+  const [carrierSelect, setCarrierSelect] = useState<string>("");
+  const [carrierOther, setCarrierOther] = useState<string>("");
   const [homeownerSignature, setHomeownerSignature] = useState<string | null>(null);
   const [repSignature, setRepSignature] = useState<string | null>(null);
   const [scrolledTerms, setScrolledTerms] = useState(false);
@@ -173,12 +183,51 @@ export function ServiceAgreementForm({
           {SERVICE_AGREEMENT_FIELD_LABELS.map(({ key, label }) => (
             <div key={key} className="space-y-1.5">
               <Label htmlFor={`sa-${key}`}>{label}</Label>
-              <Input
-                id={`sa-${key}`}
-                type={key === "dateOfLoss" ? "date" : "text"}
-                value={fields[key]}
-                onChange={(e) => setFields((prev) => ({ ...prev, [key]: e.target.value }))}
-              />
+              {key === "insuranceCompany" && !fields.insuranceCompany ? (
+                <>
+                  <Select
+                    value={carrierSelect}
+                    onValueChange={(value) => {
+                      setCarrierSelect(value);
+                      if (value === "Other") {
+                        setFields((prev) => ({ ...prev, insuranceCompany: carrierOther }));
+                      } else {
+                        setFields((prev) => ({ ...prev, insuranceCompany: value }));
+                        setCarrierOther("");
+                      }
+                    }}
+                  >
+                    <SelectTrigger id={`sa-${key}`}>
+                      <SelectValue placeholder="Select insurance carrier…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CARRIERS.map((carrier) => (
+                        <SelectItem key={carrier} value={carrier}>
+                          {carrier}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {carrierSelect === "Other" ? (
+                    <Input
+                      placeholder="Enter carrier name"
+                      value={carrierOther}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setCarrierOther(value);
+                        setFields((prev) => ({ ...prev, insuranceCompany: value }));
+                      }}
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <Input
+                  id={`sa-${key}`}
+                  type={key === "dateOfLoss" ? "date" : "text"}
+                  value={fields[key]}
+                  onChange={(e) => setFields((prev) => ({ ...prev, [key]: e.target.value }))}
+                />
+              )}
             </div>
           ))}
         </div>
