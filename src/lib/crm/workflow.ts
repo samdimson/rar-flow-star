@@ -85,6 +85,8 @@ export type WorkflowTask = {
   displayStageId?: StageId;
   /** Code shown in the stage pill row, when it differs from code. */
   displayCode?: string;
+  /** Hidden from default stage rows and advance options; reachable via a dedicated entry point. */
+  hidden?: boolean;
   name: string;
   description: string;
   next: string[];
