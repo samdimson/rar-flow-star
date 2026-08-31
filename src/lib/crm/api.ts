@@ -458,12 +458,7 @@ export function missingRequirements(
     | "contract_amount"
     | "production_manager_id"
     | "install_date"
-  > & {
-    damage_type?: string | null;
-    damage_areas?: string[] | null;
-    roof_condition?: string | null;
-    inspection_notes?: string | null;
-  },
+  >,
   claim:
     | (Pick<ClaimRow, "carrier" | "claim_number" | "adjuster_meeting_at" | "rcv_amount"> & {
         scope_document_id?: string | null;
@@ -472,7 +467,7 @@ export function missingRequirements(
     | undefined,
   toTaskCode: string,
   fromTaskCode?: string | null,
-  photoCount = 0,
+  hasCompleteInspectionReport = false,
 ): RequiredField[] {
   const task = TASK_BY_CODE[toTaskCode];
   // Fields required to enter the target task, plus fields the current task must
@@ -483,11 +478,7 @@ export function missingRequirements(
   if (!fields.length) return [];
   const present: Record<RequiredField, unknown> = {
     inspection_date: lead.inspection_date,
-    damage_type: lead.damage_type,
-    damage_areas: lead.damage_areas,
-    roof_condition: lead.roof_condition,
-    inspection_notes: lead.inspection_notes,
-    inspection_photos: photoCount,
+    inspection_report: hasCompleteInspectionReport,
     carrier: claim?.carrier,
     claim_number: claim?.claim_number,
     adjuster_meeting_at: claim?.adjuster_meeting_at,
@@ -501,11 +492,7 @@ export function missingRequirements(
   return fields.filter((f) => {
     const v = present[f];
     if (f === "rcv_amount") return !(Number(v) > 0);
-    if (f === "inspection_photos") return !(Number(v) >= 10);
-    if (f === "damage_areas") return !(Array.isArray(v) && v.length > 0);
-    if (f === "damage_type" || f === "roof_condition" || f === "inspection_notes") {
-      return typeof v !== "string" || v.trim() === "";
-    }
+    if (f === "inspection_report") return v !== true;
     return v === null || v === undefined || v === "" || v === 0;
   });
 }
@@ -616,13 +603,9 @@ export async function applyTransition({ lead, toTaskCode, reason, isOverride }: 
     .eq("lead_id", lead.id)
     .maybeSingle();
 
-  const { count: photoCount } = await supabase
-    .from("documents")
-    .select("id", { count: "exact", head: true })
-    .eq("lead_id", lead.id)
-    .eq("category", "photo");
+  const hasReport = await fetchHasCompleteInspectionReport(lead.id);
 
-  const missing = missingRequirements(lead, claim, toTaskCode, lead.task_code, photoCount ?? 0);
+  const missing = missingRequirements(lead, claim, toTaskCode, lead.task_code, hasReport);
   if (missing.length && !isOverride) {
     throw new Error(
       `Cannot advance to ${task.code} ${task.name}. Missing required: ${missing.map(requirementLabel).join(", ")}.`,

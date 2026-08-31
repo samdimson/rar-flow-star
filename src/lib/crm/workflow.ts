@@ -24,11 +24,7 @@ export const STAGES: { id: StageId; name: string; short: string }[] = [
 /** Fields that must be present on the lead/claim before advancing to a task. */
 export type RequiredField =
   | "inspection_date"
-  | "damage_type"
-  | "damage_areas"
-  | "roof_condition"
-  | "inspection_notes"
-  | "inspection_photos"
+  | "inspection_report"
   | "carrier"
   | "claim_number"
   | "adjuster_meeting_at"
@@ -41,11 +37,7 @@ export type RequiredField =
 
 export const REQUIRED_FIELD_LABELS: Record<RequiredField, string> = {
   inspection_date: "Inspection date",
-  damage_type: "Damage type",
-  damage_areas: "Damaged areas",
-  roof_condition: "Roof condition",
-  inspection_notes: "Inspection notes",
-  inspection_photos: "10 inspection photos",
+  inspection_report: "Completed inspection report (all fields + 10 photos)",
   carrier: "Insurance carrier",
   claim_number: "Claim number",
   adjuster_meeting_at: "Adjuster meeting date/time",
@@ -60,11 +52,7 @@ export const REQUIRED_FIELD_LABELS: Record<RequiredField, string> = {
 /** Which lead-detail tab hosts the input for each required field. */
 export const REQUIRED_FIELD_TAB: Record<RequiredField, string> = {
   inspection_date: "overview",
-  damage_type: "inspection",
-  damage_areas: "inspection",
-  roof_condition: "inspection",
-  inspection_notes: "inspection",
-  inspection_photos: "inspection",
+  inspection_report: "inspection",
   carrier: "insurance",
   claim_number: "insurance",
   adjuster_meeting_at: "insurance",
@@ -159,11 +147,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
     next: ["2.2", "2.3"],
     required: [
       "inspection_date",
-      "damage_type",
-      "damage_areas",
-      "roof_condition",
-      "inspection_notes",
-      "inspection_photos",
+      "inspection_report",
     ],
     followUps: [{ title: "Review damage and qualify claim", dueInDays: 1, kind: "review", priority: "high" }],
   },
