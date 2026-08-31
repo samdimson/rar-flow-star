@@ -923,7 +923,7 @@ function LeadDetail() {
           {/* Supplements --------------------------------------------- */}
 
           <TabsContent value="supplements" className="mt-4">
-            <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
+            <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} lead={lead} />
           </TabsContent>
 
           {/* Appointments -------------------------------------------- */}
