@@ -31,7 +31,6 @@ import {
   requirementLabel,
   useAdvanceLead,
   useClaim,
-  useDocuments,
   type ClaimRow,
   type LeadRow,
 } from "@/lib/crm/api";
@@ -41,6 +40,7 @@ import {
   TASK_BY_CODE,
   type RequiredField,
 } from "@/lib/crm/workflow";
+import { useInspectionReports } from "@/lib/crm/inspection-reports";
 import { LeadIdentityHeader } from "@/components/crm/lead-identity-header";
 
 type WithRelations = {
@@ -55,13 +55,7 @@ const leadCustomerName = (lead: LeadRow) => {
 const leadAddress = (lead: LeadRow) =>
   (lead as LeadRow & WithRelations).property?.address_line1 ?? "";
 
-const INSPECTION_FIELDS: RequiredField[] = [
-  "damage_type",
-  "damage_areas",
-  "roof_condition",
-  "inspection_notes",
-  "inspection_photos",
-];
+const INSPECTION_FIELDS: RequiredField[] = ["inspection_report"];
 
 export function AdvanceDialog({
   lead,
@@ -99,12 +93,11 @@ export function AdvanceDialog({
   // read the claim row for this lead rather than trusting the optional prop.
   const { data: fetchedClaim } = useClaim(lead.id);
   const effectiveClaim = fetchedClaim ?? claim ?? null;
-  const { data: leadDocs = [] } = useDocuments({ column: "lead_id", value: lead.id });
-  const photoCount = leadDocs.filter((d) => d.category === "photo").length;
+  const { hasComplete } = useInspectionReports(lead.id);
 
   const effectiveTarget = options.includes(target) ? target : (initialTarget && options.includes(initialTarget) ? initialTarget : options[0] ?? "");
   const missing = effectiveTarget
-    ? missingRequirements(lead, effectiveClaim, effectiveTarget, lead.task_code, photoCount)
+    ? missingRequirements(lead, effectiveClaim, effectiveTarget, lead.task_code, hasComplete)
     : [];
   const targetTask = effectiveTarget ? TASK_BY_CODE[effectiveTarget] : undefined;
 
@@ -117,7 +110,7 @@ export function AdvanceDialog({
   );
   const inspectionBlocked =
     inspectionGate && setActiveTab
-      ? missingRequirements(lead, effectiveClaim, inspectionGate, lead.task_code, photoCount).some(
+      ? missingRequirements(lead, effectiveClaim, inspectionGate, lead.task_code, hasComplete).some(
           (f) => INSPECTION_FIELDS.includes(f),
         )
       : false;
