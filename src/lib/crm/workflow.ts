@@ -212,6 +212,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
   {
     code: "3.5",
     stageId: 3,
+    hidden: true,
     name: "Supplement / Appeal Pending",
     description: "Claim denied or underpaid; appeal submitted",
     next: ["3.6", "3.4", "4.1"],
