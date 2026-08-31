@@ -273,7 +273,7 @@ export function ServiceAgreementForm({
       {/* Signatures */}
       <section className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-orange-500">Signatures</h2>
-        <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
           <SignaturePad
             label="Homeowner Signature"
             disabled={!scrolledTerms}
@@ -284,7 +284,7 @@ export function ServiceAgreementForm({
             <Input id="sa-ho-date" readOnly value={shortDate(today)} />
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
           <SignaturePad
             label={`${SA_COMPANY} Representative`}
             disabled={!scrolledTerms}
