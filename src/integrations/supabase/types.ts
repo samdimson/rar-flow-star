@@ -991,12 +991,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           customer_id: string | null
-          damage_areas: string[] | null
-          damage_type: string | null
           estimated_value: number
           id: string
           inspection_date: string | null
-          inspection_notes: string | null
           install_date: string | null
           lead_number: string
           net_amount: number | null
@@ -1006,7 +1003,6 @@ export type Database = {
           production_manager_id: string | null
           property_id: string | null
           rescission_ends_at: string | null
-          roof_condition: string | null
           service_agreement_signed_at: string | null
           source: Database["public"]["Enums"]["lead_source"]
           source_detail: string | null
@@ -1024,12 +1020,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
-          damage_areas?: string[] | null
-          damage_type?: string | null
           estimated_value?: number
           id?: string
           inspection_date?: string | null
-          inspection_notes?: string | null
           install_date?: string | null
           lead_number?: string
           net_amount?: number | null
@@ -1039,7 +1032,6 @@ export type Database = {
           production_manager_id?: string | null
           property_id?: string | null
           rescission_ends_at?: string | null
-          roof_condition?: string | null
           service_agreement_signed_at?: string | null
           source?: Database["public"]["Enums"]["lead_source"]
           source_detail?: string | null
@@ -1057,12 +1049,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
-          damage_areas?: string[] | null
-          damage_type?: string | null
           estimated_value?: number
           id?: string
           inspection_date?: string | null
-          inspection_notes?: string | null
           install_date?: string | null
           lead_number?: string
           net_amount?: number | null
@@ -1072,7 +1061,6 @@ export type Database = {
           production_manager_id?: string | null
           property_id?: string | null
           rescission_ends_at?: string | null
-          roof_condition?: string | null
           service_agreement_signed_at?: string | null
           source?: Database["public"]["Enums"]["lead_source"]
           source_detail?: string | null
