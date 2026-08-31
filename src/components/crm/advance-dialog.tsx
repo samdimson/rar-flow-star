@@ -92,6 +92,10 @@ export function AdvanceDialog({
   const [target, setTarget] = useState(initialTarget ?? options[0] ?? "");
   const [reason, setReason] = useState("");
   const [confirmDenial, setConfirmDenial] = useState(false);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [meetingAt, setMeetingAt] = useState("");
+  const [savingMeeting, setSavingMeeting] = useState(false);
+  const queryClient = useQueryClient();
   const advance = useAdvanceLead();
   // Required-field checks for rcv_amount live on insurance_claims, so always
   // read the claim row for this lead rather than trusting the optional prop.
