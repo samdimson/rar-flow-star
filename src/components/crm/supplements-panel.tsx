@@ -4,7 +4,8 @@ import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { EmptyState, SectionCard } from "@/components/crm/primitives";
 import { RecordForm, type FieldSpec } from "@/components/crm/record-form";
 import { Button } from "@/components/ui/button";
-import { useSupplements, type SupplementRow } from "@/lib/crm/api";
+import { useAdvanceLead, useSupplements, type LeadRow, type SupplementRow } from "@/lib/crm/api";
+import { TASK_BY_CODE } from "@/lib/crm/workflow";
 import { currency, shortDate } from "@/lib/crm/format";
 import { cn } from "@/lib/utils";
 
@@ -127,13 +128,25 @@ export function SupplementsPanel({
   leadId,
   userId,
   canEdit,
+  lead,
 }: {
   leadId: string;
   userId: string | null;
   canEdit: boolean;
+  lead?: LeadRow | null;
 }) {
   const { data: supplements = [], isLoading } = useSupplements({ column: "lead_id", value: leadId });
   const [drafts, setDrafts] = useState(0);
+  const advance = useAdvanceLead();
+
+  const canFileAppeal =
+    canEdit && !!lead && (TASK_BY_CODE[lead.task_code]?.next ?? []).includes("3.5");
+
+  const fileSupplementAppeal = () => {
+    if (!lead) return;
+    if (!window.confirm("Move this lead to 3.5 — Supplement / Appeal Pending?")) return;
+    advance.mutate({ lead, toTaskCode: "3.5" });
+  };
 
   const requested = supplements.reduce((s, r) => s + Number(r.requested_amount ?? 0), 0);
   const approved = supplements.reduce((s, r) => s + Number(r.approved_amount ?? 0), 0);
@@ -143,9 +156,16 @@ export function SupplementsPanel({
       title="Supplements"
       actions={
         canEdit ? (
-          <Button size="sm" variant="outline" onClick={() => setDrafts((d) => d + 1)}>
-            <Plus className="size-4" /> Add supplement
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {canFileAppeal ? (
+              <Button size="sm" onClick={fileSupplementAppeal} disabled={advance.isPending}>
+                File Supplement / Appeal
+              </Button>
+            ) : null}
+            <Button size="sm" variant="outline" onClick={() => setDrafts((d) => d + 1)}>
+              <Plus className="size-4" /> Add supplement
+            </Button>
+          </div>
         ) : undefined
       }
       contentClassName="space-y-3"

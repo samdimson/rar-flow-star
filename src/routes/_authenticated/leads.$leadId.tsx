@@ -498,7 +498,8 @@ function LeadDetail() {
                 (t) =>
                   (t.displayStageId ?? t.stageId) === lead.stage_id &&
                   t.code !== "2.2" &&
-                  t.code !== "2.3",
+                  t.code !== "2.3" &&
+                  (t.hidden !== true || t.code === lead.task_code),
               );
               const currentTask = TASK_BY_CODE[lead.task_code];
               const stageTasks =
@@ -922,7 +923,7 @@ function LeadDetail() {
           {/* Supplements --------------------------------------------- */}
 
           <TabsContent value="supplements" className="mt-4">
-            <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} />
+            <SupplementsPanel leadId={leadId} userId={user?.id ?? null} canEdit={canEdit} lead={lead} />
           </TabsContent>
 
           {/* Appointments -------------------------------------------- */}

@@ -85,6 +85,8 @@ export type WorkflowTask = {
   displayStageId?: StageId;
   /** Code shown in the stage pill row, when it differs from code. */
   displayCode?: string;
+  /** Hidden from default stage rows and advance options; reachable via a dedicated entry point. */
+  hidden?: boolean;
   name: string;
   description: string;
   next: string[];
@@ -210,6 +212,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
   {
     code: "3.5",
     stageId: 3,
+    hidden: true,
     name: "Supplement / Appeal Pending",
     description: "Claim denied or underpaid; appeal submitted",
     next: ["3.6", "3.4", "4.1"],
@@ -218,6 +221,7 @@ export const WORKFLOW_TASKS: WorkflowTask[] = [
   {
     code: "3.6",
     stageId: 3,
+    displayCode: "3.5",
     name: "Reinspection / 2nd Adjuster",
     description: "Carrier granted second inspection",
     next: ["3.4"],

@@ -88,7 +88,7 @@ export function AdvanceDialog({
     onOpenChange?.(next);
   };
   const current = TASK_BY_CODE[lead.task_code];
-  const options = current?.next ?? [];
+  const options = (current?.next ?? []).filter((code) => !TASK_BY_CODE[code]?.hidden);
   const [target, setTarget] = useState(initialTarget ?? options[0] ?? "");
   const [reason, setReason] = useState("");
   const [confirmDenial, setConfirmDenial] = useState(false);
