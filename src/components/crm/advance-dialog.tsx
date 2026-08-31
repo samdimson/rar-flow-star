@@ -293,13 +293,47 @@ export function AdvanceDialog({
             />
           </div>
 
+          {needsAdjusterMeeting && showScheduler ? (
+            <div className="space-y-1.5 rounded-md border border-border p-3">
+              <Label htmlFor="advance-meeting">Adjuster meeting</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  id="advance-meeting"
+                  type="datetime-local"
+                  value={meetingAt}
+                  onChange={(e) => setMeetingAt(e.target.value)}
+                  className="max-w-[16rem]"
+                />
+                <Button size="sm" onClick={saveMeeting} disabled={!meetingAt || savingMeeting}>
+                  {savingMeeting ? "Saving…" : "Save"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowScheduler(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
         </div>
 
         <DialogFooter>
+          {needsAdjusterMeeting && !showScheduler ? (
+            <Button variant="outline" onClick={() => setShowScheduler(true)}>
+              <CalendarClock className="size-4" /> Schedule Adjuster Meeting
+            </Button>
+          ) : null}
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={submit} disabled={!effectiveTarget || advance.isPending}>
+          <Button
+            onClick={submit}
+            disabled={!effectiveTarget || blocked || advance.isPending}
+            className={
+              blocked
+                ? "bg-muted text-muted-foreground hover:bg-muted"
+                : "bg-accent text-accent-foreground hover:bg-accent/90"
+            }
+          >
             {advance.isPending ? "Saving…" : "Confirm move"}
           </Button>
         </DialogFooter>
