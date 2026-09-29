@@ -141,6 +141,28 @@ function AuthPage() {
                 </form>
               </TabsContent>
 
+              <TabsContent value="reset">
+                <form onSubmit={resetPassword} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reset-email">Work email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={busy}>
+                    {busy ? "Sending…" : "Email me a reset link"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    We'll email you a link to set a new password.
+                  </p>
+                </form>
+              </TabsContent>
+
               <TabsContent value="signup">
                 <form onSubmit={signUp} className="space-y-3">
                   <div className="space-y-1.5">
